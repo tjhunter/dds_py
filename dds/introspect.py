@@ -1,5 +1,5 @@
 import logging
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional, List
+from typing import TypeVar, Callable, Any, NewType, NamedTuple, Union, OrderedDict, FrozenSet, Optional, List, Type
 from types import ModuleType, FunctionType
 import inspect
 import ast
@@ -12,6 +12,11 @@ from .structures import PyHash, Path, FunctionInteractions, KSException
 _logger = logging.getLogger(__name__)
 
 
+def introspect(f: Callable[[Any], Any]) -> FunctionInteractions:
+    gctx = GlobalContext(whitelisted_packages=frozenset(["dds"]))
+    return _introspect(f, [], None, gctx)
+
+
 class Functions(str, Enum):
     Load = "load"
     Keep = "keep"
@@ -19,28 +24,18 @@ class Functions(str, Enum):
     Eval = "eval"
 
 
-def introspect(f: Callable[[Any], Any]) -> FunctionInteractions:
-    return _introspect(f, [], None)
-    # src = inspect.getsource(f)
-    # ast_src = ast.parse(src)
-    # ast_f = ast_src.body[0]
-    # fun_module = sys.modules[f.__module__]
-    # members = inspect.getmembers(fun_module)
-    # member_funs = dict(((name, o) for (name, o) in members if inspect.isfunction(o)))
-    # member_mods = dict(((name, o) for (name, o) in members if inspect.ismodule(o)))
-    # # _logger.debug(f"fun_module: {fun_module}, {member_funs} {member_mods}")
-    # _logger.info(f"source: {src}")
-    # # _logger.info(f"ast: {ast_f}")
-    # Test().visit(ast_f)
-    # _logger.info(f"parsing:")
-    # fis = _inspect_fun(ast_f, fun_module)
-    # _logger.info(f"interactions: {fis}")
-    # return None
+CanonicalPath = NewType("CanonicalPath", List[str])
 
 
-def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[PyHash]) -> FunctionInteractions:
+class GlobalContext(NamedTuple):
+    # The packages that are authorized for traversal
+    whitelisted_packages: FrozenSet[str]
+
+
+def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[PyHash], gctx: GlobalContext) -> FunctionInteractions:
     src = inspect.getsource(f)
     ast_src = ast.parse(src)
+    body_lines = src.split("\n")
     ast_f = ast_src.body[0]
     fun_body_sig = _hash(src)
     fun_module = sys.modules[f.__module__]
@@ -48,7 +43,7 @@ def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[
     Test().visit(ast_f)
     # _logger.info(f"parsing:")
     fun_input_sig = context_sig if context_sig else _hash(args)
-    fis = _inspect_fun(ast_f, fun_module, fun_body_sig, fun_input_sig)
+    fis = _inspect_fun(ast_f, gctx, fun_module, body_lines, fun_input_sig)
     # Find the outer interactions
     outputs = [tup for fi in fis for tup in fi.outputs]
     _logger.info(f"outputs: {outputs}")
@@ -87,34 +82,45 @@ def _function_name(node) -> List[str]:
     assert False, (node, type(node))
 
 
-def _inspect_fun(node: ast.FunctionDef, mod: ModuleType,
-                  function_body_hash: PyHash,
-                  function_args_hash: PyHash) -> List[FunctionInteractions]:
+def _inspect_fun(node: ast.FunctionDef,
+                 gctx: GlobalContext,
+                 mod: ModuleType,
+                 function_body_lines: List[str],
+                 function_args_hash: PyHash) -> List[FunctionInteractions]:
     _logger.debug(f"function: {node.name} {node.args} {node.body}")
     l: List[FunctionInteractions] = []
     for n in node.body:
         if isinstance(n, ast.Expr):
-            fi = _inspect_line(n, mod, function_body_hash, function_args_hash)
+            function_body_hash = _hash(function_body_lines[:n.end_lineno])
+            fi = _inspect_line(n, gctx, mod, function_body_hash, function_args_hash)
             if fi:
                 l.append(fi)
     return l
 
 
-def _inspect_line(ln, mod: ModuleType,
+def _inspect_line(ln,
+                  gctx: GlobalContext,
+                  mod: ModuleType,
                   function_body_hash: PyHash,
                   function_args_hash: PyHash) -> Optional[FunctionInteractions]:
     if isinstance(ln, ast.Expr):
-        return _inspect_call(ln.value, mod, function_body_hash, function_args_hash)
+        return _inspect_call(ln.value, gctx, mod, function_body_hash, function_args_hash)
     else:
         _logger.debug(f"Unknown expression type: {ln}")
 
 
-def _inspect_call(node: ast.Call, mod: ModuleType,
+def _inspect_call(node: ast.Call,
+                  gctx: GlobalContext,
+                  mod: ModuleType,
                   function_body_hash: PyHash,
                   function_args_hash: PyHash) -> Optional[FunctionInteractions]:
-    # _logger.debug(f"{node.end_lineno} {dir(node)}")
     fname = _function_name(node.func)
-    if not _is_primary_function(fname):
+    obj_called = _retrieve_object(fname, mod, gctx, None)
+    _logger.debug(f"{node.lineno} {node} {obj_called}")
+    canon_path = _canonical_path(fname, mod)
+    _logger.debug(f"canon_path: {canon_path}")
+
+    if not _is_primary_function(canon_path):
         return None
     # Parse the arguments to find the function that is called
     if not node.args:
@@ -133,24 +139,54 @@ def _inspect_call(node: ast.Call, mod: ModuleType,
         raise NotImplementedError((fname[-1], node))
 
     # We just use the context in the function
-    fun_called = _retrieve_fun(f_called, mod)
+    fun_called = _retrieve_object([f_called], mod, gctx, FunctionType)
+    can_path = _canonical_path([f_called], mod)
     # _logger.debug(f"Introspecting function")
     context_sig = _hash([function_body_hash, function_args_hash, node.end_lineno])
-    inner_intro = _introspect(fun_called, args=[], context_sig=context_sig)
+    inner_intro = _introspect(fun_called, args=[], context_sig=context_sig, gctx=gctx)
     # _logger.debug(f"Introspecting function finished: {inner_intro}")
-    _logger.debug(f"keep: {store_path} <- {f_called}: {inner_intro.fun_return_sig}")
+    _logger.debug(f"keep: {store_path} <- {can_path}: {inner_intro.fun_return_sig}")
     if store_path:
         inner_intro.outputs.append((store_path, inner_intro.fun_return_sig))
     return inner_intro
 
 
-def _retrieve_fun(fname: str, mod: ModuleType) -> FunctionType:
+def _retrieve_object(path: List[str], mod: ModuleType, gctx: GlobalContext, expected_type: Optional[Type]) -> Union[None, FunctionType]:
+    assert path
+    fname = path[0]
     if fname not in mod.__dict__:
-        raise KSException(f"Function {fname} not found in module {mod}. Choices are {mod.__dict__}")
-    fun = mod.__dict__[fname]
-    if not isinstance(fun, FunctionType):
-        raise KSException(f"Object {fname} is not a function but of type {type(fun)}")
-    return fun
+        raise KSException(f"Object {fname} not found in module {mod}. Choices are {mod.__dict__}")
+    obj = mod.__dict__[fname]
+    if len(path) >= 2:
+        if not isinstance(obj, ModuleType):
+            raise KSException(f"Object {fname} is not a module but of type {type(obj)}")
+        if obj.__name__ not in gctx.whitelisted_packages:
+            _logger.debug(f"Located module {obj.__name__}, skipped")
+            return None
+        return _retrieve_object(path[1:], obj, gctx, expected_type)
+    if expected_type and not isinstance(obj, expected_type):
+        _logger.debug(f"Object {fname} of type {type(obj)}, expected {expected_type}")
+        # TODO: raise exception
+        return None
+    return obj
+
+
+def _canonical_path(path: List[str], mod: ModuleType) -> CanonicalPath:
+    """
+    The canonical path of an entity in the python module hierarchy.
+    """
+    if not path:
+        # Return the path of the module
+        return CanonicalPath(mod.__name__.split("."))
+    assert path
+    fname = path[0]
+    if fname not in mod.__dict__:
+        raise KSException(f"Object {fname} not found in module {mod}. Choices are {mod.__dict__}")
+    obj = mod.__dict__[fname]
+    if isinstance(obj, ModuleType):
+        # Look into this module to find the object:
+        return _canonical_path(path[1:], obj)
+    return CanonicalPath(_canonical_path([], mod) + [fname])
 
 
 def _retrieve_path(fname: str, mod: ModuleType) -> Path:
@@ -162,9 +198,9 @@ def _retrieve_path(fname: str, mod: ModuleType) -> Path:
     return obj
 
 
-def _is_primary_function(path: List[str]) -> bool:
+def _is_primary_function(path: CanonicalPath) -> bool:
     # TODO use the proper definition of the module
-    if len(path) == 2 and path[0] == "ks":
+    if len(path) == 2 and path[0] == "dds":
         if path[1] == Functions.Eval:
             raise KSException("invalid call to eval")
         return path[1] in (Functions.Keep, Functions.Load, Functions.Cache)
