@@ -11,7 +11,7 @@ def f1a(i: int) -> int: return i * 2
 
 
 def f1():
-    return 2
+    return "ABD"
 
 
 def f2():

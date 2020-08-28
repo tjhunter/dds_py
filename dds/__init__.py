@@ -15,7 +15,7 @@ _logger = logging.getLogger(__name__)
 __all__ = ["Path", "keep", "load", "cache", "eval"]
 
 
-_store: Store = LocalFileStore("/tmp")
+_store: Store = LocalFileStore("/tmp", "/tmp/data/")
 _context_set: bool = False
 
 
@@ -60,6 +60,7 @@ def eval(fun: Callable[[_In], _T], *args, **kwargs) -> _T:
         _logger.info(f"fun {fun}: {inters}")
         res = fun(*args, **kwargs)
         _logger.info(f"Evaluating (eval) fun {fun} with args {args} kwargs {kwargs} -> {res}")
+        _store.sync_paths()
         return res
     finally:
         _context_set = False
