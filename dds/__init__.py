@@ -1,28 +1,25 @@
 import logging
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional
-import inspect
-import ast
+from typing import TypeVar, Callable, Any, Optional
+from collections import OrderedDict
 
-from .structures import Path, PyHash, FunctionInteractions, KSException
 from .introspect import introspect
 from .store import LocalFileStore, Store
+from .structures import Path, PyHash, FunctionInteractions, KSException, EvalContext
 
 _T = TypeVar("T")
 _In = TypeVar("In")
 _logger = logging.getLogger(__name__)
 
-
 __all__ = ["Path", "keep", "load", "cache", "eval"]
 
-
 _store: Store = LocalFileStore("/tmp", "/tmp/data/")
-_context_set: bool = False
+_eval_ctx: Optional[EvalContext] = None
 
 
 def keep(path: Path, fun: Callable[[_In], _T], *args, **kwargs) -> _T:
-    if not _context_set:
+    if not _eval_ctx:
         raise NotImplementedError("Must call eval for now")
-    key = _store.get_path(path)
+    key = _eval_ctx.requested_paths[path]
     assert key is not None, (path, fun)
     if _store.has_blob(key):
         _logger.debug(f"Restoring path {path} -> {key}")
@@ -45,23 +42,21 @@ def cache(fun: Callable[[_In], _T], *args, **kwargs) -> _T:
 
 
 def eval(fun: Callable[[_In], _T], *args, **kwargs) -> _T:
-    global _context_set
-    if _context_set:
+    global _eval_ctx
+    if _eval_ctx:
         # TODO more info
         raise KSException("Already in eval() context")
-    _context_set = True
+    _eval_ctx = EvalContext(requested_paths={})
     try:
         # TODO: pass args too
         inters = introspect(fun)
+        _eval_ctx = EvalContext(requested_paths=dict(inters.outputs))
         for (p, key) in inters.outputs:
             _logger.debug(f"Updating path: {p} -> {key}")
-            # The key may not be computed yet
-            _store.register(p, key)
         _logger.info(f"fun {fun}: {inters}")
         res = fun(*args, **kwargs)
         _logger.info(f"Evaluating (eval) fun {fun} with args {args} kwargs {kwargs} -> {res}")
-        _store.sync_paths()
+        _store.sync_paths(OrderedDict(inters.outputs))
         return res
     finally:
-        _context_set = False
-
+        _eval_ctx = False

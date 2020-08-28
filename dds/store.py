@@ -1,8 +1,9 @@
+import json
 import logging
-from typing import Any, Optional
 import os
-import pickle
+from typing import Any, Optional, OrderedDict
 
+from .codec import ProtocolRef, codec_registry, GenericLocation
 from .structures import PyHash, Path, KSException
 
 _logger = logging.getLogger(__name__)
@@ -20,28 +21,22 @@ class Store(object):
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
         pass
 
-    def store_blob(self, key: PyHash, blob: Any):
+    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
         """ idempotent
         """
         pass
 
-    def register(self, path: Path, key: PyHash):
+    def sync_paths(self, paths: OrderedDict[Path, PyHash]):
         """
-        does not commit until sync_paths() is called: this path is available
-        but is not publicly committed.
+        Commits all the paths.
         """
         pass
 
-    def get_path(self, path: Path) -> Optional[PyHash]:
-        pass
-
-    def sync_paths(self):
-        """
-        Exposes publicly all the changes that were not done on the public dataset.
-        """
-        pass
     # TODO: reset paths to start the store from scratch without losing data
 
+
+# TODO: add a notion of FileSystemType (Local, DBFS, S3)
+# We need to have a matrix between FS types and object types
 
 class LocalFileStore(Store):
 
@@ -55,49 +50,31 @@ class LocalFileStore(Store):
         p_blobs = os.path.join(self._root, "blobs")
         if not os.path.exists(p_blobs):
             os.makedirs(p_blobs)
-        self._register = os.path.join(self._root, "register.pickle")
-        if not os.path.exists(self._register):
-            with open(self._register, "wb") as f:
-                pickle.dump({}, f)
 
     def fetch_blob(self, key: PyHash) -> Any:
         p = os.path.join(self._root, "blobs", key)
-        if not os.path.exists(p):
+        meta_p = os.path.join(self._root, "blobs", key + ".meta")
+        if not os.path.exists(p) or not os.path.exists(meta_p):
             return None
-        with open(p, "rb") as f:
-            return pickle.load(f)
+        with open(meta_p, "rb") as f:
+            ref = ProtocolRef(json.load(f)["protocol"])
+        codec = codec_registry.get_codec(None, ref)
+        codec.deserialize_from(GenericLocation(p))
 
-    def store_blob(self, key: PyHash, blob: Any):
+    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
+        protocol = codec_registry.get_codec(type(blob), codec)
         p = os.path.join(self._root, "blobs", key)
-        with open(p, "wb") as f:
-            if isinstance(blob, str):
-                f.write(blob.encode(encoding="utf-8"))
-            else:
-                pickle.dump(blob, f)
+        protocol.serialize_into(blob, GenericLocation(p))
+        meta_p = os.path.join(self._root, "blobs", key + ".meta")
+        with open(meta_p, "wb") as f:
+            f.write(json.dumps({"protocol": protocol.ref()}).encode("utf-8"))
         _logger.debug(f"Committed new blob in {key}")
-
-    def register(self, path: Path, key: PyHash):
-        with open(self._register, "rb") as f:
-            dct = pickle.load(f)
-        dct[path] = key
-        with open(self._register, "wb") as f:
-            pickle.dump(dct, f)
-        _logger.debug(f"Committed {path} -> {key}")
-
-    def get_path(self, path: Path) -> Optional[PyHash]:
-        with open(self._register, "rb") as f:
-            dct = pickle.load(f)
-        if path in dct:
-            return dct[path]
-        return None
 
     def has_blob(self, key: PyHash) -> bool:
         return os.path.exists(os.path.join(self._root, "blobs", key))
 
-    def sync_paths(self):
-        with open(self._register, "rb") as f:
-            dct = pickle.load(f)
-        for (path, key) in dct.items():
+    def sync_paths(self, paths):
+        for (path, key) in paths.items():
             splits = [s.replace("/", "") for s in os.path.split(path)]
             loc_dir = os.path.join(self._data_root, *(splits[:-1]))
             loc = os.path.join(loc_dir, splits[-1])
@@ -112,6 +89,3 @@ class LocalFileStore(Store):
                     os.remove(loc)
                 _logger.debug(f"Link {loc} -> {loc_blob}")
                 os.symlink(loc_blob, loc)
-
-
-

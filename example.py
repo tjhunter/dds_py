@@ -4,14 +4,13 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 path = "/tmp/1"
-path2 = "/tmp/2"
 
 
 def f1a(i: int) -> int: return i * 2
 
 
 def f1():
-    return "ABD"
+    return "ABCD"
 
 
 def f2():
