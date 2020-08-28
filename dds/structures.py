@@ -28,3 +28,11 @@ class FunctionInteractions(NamedTuple):
 
 class KSException(BaseException):
     pass
+
+
+class EvalContext(NamedTuple):
+    """
+    The evaluation context created when evaluating a call.
+    """
+    requested_paths: Dict[Path, PyHash]
+
