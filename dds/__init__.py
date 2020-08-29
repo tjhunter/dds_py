@@ -6,8 +6,8 @@ from .introspect import introspect
 from .store import LocalFileStore, Store
 from .structures import Path, PyHash, FunctionInteractions, KSException, EvalContext
 
-_T = TypeVar("T")
-_In = TypeVar("In")
+_Out = TypeVar("_Out")
+_In = TypeVar("_In")
 _logger = logging.getLogger(__name__)
 
 __all__ = ["Path", "keep", "load", "cache", "eval"]
@@ -16,7 +16,7 @@ _store: Store = LocalFileStore("/tmp", "/tmp/data/")
 _eval_ctx: Optional[EvalContext] = None
 
 
-def keep(path: Path, fun: Callable[[_In], _T], *args, **kwargs) -> _T:
+def keep(path: Path, fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
     if not _eval_ctx:
         raise NotImplementedError("Must call eval for now")
     key = _eval_ctx.requested_paths[path]
@@ -35,13 +35,13 @@ def load(path: Path) -> Any:
     return None
 
 
-def cache(fun: Callable[[_In], _T], *args, **kwargs) -> _T:
+def cache(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
     res = fun(*args, **kwargs)
     _logger.info(f"Evaluating (cache) fun {fun} with args {args} kwargs {kwargs} -> {res}")
     return res
 
 
-def eval(fun: Callable[[_In], _T], *args, **kwargs) -> _T:
+def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
     global _eval_ctx
     if _eval_ctx:
         # TODO more info

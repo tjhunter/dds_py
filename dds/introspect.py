@@ -1,5 +1,5 @@
 import logging
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, Union, OrderedDict, FrozenSet, Optional, List, Type
+from typing import TypeVar, Callable, Any, NewType, NamedTuple, Set, Union, OrderedDict, FrozenSet, Optional, List, Type
 from types import ModuleType, FunctionType
 import inspect
 import ast
@@ -74,6 +74,48 @@ class Test(ast.NodeVisitor):
         self.generic_visit(node)
 
 
+class IntroVisitor(ast.NodeVisitor):
+
+    def __init__(self, start_mod: ModuleType, gctx: GlobalContext, function_body_lines: List[str], function_args_hash: PyHash):
+        self._start_mod = start_mod
+        self._gctx = gctx
+        self._body_lines = function_body_lines
+        self._args_hash = function_args_hash
+        self.inters: List[FunctionInteractions] = []
+
+    def visit_Call(self, node: ast.Call) -> Any:
+        # _logger.debug(f"visit: {node} {dir(node)}")
+        function_body_hash = _hash(self._body_lines[:node.lineno+1])
+        fi = _inspect_call(node, self._gctx, self._start_mod, function_body_hash, self._args_hash)
+        if fi:
+            self.inters.append(fi)
+        self.generic_visit(node)
+
+
+class ExternalVarsVisitor(ast.NodeVisitor):
+    """
+    Finds all the external variables of a function that should be hashed into the argument list.
+    TODO: currently very crude, it does not look for assigned variables.
+    """
+
+    def __init__(self, start_mod: ModuleType, gctx: GlobalContext):
+        self._start_mod = start_mod
+        self._gctx = gctx
+        self.vars: Set[str] = set()
+
+    def _authorized(self, cp: CanonicalPath) -> bool:
+        for idx in range(len(self._gctx.whitelisted_packages)):
+            if ".".join(cp[:idx]) in self._gctx.whitelisted_packages:
+                return True
+        return False
+
+    def visit_Name(self, node: ast.Name) -> Any:
+        if node.id in self._start_mod.__dict__ and node.id not in self.vars:
+            cpath = _canonical_path([node.id], self._start_mod)
+            if self._authorized(cpath):
+                self.vars.add(node.id)
+
+
 def _function_name(node) -> List[str]:
     if isinstance(node, ast.Name):
         return [node.id]
@@ -88,25 +130,13 @@ def _inspect_fun(node: ast.FunctionDef,
                  function_body_lines: List[str],
                  function_args_hash: PyHash) -> List[FunctionInteractions]:
     _logger.debug(f"function: {node.name} {node.args} {node.body}")
-    l: List[FunctionInteractions] = []
-    for n in node.body:
-        if isinstance(n, ast.Expr):
-            function_body_hash = _hash(function_body_lines[:n.end_lineno])
-            fi = _inspect_line(n, gctx, mod, function_body_hash, function_args_hash)
-            if fi:
-                l.append(fi)
-    return l
-
-
-def _inspect_line(ln,
-                  gctx: GlobalContext,
-                  mod: ModuleType,
-                  function_body_hash: PyHash,
-                  function_args_hash: PyHash) -> Optional[FunctionInteractions]:
-    if isinstance(ln, ast.Expr):
-        return _inspect_call(ln.value, gctx, mod, function_body_hash, function_args_hash)
-    else:
-        _logger.debug(f"Unknown expression type: {ln}")
+    # Find all the outer dependencies to hash them
+    vdeps = ExternalVarsVisitor(mod, gctx)
+    vdeps.visit(node)
+    assert False, "add visitors"
+    visitor = IntroVisitor(mod, gctx, function_body_lines, function_args_hash)
+    visitor.visit(node)
+    return visitor.inters
 
 
 def _inspect_call(node: ast.Call,
@@ -142,7 +172,7 @@ def _inspect_call(node: ast.Call,
     fun_called = _retrieve_object([f_called], mod, gctx, FunctionType)
     can_path = _canonical_path([f_called], mod)
     # _logger.debug(f"Introspecting function")
-    context_sig = _hash([function_body_hash, function_args_hash, node.end_lineno])
+    context_sig = _hash([function_body_hash, function_args_hash, node.lineno])
     inner_intro = _introspect(fun_called, args=[], context_sig=context_sig, gctx=gctx)
     # _logger.debug(f"Introspecting function finished: {inner_intro}")
     _logger.debug(f"keep: {store_path} <- {can_path}: {inner_intro.fun_return_sig}")
