@@ -14,7 +14,8 @@ def f1():
 
 
 def f2():
-    dds.keep(path, f1)
+    if True:
+        z = dds.keep(path, f1)
     x = 3
     dds.cache(f1a, x)
 
