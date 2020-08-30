@@ -4,7 +4,7 @@ import os
 from typing import Any, Optional, OrderedDict
 
 from .codec import ProtocolRef, codec_registry, GenericLocation
-from .structures import PyHash, Path, KSException
+from .structures import PyHash, DDSPath, KSException
 
 _logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class Store(object):
         """
         pass
 
-    def sync_paths(self, paths: OrderedDict[Path, PyHash]):
+    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]):
         """
         Commits all the paths.
         """

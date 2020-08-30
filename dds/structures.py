@@ -1,7 +1,8 @@
 from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional, Dict, List, Tuple
 
 
-Path = str
+# A path to an object in the DDS store.
+DDSPath = NewType("Path", str)
 
 
 # The hash of a python object
@@ -19,7 +20,7 @@ class FunctionInteractions(NamedTuple):
     # # The set of input paths for the function
     # inputs: FrozenSet[Path]
     # # The set of paths that will be committed by the function
-    outputs: List[Tuple[Path, PyHash]]
+    outputs: List[Tuple[DDSPath, PyHash]]
     # # The set of objects that will be read or committed to the cache
     # cache: FrozenSet[PyHash]
     # # The input of the function (with all the arguments), in case this is top level
@@ -34,5 +35,5 @@ class EvalContext(NamedTuple):
     """
     The evaluation context created when evaluating a call.
     """
-    requested_paths: Dict[Path, PyHash]
+    requested_paths: Dict[DDSPath, PyHash]
 
