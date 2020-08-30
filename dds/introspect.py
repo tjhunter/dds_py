@@ -1,5 +1,5 @@
 import logging
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, Set, Union, OrderedDict, FrozenSet, Optional, List, Type
+from typing import TypeVar, Callable, Any, NewType, NamedTuple, Dict, Set, Union, OrderedDict, FrozenSet, Optional, List, Type
 from types import ModuleType, FunctionType
 import inspect
 import ast
@@ -7,13 +7,16 @@ import sys
 from enum import Enum
 import hashlib
 
-from .structures import PyHash, Path, FunctionInteractions, KSException
+from .structures import PyHash, DDSPath, FunctionInteractions, KSException
 
 _logger = logging.getLogger(__name__)
 
 
 def introspect(f: Callable[[Any], Any]) -> FunctionInteractions:
-    gctx = GlobalContext(whitelisted_packages=frozenset(["dds"]))
+    # TODO: exposed the whitelist
+    gctx = GlobalContext(
+        f.__module__,
+        whitelisted_packages=frozenset(["dds", "__main__"]))
     return _introspect(f, [], None, gctx)
 
 
@@ -24,12 +27,57 @@ class Functions(str, Enum):
     Eval = "eval"
 
 
-CanonicalPath = NewType("CanonicalPath", List[str])
+# CanonicalPath = NewType("CanonicalPath", List[str])
+
+class CanonicalPath(object):
+
+    def __init__(self, p: List[str]):
+        self._path = p
+
+    def __hash__(self):
+        return hash(tuple(self._path))
+
+    def append(self, s: str) -> "CanonicalPath":
+        return CanonicalPath(self._path + [s])
+
+    def head(self) -> str:
+        return self._path[0]
+
+    def get(self, i: int) -> str:
+        return self._path[i]
+
+    def __len__(self):
+        return len(self._path)
+
+    def __repr__(self):
+        x = ".".join(self._path)
+        return f"<{x}>"
 
 
-class GlobalContext(NamedTuple):
+class GlobalContext(object):
     # The packages that are authorized for traversal
-    whitelisted_packages: FrozenSet[str]
+
+    def __init__(self,
+                 start_module: ModuleType,
+                 whitelisted_packages: FrozenSet[str]):
+        self.whitelisted_packages = whitelisted_packages
+        self.start_module = start_module
+        # Hashes of all the static objects
+        self._hashes: Dict[CanonicalPath, PyHash] = {}
+
+    def get_hash(self, path: CanonicalPath) -> PyHash:
+        if path not in self._hashes:
+            assert path, path
+            if path.head() in sys.modules:
+                start_mod = sys.modules[path.head()]
+            else:
+                assert path.head() == "__main__", path
+                start_mod = self.start_module
+            obj = _retrieve_object(path[1:], start_mod, self, None)
+            hash = _hash(obj)
+            _logger.debug(f"Cache hash: {path}: {hash}")
+            self._hashes[path] = hash
+        return self._hashes[path]
 
 
 def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[PyHash], gctx: GlobalContext) -> FunctionInteractions:
@@ -77,6 +125,7 @@ class Test(ast.NodeVisitor):
 class IntroVisitor(ast.NodeVisitor):
 
     def __init__(self, start_mod: ModuleType, gctx: GlobalContext, function_body_lines: List[str], function_args_hash: PyHash):
+        # TODO: start_mod is in the global context
         self._start_mod = start_mod
         self._gctx = gctx
         self._body_lines = function_body_lines
@@ -101,19 +150,27 @@ class ExternalVarsVisitor(ast.NodeVisitor):
     def __init__(self, start_mod: ModuleType, gctx: GlobalContext):
         self._start_mod = start_mod
         self._gctx = gctx
-        self.vars: Set[str] = set()
+        self.vars: Set[CanonicalPath] = set()
 
     def _authorized(self, cp: CanonicalPath) -> bool:
         for idx in range(len(self._gctx.whitelisted_packages)):
-            if ".".join(cp[:idx]) in self._gctx.whitelisted_packages:
+            if ".".join(cp._path[:idx]) in self._gctx.whitelisted_packages:
                 return True
         return False
 
     def visit_Name(self, node: ast.Name) -> Any:
-        if node.id in self._start_mod.__dict__ and node.id not in self.vars:
-            cpath = _canonical_path([node.id], self._start_mod)
-            if self._authorized(cpath):
-                self.vars.add(node.id)
+        # _logger.debug(f"visit name {node.id}")
+        if node.id not in self._start_mod.__dict__ or node.id in self.vars:
+            return
+        obj = self._start_mod.__dict__[node.id]
+        if isinstance(obj, ModuleType) or isinstance(obj, Callable):
+            # Modules and callables are tracked separately
+            return
+        cpath = _canonical_path([node.id], self._start_mod)
+        if self._authorized(cpath):
+            self.vars.add(cpath)
+        else:
+            _logger.debug(f"Skipping unauthorized name: {node.id}: {cpath}")
 
 
 def _function_name(node) -> List[str]:
@@ -133,7 +190,13 @@ def _inspect_fun(node: ast.FunctionDef,
     # Find all the outer dependencies to hash them
     vdeps = ExternalVarsVisitor(mod, gctx)
     vdeps.visit(node)
-    assert False, "add visitors"
+    ext_vars = sorted(list(vdeps.vars))
+    _logger.debug(f"external: {ext_vars}")
+    fun_args = []
+    for ev in ext_vars:
+        fun_args.append(ev)
+        fun_args.append(gctx.get_hash(ev))
+    # assert False, "add visitors"
     visitor = IntroVisitor(mod, gctx, function_body_lines, function_args_hash)
     visitor.visit(node)
     return visitor.inters
@@ -157,7 +220,7 @@ def _inspect_call(node: ast.Call,
         raise KSException("Wrong number of args")
     if node.keywords:
         raise NotImplementedError(node)
-    store_path: Optional[Path] = None
+    store_path: Optional[DDSPath] = None
     f_called: str = ""
     if fname[-1] == Functions.Keep:
         store_path_symbol = node.args[0].id
@@ -216,24 +279,24 @@ def _canonical_path(path: List[str], mod: ModuleType) -> CanonicalPath:
     if isinstance(obj, ModuleType):
         # Look into this module to find the object:
         return _canonical_path(path[1:], obj)
-    return CanonicalPath(_canonical_path([], mod) + [fname])
+    return _canonical_path([], mod).append(fname)
 
 
-def _retrieve_path(fname: str, mod: ModuleType) -> Path:
+def _retrieve_path(fname: str, mod: ModuleType) -> DDSPath:
     if fname not in mod.__dict__:
         raise KSException(f"Expected path {fname} not found in module {mod}. Choices are {mod.__dict__}")
     obj = mod.__dict__[fname]
     if not isinstance(obj, str):
         raise KSException(f"Object {fname} is not a function but of type {type(obj)}")
-    return obj
+    return DDSPath(obj)
 
 
 def _is_primary_function(path: CanonicalPath) -> bool:
     # TODO use the proper definition of the module
-    if len(path) == 2 and path[0] == "dds":
-        if path[1] == Functions.Eval:
+    if len(path) == 2 and path.head() == "dds":
+        if path.get(1) == Functions.Eval:
             raise KSException("invalid call to eval")
-        return path[1] in (Functions.Keep, Functions.Load, Functions.Cache)
+        return path.get(1) in (Functions.Keep, Functions.Load, Functions.Cache)
     return False
 
 

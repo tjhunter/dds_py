@@ -4,19 +4,19 @@ from collections import OrderedDict
 
 from .introspect import introspect
 from .store import LocalFileStore, Store
-from .structures import Path, PyHash, FunctionInteractions, KSException, EvalContext
+from .structures import DDSPath, PyHash, FunctionInteractions, KSException, EvalContext
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
 _logger = logging.getLogger(__name__)
 
-__all__ = ["Path", "keep", "load", "cache", "eval"]
+__all__ = ["DDSPath", "keep", "load", "cache", "eval"]
 
 _store: Store = LocalFileStore("/tmp", "/tmp/data/")
 _eval_ctx: Optional[EvalContext] = None
 
 
-def keep(path: Path, fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
+def keep(path: DDSPath, fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
     if not _eval_ctx:
         raise NotImplementedError("Must call eval for now")
     key = _eval_ctx.requested_paths[path]
@@ -30,7 +30,7 @@ def keep(path: Path, fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
     return res
 
 
-def load(path: Path) -> Any:
+def load(path: DDSPath) -> Any:
     _logger.info(f"Performing load from {path}")
     return None
 
