@@ -1,5 +1,5 @@
 import logging
-from typing import TypeVar, Callable, Any, Optional
+from typing import TypeVar, Callable, Any, Optional, Union
 from collections import OrderedDict
 
 from .introspect import introspect
@@ -16,7 +16,8 @@ _store: Store = LocalFileStore("/tmp", "/tmp/data/")
 _eval_ctx: Optional[EvalContext] = None
 
 
-def keep(path: DDSPath, fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
+def keep(path: Union[str, DDSPath], fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
+    # TODO: clean and validate the path here
     if not _eval_ctx:
         raise NotImplementedError("Must call eval for now")
     key = _eval_ctx.requested_paths[path]
