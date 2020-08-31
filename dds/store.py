@@ -3,8 +3,8 @@ import logging
 import os
 from typing import Any, Optional, OrderedDict
 
-from .codec import ProtocolRef, codec_registry, GenericLocation
-from .structures import PyHash, DDSPath, KSException
+from .codec import ProtocolRef, codec_registry
+from .structures import PyHash, DDSPath, KSException, GenericLocation
 
 _logger = logging.getLogger(__name__)
 
