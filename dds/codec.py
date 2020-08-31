@@ -1,58 +1,11 @@
+import importlib.util
 import logging
-from typing import Any, Optional, Dict, NamedTuple, NewType, List, Type
+from typing import Optional, Dict, List, Type
 
-from .structures import KSException
+from .codecs.builtins import StringLocalCodec
+from .structures import KSException, CodecProtocol, ProtocolRef
 
 _logger = logging.getLogger(__name__)
-
-# The name of a codec protocol.
-ProtocolRef = NewType("ProtocolRef", str)
-
-# A URI like wrapper to put stuff somewhere.
-# The exact content and schema is determined by the store.
-GenericLocation = NewType("GenericLocation", str)
-
-
-class CodecProtocol(object):
-
-    def ref(self) -> ProtocolRef:
-        pass
-
-    def handled_types(self) -> List[Type]:
-        """ The list of types that this codec can handle """
-        pass
-
-    def serialize_into(self, blob: Any, loc: GenericLocation):
-        """
-        Simple in-memory serialization
-        """
-        pass
-
-    def deserialize_from(self, loc: GenericLocation) -> Any:
-        """ Simple in-memory deserialization """
-        pass
-
-
-class StringLocalCodec(CodecProtocol):
-
-    def ref(self): return ProtocolRef("default.string")
-
-    def handled_types(self): return [str]
-
-    def serialize_into(self, blob: Any, loc: GenericLocation):
-        assert isinstance(blob, str)
-        with open(loc, "wb") as f:
-            f.write(blob.encode(encoding="utf-8"))
-
-    def deserialize_from(self, loc: GenericLocation) -> str:
-        with open(loc, "rb") as f:
-            return f.read().decode("utf-8")
-
-# TODO: generic python codec based on pickles
-
-class BlobMetaData(NamedTuple):
-    protocol: ProtocolRef
-    # TODO: creation date?
 
 
 class CodecRegistry(object):
@@ -86,7 +39,22 @@ class CodecRegistry(object):
         return codec
 
 
-codec_registry: CodecRegistry = CodecRegistry([
-    StringLocalCodec()
-])
+def _build_default_registry() -> CodecRegistry:
+    codecs = [StringLocalCodec()]
+    if importlib.util.find_spec("pandas") is not None:
+        from .codecs.pandas import PandasLocalCodec
+        _logger.info(f"Loading pandas codecs")
+        codecs.append(PandasLocalCodec())
+    else:
+        _logger.debug(f"Cannot load pandas")
+    return CodecRegistry(codecs)
 
+
+_registry: Optional[CodecRegistry] = None
+
+
+def codec_registry() -> CodecRegistry:
+    global _registry
+    if _registry is None:
+        _registry = _build_default_registry()
+    return _registry

@@ -58,11 +58,11 @@ class LocalFileStore(Store):
             return None
         with open(meta_p, "rb") as f:
             ref = ProtocolRef(json.load(f)["protocol"])
-        codec = codec_registry.get_codec(None, ref)
+        codec = codec_registry().get_codec(None, ref)
         codec.deserialize_from(GenericLocation(p))
 
     def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
-        protocol = codec_registry.get_codec(type(blob), codec)
+        protocol = codec_registry().get_codec(type(blob), codec)
         p = os.path.join(self._root, "blobs", key)
         protocol.serialize_into(blob, GenericLocation(p))
         meta_p = os.path.join(self._root, "blobs", key + ".meta")
