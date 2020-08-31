@@ -196,6 +196,7 @@ def _inspect_fun(node: ast.FunctionDef,
     for ev in ext_vars:
         fun_args.append(ev)
         fun_args.append(gctx.get_hash(ev))
+        # TODO: compute the hash of all the arguments, here, instead of in pieces around
     # assert False, "add visitors"
     visitor = IntroVisitor(mod, gctx, function_body_lines, function_args_hash)
     visitor.visit(node)
