@@ -1,4 +1,4 @@
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional, Dict, List, Tuple
+from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional, Dict, List, Tuple, Type
 
 
 # A path to an object in the DDS store.
@@ -27,6 +27,7 @@ class FunctionInteractions(NamedTuple):
     # fun_inputs: OrderedDict[str, PyHash]
 
 
+
 class KSException(BaseException):
     pass
 
@@ -36,4 +37,37 @@ class EvalContext(NamedTuple):
     The evaluation context created when evaluating a call.
     """
     requested_paths: Dict[DDSPath, PyHash]
+
+
+# The name of a codec protocol.
+ProtocolRef = NewType("ProtocolRef", str)
+
+# A URI like wrapper to put stuff somewhere.
+# The exact content and schema is determined by the store.
+GenericLocation = NewType("GenericLocation", str)
+
+
+class CodecProtocol(object):
+
+    def ref(self) -> ProtocolRef:
+        pass
+
+    def handled_types(self) -> List[Type]:
+        """ The list of types that this codec can handle """
+        pass
+
+    def serialize_into(self, blob: Any, loc: GenericLocation):
+        """
+        Simple in-memory serialization
+        """
+        pass
+
+    def deserialize_from(self, loc: GenericLocation) -> Any:
+        """ Simple in-memory deserialization """
+        pass
+
+
+class BlobMetaData(NamedTuple):
+    protocol: ProtocolRef
+    # TODO: creation date?
 

@@ -1,11 +1,12 @@
-import logging
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, Dict, Set, Union, OrderedDict, FrozenSet, Optional, List, Type
-from types import ModuleType, FunctionType
-import inspect
 import ast
+import hashlib
+import inspect
+import logging
 import sys
 from enum import Enum
-import hashlib
+from types import ModuleType, FunctionType
+from typing import Tuple, Callable, Any, Dict, Set, Union, FrozenSet, Optional, \
+    List, Type
 
 from .structures import PyHash, DDSPath, FunctionInteractions, KSException
 
@@ -15,7 +16,7 @@ _logger = logging.getLogger(__name__)
 def introspect(f: Callable[[Any], Any]) -> FunctionInteractions:
     # TODO: exposed the whitelist
     gctx = GlobalContext(
-        f.__module__,
+        f.__module__,  # typing: ignore
         whitelisted_packages=frozenset(["dds", "__main__"]))
     return _introspect(f, [], None, gctx)
 
@@ -26,8 +27,6 @@ class Functions(str, Enum):
     Cache = "cache"
     Eval = "eval"
 
-
-# CanonicalPath = NewType("CanonicalPath", List[str])
 
 class CanonicalPath(object):
 
@@ -42,6 +41,9 @@ class CanonicalPath(object):
 
     def head(self) -> str:
         return self._path[0]
+
+    def tail(self) -> "CanonicalPath":
+        return CanonicalPath(self._path[1:])
 
     def get(self, i: int) -> str:
         return self._path[i]
@@ -73,14 +75,15 @@ class GlobalContext(object):
             else:
                 assert path.head() == "__main__", path
                 start_mod = self.start_module
-            obj = _retrieve_object(path[1:], start_mod, self, None)
+            obj = _retrieve_object(path.tail()._path, start_mod, self, None)
             hash = _hash(obj)
             _logger.debug(f"Cache hash: {path}: {hash}")
             self._hashes[path] = hash
         return self._hashes[path]
 
 
-def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[PyHash], gctx: GlobalContext) -> FunctionInteractions:
+def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[PyHash],
+                gctx: GlobalContext) -> FunctionInteractions:
     src = inspect.getsource(f)
     ast_src = ast.parse(src)
     body_lines = src.split("\n")
@@ -88,43 +91,40 @@ def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[
     fun_body_sig = _hash(src)
     fun_module = sys.modules[f.__module__]
     _logger.info(f"source: {src}")
-    Test().visit(ast_f)
-    # _logger.info(f"parsing:")
+    # Test().visit(ast_f)
     fun_input_sig = context_sig if context_sig else _hash(args)
-    fis = _inspect_fun(ast_f, gctx, fun_module, body_lines, fun_input_sig)
+    (all_args_hash, fis) = _inspect_fun(ast_f, gctx, fun_module, body_lines, fun_input_sig)
     # Find the outer interactions
     outputs = [tup for fi in fis for tup in fi.outputs]
     _logger.info(f"outputs: {outputs}")
-    fun_return_sig = _hash([fun_body_sig, fun_input_sig])
+    fun_return_sig = _hash([fun_body_sig, all_args_hash])
     return FunctionInteractions(fun_body_sig, fun_return_sig,
                                 fun_context_input_sig=context_sig,
                                 outputs=outputs)
 
 
-class Test(ast.NodeVisitor):
-    def __init__(self):
-        pass
-
-    # def visit(self, node: ast.AST) -> Any:
-    #     _logger.debug(f"node: {node}, {dir(node)}")
-    #     self.generic_visit(node)
-
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:
-        # _logger.debug(f"function: {node.name} {node.args} {node.body}")
-        self.generic_visit(node)
-
-    def visit_Expr(self, node: ast.Expr) -> Any:
-        # _logger.debug(f"expr: {node}, {node.value}")
-        self.generic_visit(node)
-
-    def visit_Call(self, node: ast.Call) -> Any:
-        # _logger.debug(f"call: {node}, {_function_name(node.func)} {node.args} {node.keywords}")
-        self.generic_visit(node)
+# class Test(ast.NodeVisitor):
+#     def __init__(self):
+#         pass
+#
+#     def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:
+#         # _logger.debug(f"function: {node.name} {node.args} {node.body}")
+#         self.generic_visit(node)
+#
+#     def visit_Expr(self, node: ast.Expr) -> Any:
+#         # _logger.debug(f"expr: {node}, {node.value}")
+#         self.generic_visit(node)
+#
+#     def visit_Call(self, node: ast.Call) -> Any:
+#         # _logger.debug(f"call: {node}, {_function_name(node.func)} {node.args} {node.keywords}")
+#         self.generic_visit(node)
 
 
 class IntroVisitor(ast.NodeVisitor):
 
-    def __init__(self, start_mod: ModuleType, gctx: GlobalContext, function_body_lines: List[str], function_args_hash: PyHash):
+    def __init__(self, start_mod: ModuleType,
+                 gctx: GlobalContext, function_body_lines: List[str],
+                 function_args_hash: PyHash):
         # TODO: start_mod is in the global context
         self._start_mod = start_mod
         self._gctx = gctx
@@ -134,7 +134,7 @@ class IntroVisitor(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)}")
-        function_body_hash = _hash(self._body_lines[:node.lineno+1])
+        function_body_hash = _hash(self._body_lines[:node.lineno + 1])
         fi = _inspect_call(node, self._gctx, self._start_mod, function_body_hash, self._args_hash)
         if fi:
             self.inters.append(fi)
@@ -185,7 +185,7 @@ def _inspect_fun(node: ast.FunctionDef,
                  gctx: GlobalContext,
                  mod: ModuleType,
                  function_body_lines: List[str],
-                 function_args_hash: PyHash) -> List[FunctionInteractions]:
+                 function_args_hash: PyHash) -> Tuple[PyHash, List[FunctionInteractions]]:
     _logger.debug(f"function: {node.name} {node.args} {node.body}")
     # Find all the outer dependencies to hash them
     vdeps = ExternalVarsVisitor(mod, gctx)
@@ -197,10 +197,11 @@ def _inspect_fun(node: ast.FunctionDef,
         fun_args.append(ev)
         fun_args.append(gctx.get_hash(ev))
         # TODO: compute the hash of all the arguments, here, instead of in pieces around
+    function_all_args_hash = _hash([function_args_hash, fun_args])
     # assert False, "add visitors"
-    visitor = IntroVisitor(mod, gctx, function_body_lines, function_args_hash)
+    visitor = IntroVisitor(mod, gctx, function_body_lines, function_all_args_hash)
     visitor.visit(node)
-    return visitor.inters
+    return (function_all_args_hash, visitor.inters)
 
 
 def _inspect_call(node: ast.Call,
@@ -245,7 +246,8 @@ def _inspect_call(node: ast.Call,
     return inner_intro
 
 
-def _retrieve_object(path: List[str], mod: ModuleType, gctx: GlobalContext, expected_type: Optional[Type]) -> Union[None, FunctionType]:
+def _retrieve_object(path: List[str], mod: ModuleType, gctx: GlobalContext, expected_type: Optional[Type]) -> Union[
+    None, FunctionType]:
     assert path
     fname = path[0]
     if fname not in mod.__dict__:
@@ -304,10 +306,13 @@ def _is_primary_function(path: CanonicalPath) -> bool:
 def _hash(x: Any) -> PyHash:
     def algo_str(s: str) -> PyHash:
         return PyHash(hashlib.sha256(s.encode()).hexdigest())
+
     if isinstance(x, str):
         return algo_str(x)
     if isinstance(x, int):
         return algo_str(str(x))
     if isinstance(x, list):
         return algo_str("|".join([_hash(y) for y in x]))
+    if isinstance(x, CanonicalPath):
+        return algo_str(repr(x))
     raise NotImplementedError(str(type(x)))
