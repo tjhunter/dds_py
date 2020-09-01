@@ -2,7 +2,7 @@ import logging
 from typing import TypeVar, Callable, Any, Optional, Union
 from collections import OrderedDict
 
-from .introspect import introspect
+from .introspect import introspect, whitelist_module
 from .store import LocalFileStore, Store
 from .structures import DDSPath, PyHash, FunctionInteractions, KSException, EvalContext
 
@@ -10,8 +10,9 @@ _Out = TypeVar("_Out")
 _In = TypeVar("_In")
 _logger = logging.getLogger(__name__)
 
-__all__ = ["DDSPath", "keep", "load", "cache", "eval"]
+__all__ = ["DDSPath", "keep", "load", "cache", "eval", "whitelist_module"]
 
+# TODO: set up in the use temporary space
 _store: Store = LocalFileStore("/tmp", "/tmp/data/")
 _eval_ctx: Optional[EvalContext] = None
 
@@ -23,7 +24,7 @@ def keep(path: Union[str, DDSPath], fun: Callable[[_In], _Out], *args, **kwargs)
     key = _eval_ctx.requested_paths[path]
     assert key is not None, (path, fun)
     if _store.has_blob(key):
-        _logger.debug(f"Restoring path {path} -> {key}")
+        _logger.debug(f"Restoring path {path} from {key}")
         return _store.fetch_blob(key)
     _logger.info(f"Evaluating (keep:{path}) fun {fun} with args {args} kwargs {kwargs}")
     res = fun(*args, **kwargs)
@@ -43,6 +44,14 @@ def cache(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
 
 
 def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
+    """
+    Evaluates a function that may cache data, without caching the result
+    of the function itself.
+    :param fun: the function
+    :param args: arguments
+    :param kwargs: argument
+    :return: the return value of the function
+    """
     global _eval_ctx
     if _eval_ctx:
         # TODO more info
@@ -56,7 +65,7 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
             _logger.debug(f"Updating path: {p} -> {key}")
         _logger.info(f"fun {fun}: {inters}")
         res = fun(*args, **kwargs)
-        _logger.info(f"Evaluating (eval) fun {fun} with args {args} kwargs {kwargs} -> {res}")
+        _logger.info(f"Evaluating (eval) fun {fun} with args {args} kwargs {kwargs}")
         _store.sync_paths(OrderedDict(inters.outputs))
         return res
     finally:
