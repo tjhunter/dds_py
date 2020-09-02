@@ -22,7 +22,7 @@ def introspect(f: Callable[[Any], Any]) -> FunctionInteractions:
     # TODO: exposed the whitelist
     gctx = GlobalContext(
         f.__module__,  # typing: ignore
-        whitelisted_packages=frozenset(["dds", "__main__"]))
+        whitelisted_packages=_whitelisted_packages)
     return _introspect(f, [], None, gctx)
 
 
@@ -76,7 +76,7 @@ class GlobalContext(object):
 
     def __init__(self,
                  start_module: ModuleType,
-                 whitelisted_packages: FrozenSet[Package]):
+                 whitelisted_packages: Set[Package]):
         self.whitelisted_packages = whitelisted_packages
         self.start_module = start_module
         # Hashes of all the static objects
@@ -90,6 +90,7 @@ class GlobalContext(object):
             else:
                 assert path.head() == "__main__", path
                 start_mod = self.start_module
+            _logger.debug(f"get_hash: path={path} start_mod={start_mod}")
             obj = _retrieve_object(path.tail()._path, start_mod, self, None)
             hash = _hash(obj)
             _logger.debug(f"Cache hash: {path}: {hash}")
@@ -97,6 +98,7 @@ class GlobalContext(object):
         return self._hashes[path]
 
     def is_authorized_path(self, cp: CanonicalPath) -> bool:
+        _logger.debug(f"is_authorized_path: {self.whitelisted_packages}")
         for idx in range(len(self.whitelisted_packages)):
             if ".".join(cp._path[:idx]) in self.whitelisted_packages:
                 return True
@@ -178,15 +180,16 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         self.vars: Set[CanonicalPath] = set()
 
     def visit_Name(self, node: ast.Name) -> Any:
-        # _logger.debug(f"visit name {node.id}")
         if node.id not in self._start_mod.__dict__ or node.id in self.vars:
             return
         obj = self._start_mod.__dict__[node.id]
         if isinstance(obj, ModuleType) or isinstance(obj, Callable):
             # Modules and callables are tracked separately
+            _logger.debug(f"visit name {node.id}: skipping (fun/mod)")
             return
         cpath = _canonical_path([node.id], self._start_mod)
         if self._gctx.is_authorized_path(cpath):
+            _logger.debug(f"visit name {node.id}: authorized")
             self.vars.add(cpath)
         else:
             _logger.debug(f"Skipping unauthorized name: {node.id}: {cpath}")
@@ -198,6 +201,15 @@ def _function_name(node) -> List[str]:
     if isinstance(node, ast.Attribute):
         return _function_name(node.value) + [node.attr]
     assert False, (node, type(node))
+
+
+def _mod_path(m: ModuleType) -> CanonicalPath:
+    return CanonicalPath(m.__name__.split("."))
+
+
+def _fun_path(f: Callable) -> CanonicalPath:
+    mod = inspect.getmodule(f)
+    return CanonicalPath(_mod_path(mod)._path + [f.__name__])
 
 
 def _inspect_fun(node: ast.FunctionDef,
@@ -291,6 +303,7 @@ def _retrieve_object(
         expected_type: Optional[Type]) -> Union[None, FunctionType]:
     assert path
     fname = path[0]
+    _logger.debug(f"_retrieve_object: {path} {mod}")
     if fname not in mod.__dict__:
         # If the name is not in scope, it is assumed to be defined in the function body -> skipped
         # (it is included with the code lines)
@@ -301,10 +314,16 @@ def _retrieve_object(
     if len(path) >= 2:
         if not isinstance(obj, ModuleType):
             raise KSException(f"Object {fname} is not a module but of type {type(obj)}")
-        if obj.__name__ not in gctx.whitelisted_packages:
-            _logger.debug(f"Located module {obj.__name__}, skipped")
-            return None
         return _retrieve_object(path[1:], obj, gctx, expected_type)
+    # Check the real module of the object, if available (such as for functions)
+    obj_mod = inspect.getmodule(obj)
+    if obj_mod is not None:
+        obj_mod_path = _mod_path(obj_mod)
+        if not gctx.is_authorized_path(obj_mod_path):
+            _logger.debug(f"Actual module {obj_mod_path} for obj {obj} is unauthorized")
+            return None
+        else:
+            _logger.debug(f"Actual module {obj_mod_path} for obj {obj}: authorized")
     if expected_type and not isinstance(obj, expected_type):
         _logger.debug(f"Object {fname} of type {type(obj)}, expected {expected_type}")
         # TODO: raise exception
@@ -312,8 +331,8 @@ def _retrieve_object(
     # Drop if this object is not to be considered:
     if isinstance(obj, (FunctionType, abc.ABCMeta)):
         fun_mod = inspect.getmodule(obj)
-        _logger.debug(f"_retrieve_object: {path} -> {obj}: {fun_mod.__name__}")
-        p = CanonicalPath(fun_mod.__name__.split("."))
+        p = _mod_path(fun_mod)
+        _logger.debug(f"_retrieve_object: {path} -> {obj}: {p}")
         if not gctx.is_authorized_path(p):
             _logger.debug(f"_retrieve_object: dropping unauthorized function {path} -> {obj}: {fun_mod.__name__}")
             return None
@@ -330,7 +349,7 @@ def _canonical_path(path: List[str], mod: ModuleType) -> CanonicalPath:
     """
     if not path:
         # Return the path of the module
-        return CanonicalPath(mod.__name__.split("."))
+        return _mod_path(mod)
     assert path
     fname = path[0]
     if fname not in mod.__dict__:
