@@ -9,7 +9,7 @@ import json
 
 
 import pyspark.sql
-import pyspark.sql.DataFrame as DataFrame
+from pyspark.sql import DataFrame
 
 from ..structures import CodecProtocol, ProtocolRef, GenericLocation
 from ..structures import PyHash, DDSPath, KSException, GenericLocation
