@@ -39,7 +39,7 @@ VERSION = "0.1.0"
 setup(
     name='dds_py',
     version=VERSION,
-    packages=['dds'],
+    packages=['dds', 'dds.codecs'],
     extras_require={
         'pandas': ['pandas>=0.23.1', 'pyarrow>=0.10'],
         'spark': ['pyspark>=2.4.0']

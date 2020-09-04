@@ -10,7 +10,7 @@ _Out = TypeVar("_Out")
 _In = TypeVar("_In")
 _logger = logging.getLogger(__name__)
 
-__all__ = ["DDSPath", "keep", "load", "cache", "eval", "whitelist_module"]
+__all__ = ["DDSPath", "keep", "load", "cache", "eval", "whitelist_module", "set_store"]
 
 # TODO: set up in the use temporary space
 _store: Store = LocalFileStore("/tmp", "/tmp/data/")
@@ -70,3 +70,37 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
         return res
     finally:
         _eval_ctx = False
+
+
+def set_store(
+        store: Union[str, Store],
+        internal_dir: Optional[str] = None,
+        data_dir: Optional[str] = None):
+    """
+    Sets the store for the execution of the program.
+
+    store: either a store, or 'local' or 'dbfs'
+    """
+    global _store
+    if isinstance(store, Store):
+        # Directly setting the store
+        _store = store
+        return
+    elif store == "local":
+        if not internal_dir:
+            internal_dir = "/tmp"
+        if not data_dir:
+            data_dir = "/tmp/data"
+        _store = LocalFileStore(internal_dir, data_dir)
+        return
+    elif store == "dbfs":
+        if data_dir is None:
+            raise KSException("Missing data_dir argument")
+        if internal_dir is None:
+            raise KSException("Missing internal_dir argument")
+        from .codecs.databricks import DBFSStore
+        _store = DBFSStore(internal_dir, data_dir)
+    else:
+        raise KSException(f"Unknown store {store}")
+    _logger.debug(f"Setting the store to {_store}")
+
