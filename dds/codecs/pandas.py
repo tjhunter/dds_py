@@ -1,5 +1,7 @@
 """
-The string protocol.
+The pandas protocol.
+
+It relies on pandas having a parquet driver installed (which may or may not be the case)
 """
 
 import logging
