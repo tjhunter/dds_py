@@ -6,7 +6,10 @@ import sklearn.model_selection._search
 
 from typing import Any
 
-from ..structures import CodecProtocol, ProtocolRef, GenericLocation
+from ..structures import CodecProtocol, ProtocolRef, GenericLocation, CodecBackend
+
+
+Local = CodecBackend("Local")
 
 
 class StringLocalCodec(CodecProtocol):

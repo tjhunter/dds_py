@@ -12,6 +12,7 @@ import logging
 import pandas.core.frame
 
 from ..structures import CodecProtocol, ProtocolRef, GenericLocation
+from .builtins import Local
 
 _logger = logging.getLogger(__name__)
 
@@ -19,6 +20,8 @@ _logger = logging.getLogger(__name__)
 class PandasLocalCodec(CodecProtocol):
 
     def ref(self): return ProtocolRef("default.pandas_local")
+
+    def handled_backends(self): return [Local]
 
     # TODO: just use strings, it will be faster
     def handled_types(self): return [pandas.DataFrame, pandas.core.frame.DataFrame]

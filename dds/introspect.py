@@ -267,22 +267,22 @@ def _inspect_call(node: ast.Call,
                   function_args_hash: PyHash,
                   var_names: Set[str]) -> Optional[FunctionInteractions]:
     fname = _function_name(node.func)
-    _logger.debug(f"_inspect_call: fname: {fname}")
+    _logger.debug(f"fname: {fname}")
     # Do not try to parse the builtins
     if len(fname) == 1 and fname[0] in builtins.__dict__:
-        _logger.debug(f"_inspect_call: skipping builtin")
+        _logger.debug(f"skipping builtin")
         return None
     if fname[0] in var_names:
-        _logger.debug(f"_inspect_call: skipping local var")
+        _logger.debug(f"skipping local var")
         return None
     obj_called = _retrieve_object(fname, mod, gctx, None)
     if obj_called is None:
         # This is not an object to consider
-        _logger.debug(f"_inspect_call: skipping")
+        _logger.debug(f"skipping none")
         return None
-    _logger.debug(f"_inspect_call: ln:{node.lineno} {node} {obj_called}")
-    canon_path = _canonical_path(fname, mod, gctx)
-    _logger.debug(f"_inspect_call: canon_path: {canon_path}")
+    _logger.debug(f"ln:{node.lineno} {node} {obj_called}")
+    # canon_path = _canonical_path(fname, mod, gctx)
+    # _logger.debug(f"canon_path: {canon_path}")
 
     if node.keywords:
         raise NotImplementedError(node)
@@ -292,7 +292,7 @@ def _inspect_call(node: ast.Call,
         if len(node.args) < 2:
             raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
         store_path_symbol: str = node.args[0].id
-        _logger.debug(f"_inspect_call: Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}")
+        _logger.debug(f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}")
         store_path = _retrieve_path(store_path_symbol, mod, gctx)
         f_called = node.args[1].id
     elif fname[-1] == Functions.Cache:
@@ -304,13 +304,13 @@ def _inspect_call(node: ast.Call,
 
     # We just use the context in the function
     fun_called = _retrieve_object([f_called], mod, gctx, FunctionType)
-    _logger.debug(f"_inspect_call: fun_called: {fun_called}")
-    can_path = _canonical_path([f_called], mod, gctx)
+    can_path = _fun_path(fun_called)
+    _logger.debug(f"fun_called: {fun_called} : {can_path}")
     # _logger.debug(f"Introspecting function")
     context_sig = _hash([function_body_hash, function_args_hash, node.lineno])
     inner_intro = _introspect(fun_called, args=[], context_sig=context_sig, gctx=gctx)
     # _logger.debug(f"Introspecting function finished: {inner_intro}")
-    _logger.debug(f"_inspect_call: keep: {store_path} <- {can_path}: {inner_intro.fun_return_sig}")
+    _logger.debug(f"keep: {store_path} <- {can_path}: {inner_intro.fun_return_sig}")
     if store_path:
         inner_intro.outputs.append((store_path, inner_intro.fun_return_sig))
     return inner_intro
@@ -329,18 +329,18 @@ def _retrieve_object(
     if fname not in mod.__dict__:
         # In some cases (old versions of jupyter) the module is not listed
         # -> try to load it from the root
-        _logger.debug(f"_retrieve_object: Could not find {fname} in {mod}, attempting a direct load")
+        _logger.debug(f"Could not find {fname} in {mod}, attempting a direct load")
         try:
             loaded_mod = importlib.import_module(fname)
         except ModuleNotFoundError:
             loaded_mod = None
         if loaded_mod is None:
-            _logger.debug(f"_retrieve_object: Could not load name {fname}, looking into the globals")
+            _logger.debug(f"Could not load name {fname}, looking into the globals")
             if fname in gctx.start_globals:
-                _logger.debug(f"_retrieve_object: Found {fname} in start_globals")
+                _logger.debug(f"Found {fname} in start_globals")
                 return gctx.start_globals[fname]
             else:
-                _logger.debug(f"_retrieve_object: {fname} not found in start_globals")
+                _logger.debug(f"{fname} not found in start_globals")
                 return None
         return _retrieve_object_rec(path[1:], loaded_mod, gctx, expected_type)
     else:
@@ -383,14 +383,14 @@ def _retrieve_object_rec(
     if isinstance(obj, (FunctionType, abc.ABCMeta)):
         fun_mod = inspect.getmodule(obj)
         p = _mod_path(fun_mod)
-        _logger.debug(f"_retrieve_object: {path} -> {obj}: {p}")
+        _logger.debug(f"{path} -> {obj}: {p}")
         if not gctx.is_authorized_path(p):
-            _logger.debug(f"_retrieve_object: dropping unauthorized function {path} -> {obj}: {fun_mod.__name__}")
+            _logger.debug(f"dropping unauthorized function {path} -> {obj}: {fun_mod.__name__}")
             return None
         else:
-            _logger.debug(f"_retrieve_object: authorized function {path} -> {obj}: {fun_mod.__name__}")
+            _logger.debug(f"authorized function {path} -> {obj}: {fun_mod.__name__}")
     else:
-        _logger.debug(f"_retrieve_object: not checking: {obj} {type(obj)}")
+        _logger.debug(f"not checking: {obj} {type(obj)}")
     return obj
 
 
@@ -413,7 +413,7 @@ def _canonical_path(path: List[str], mod: ModuleType, gctx: GlobalContext) -> Ca
             else:
                 _logger.debug(f"Found {fname} in start_globals")
                 loaded_mod = gctx.start_globals[fname]
-                if not isinstance(loaded_mod, ModuleType) and path:
+                if not isinstance(loaded_mod, ModuleType) and len(path) >= 2:
                     # This is a sub variable, not accepted for now.
                     raise KSException(f"Object {fname} of type {type(loaded_mod)} not accepted for path {path}")
         return _canonical_path_rec(path[1:], loaded_mod, gctx)

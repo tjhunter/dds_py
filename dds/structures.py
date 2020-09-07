@@ -27,7 +27,6 @@ class FunctionInteractions(NamedTuple):
     # fun_inputs: OrderedDict[str, PyHash]
 
 
-
 class KSException(BaseException):
     pass
 
@@ -45,6 +44,8 @@ ProtocolRef = NewType("ProtocolRef", str)
 # A URI like wrapper to put stuff somewhere.
 # The exact content and schema is determined by the store.
 GenericLocation = NewType("GenericLocation", str)
+
+CodecBackend = NewType("CodecBackend", str)
 
 
 class CodecProtocol(object):

@@ -4,7 +4,9 @@ import pytest
 
 dds.whitelist_module("dds_tests")
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(filename)s:%(lineno)s %(funcName)s %(message)s'
+                    )
 _logger = logging.getLogger(__name__)
 
 
