@@ -1,6 +1,7 @@
 import logging
 from typing import TypeVar, Callable, Any, Optional, Union
 from collections import OrderedDict
+import inspect
 
 from .introspect import introspect, whitelist_module
 from .store import LocalFileStore, Store
@@ -59,7 +60,12 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
     _eval_ctx = EvalContext(requested_paths={})
     try:
         # TODO: pass args too
-        inters = introspect(fun)
+        # Fetch the local vars from the call. This is required if running from an old IPython context
+        # (like databricks for instance)
+        # TODO: detect if we are running in databricks to account for this hack.
+        local_vars = inspect.currentframe().f_back.f_locals
+        _logger.debug(f"locals: {sorted(local_vars.keys())}")
+        inters = introspect(fun, local_vars)
         _eval_ctx = EvalContext(requested_paths=dict(inters.outputs))
         for (p, key) in inters.outputs:
             _logger.debug(f"Updating path: {p} -> {key}")
@@ -75,7 +81,8 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
 def set_store(
         store: Union[str, Store],
         internal_dir: Optional[str] = None,
-        data_dir: Optional[str] = None):
+        data_dir: Optional[str] = None,
+        dbutils: Optional[Any] = None):
     """
     Sets the store for the execution of the program.
 
@@ -98,8 +105,10 @@ def set_store(
             raise KSException("Missing data_dir argument")
         if internal_dir is None:
             raise KSException("Missing internal_dir argument")
+        if dbutils is None:
+            raise KSException("Missing dbutils argument")
         from .codecs.databricks import DBFSStore
-        _store = DBFSStore(internal_dir, data_dir)
+        _store = DBFSStore(internal_dir, data_dir, dbutils)
     else:
         raise KSException(f"Unknown store {store}")
     _logger.debug(f"Setting the store to {_store}")

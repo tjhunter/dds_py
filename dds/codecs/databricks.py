@@ -41,12 +41,11 @@ class PySparkDatabricksCodec(CodecProtocol):
 
 class DBFSStore(Store):
 
-    def __init__(self, internal_dir: str, data_dir: str):
+    def __init__(self, internal_dir: str, data_dir: str, dbutils: Any):
         _logger.debug(f"Created DBFSStore: internal_dir: {internal_dir} data_dir: {data_dir}")
         self._internal_dir = internal_dir
         self._data_dir = data_dir
-        if "dbutils" not in globals() and "dbutils" not in locals():
-            _logger.warning(f"Attempting to create a DBFSStore, but could not locate the 'dbutils' object. This will prevent the store from working correctly." )
+        self._dbutils = dbutils
 
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
         p = os.path.join(self._internal_dir, "blobs", key)
@@ -64,7 +63,7 @@ class DBFSStore(Store):
         meta_p = os.path.join(self._internal_dir, "blobs", key + ".meta")
         try:
             meta = json.dumps({"protocol": protocol.ref()})
-            dbutils.put(meta_p, meta)
+            self._dbutils.put(meta_p, meta)
         except Exception as e:
             _logger.warning(f"Failed to write blob metadata to {meta_p}: {e}")
             raise e
@@ -84,7 +83,7 @@ class DBFSStore(Store):
             meta: Optional[str] = None
             try:
                 _logger.debug(f"Attempting to read metadata for key {key}: {redir_p}")
-                meta = dbutils.fs.head(redir_path)
+                meta = self._dbutils.fs.head(redir_path)
             except Exception as e:
                 _logger.debug(f"Could not read metadata for key {key}: {e}")
                 return None
@@ -97,13 +96,13 @@ class DBFSStore(Store):
                 blob_path = self._blob_path(key)
                 obj_path = self._physical_path(dds_p)
                 _logger.debug(f"Copying {blob_path} -> {obj_path}")
-                dbutils.fs.cp(blob_path, obj_path)
+                self._dbutils.fs.cp(blob_path, obj_path)
                 _logger.debug(f"Linking new file {obj_path}")
                 try:
                     meta = json.dumps({"redirection_key": key})
-                    dbutils.put(redir_path, meta)
+                    self._dbutils.put(redir_path, meta)
                 except Exception as e:
-                    _logger.warning(f"Failed to write blob metadata to {meta_p}: {e}")
+                    _logger.warning(f"Failed to write blob metadata to {redir_path}: {e}")
                     raise e
             else:
                 _logger.debug(f"Path {dds_p} is up to ddate (key {key})")
@@ -118,7 +117,7 @@ class DBFSStore(Store):
         meta_p = os.path.join(self._internal_dir, "blobs", key + ".meta")
         try:
             _logger.debug(f"Attempting to read metadata for key {key}: {meta_p}")
-            meta: str = dbutils.fs.head(meta_p)
+            meta: str = self._dbutils.fs.head(meta_p)
             return json.loads(meta)
         except Exception as e:
             _logger.debug(f"Could not read metadata for key {key}: {e}")
