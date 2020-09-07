@@ -191,7 +191,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
             # Modules and callables are tracked separately
             _logger.debug(f"visit name {node.id}: skipping (fun/mod)")
             return
-        cpath = _canonical_path([node.id], self._start_mod)
+        cpath = _canonical_path([node.id], self._start_mod, self._gctx)
         if self._gctx.is_authorized_path(cpath):
             _logger.debug(f"visit name {node.id}: authorized")
             self.vars.add(cpath)
@@ -281,7 +281,7 @@ def _inspect_call(node: ast.Call,
         _logger.debug(f"_inspect_call: skipping")
         return None
     _logger.debug(f"_inspect_call: ln:{node.lineno} {node} {obj_called}")
-    canon_path = _canonical_path(fname, mod)
+    canon_path = _canonical_path(fname, mod, gctx)
     _logger.debug(f"_inspect_call: canon_path: {canon_path}")
 
     if node.keywords:
@@ -305,7 +305,7 @@ def _inspect_call(node: ast.Call,
     # We just use the context in the function
     fun_called = _retrieve_object([f_called], mod, gctx, FunctionType)
     _logger.debug(f"_inspect_call: fun_called: {fun_called}")
-    can_path = _canonical_path([f_called], mod)
+    can_path = _canonical_path([f_called], mod, gctx)
     # _logger.debug(f"Introspecting function")
     context_sig = _hash([function_body_hash, function_args_hash, node.lineno])
     inner_intro = _introspect(fun_called, args=[], context_sig=context_sig, gctx=gctx)
@@ -394,7 +394,7 @@ def _retrieve_object_rec(
     return obj
 
 
-def _canonical_path(path: List[str], mod: ModuleType) -> CanonicalPath:
+def _canonical_path(path: List[str], mod: ModuleType, gctx: GlobalContext) -> CanonicalPath:
     if not path:
         # Return the path of the module
         return _mod_path(mod)
@@ -402,16 +402,26 @@ def _canonical_path(path: List[str], mod: ModuleType) -> CanonicalPath:
     fname = path[0]
     if fname not in mod.__dict__:
         _logger.debug(f"Path {path} not found in {mod} -> attempting direct load")
-        loaded_mod = importlib.import_module(fname)
+        try:
+            loaded_mod = importlib.import_module(fname)
+        except ModuleNotFoundError:
+            loaded_mod = None
         if loaded_mod is None:
-            _logger.debug(f"Could not load name {fname}")
-            raise KSException(f"Object {fname} not found in module {mod}. Choices are {mod.__dict__.keys()}")
-        return _canonical_path_rec(path[1:], loaded_mod)
+            _logger.debug(f"Could not load name {fname} from modules")
+            if fname not in gctx.start_globals:
+                raise KSException(f"Object {fname} not found in module {mod}. Choices are {mod.__dict__.keys()}")
+            else:
+                _logger.debug(f"Found {fname} in start_globals")
+                loaded_mod = gctx.start_globals[fname]
+                if not isinstance(loaded_mod, ModuleType) and path:
+                    # This is a sub variable, not accepted for now.
+                    raise KSException(f"Object {fname} of type {type(loaded_mod)} not accepted for path {path}")
+        return _canonical_path_rec(path[1:], loaded_mod, gctx)
     else:
-        return _canonical_path_rec(path, mod)
+        return _canonical_path_rec(path, mod, gctx)
 
 
-def _canonical_path_rec(path: List[str], mod: ModuleType) -> CanonicalPath:
+def _canonical_path_rec(path: List[str], mod: ModuleType, gctx: GlobalContext) -> CanonicalPath:
     """
     The canonical path of an entity in the python module hierarchy.
     """
@@ -425,14 +435,14 @@ def _canonical_path_rec(path: List[str], mod: ModuleType) -> CanonicalPath:
     obj = mod.__dict__[fname]
     if isinstance(obj, ModuleType):
         # Look into this module to find the object:
-        return _canonical_path(path[1:], obj)
+        return _canonical_path(path[1:], obj, gctx)
     assert len(path) == 1, path
     ref_module = inspect.getmodule(obj)
     if ref_module == mod or ref_module is None:
-        return _canonical_path([], mod).append(fname)
+        return _canonical_path([], mod, gctx).append(fname)
     else:
         _logger.debug(f"Redirection: {path} {mod} {ref_module}")
-        return _canonical_path(path, ref_module)
+        return _canonical_path(path, ref_module, gctx)
 
 
 def _retrieve_path(fname: str, mod: ModuleType, gctx: GlobalContext) -> DDSPath:
