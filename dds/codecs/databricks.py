@@ -50,10 +50,10 @@ class StringDBFSCodec(CodecProtocol):
     def handled_types(self): return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation):
-        try:
-            self._dbutils.fs.put(loc, blob)
-        except Exception as e:
-            _logger.warning(f"Suppresing exception when writing blob to {loc}: {e}")
+        # try:
+        self._dbutils.fs.put(loc, blob, overwrite=True)
+        # except Exception as e:
+        #     _logger.warning(f"Suppresing exception when writing blob to {loc}: {e}")
 
     def deserialize_from(self, loc: GenericLocation) -> str:
         return self._dbutils.fs.head(loc)
@@ -151,5 +151,5 @@ class DBFSStore(Store):
         return self._dbutils.fs.head(str(p))
 
     def _put(self, p: Path, blob: str):
-        return self._dbutils.fs.put(str(p), blob)
+        return self._dbutils.fs.put(str(p), blob, overwrite=True)
 
