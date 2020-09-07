@@ -1,15 +1,17 @@
 import ast
 import hashlib
+import importlib
 import inspect
 import logging
 import abc
 import sys
+from collections import OrderedDict
 from enum import Enum
 from types import ModuleType, FunctionType
 import builtins
 from functools import total_ordering
 from typing import Tuple, Callable, Any, Dict, Set, Union, FrozenSet, Optional, \
-    List, Type, NewType
+    List, Type, NewType, NamedTuple, OrderedDict
 
 from .structures import PyHash, DDSPath, FunctionInteractions, KSException
 
@@ -18,11 +20,13 @@ _logger = logging.getLogger(__name__)
 Package = NewType("Package", str)
 
 
-def introspect(f: Callable[[Any], Any]) -> FunctionInteractions:
+def introspect(f: Callable[[Any], Any], start_globals: Dict[str, Any]) -> FunctionInteractions:
     # TODO: exposed the whitelist
+    # TODO: add the arguments of the function
     gctx = GlobalContext(
         f.__module__,  # typing: ignore
-        whitelisted_packages=_whitelisted_packages)
+        whitelisted_packages=_whitelisted_packages,
+        start_globals=start_globals)
     return _introspect(f, [], None, gctx)
 
 
@@ -76,9 +80,11 @@ class GlobalContext(object):
 
     def __init__(self,
                  start_module: ModuleType,
-                 whitelisted_packages: Set[Package]):
+                 whitelisted_packages: Set[Package],
+                 start_globals: Dict[str, Any]):
         self.whitelisted_packages = whitelisted_packages
         self.start_module = start_module
+        self.start_globals = start_globals
         # Hashes of all the static objects
         self._hashes: Dict[CanonicalPath, PyHash] = {}
 
@@ -105,23 +111,35 @@ class GlobalContext(object):
         return False
 
 
+class FunctionArgContext(NamedTuple):
+    # The keys of the arguments that are known at call time
+    named_args: OrderedDict[str, Optional[PyHash]]
+    # The key of the environment when calling the function
+    inner_call_key: Optional[PyHash]
+
 
 def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[PyHash],
                 gctx: GlobalContext) -> FunctionInteractions:
-    _logger.debug(f"Starting _introspect: {f}")
+    # TODO: remove args for now?
+    arg_sig = inspect.signature(f)
+    _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig}")
+    assert not args, ("Not implemented", args)
+    fun_arg_context = FunctionArgContext(
+        # TODO: bind the arguments to their slots
+        named_args=OrderedDict(list((n, None) for n in arg_sig.parameters.keys())),
+        inner_call_key=context_sig)
     src = inspect.getsource(f)
     ast_src = ast.parse(src)
     body_lines = src.split("\n")
     ast_f = ast_src.body[0]
     fun_body_sig = _hash(src)
     fun_module = sys.modules[f.__module__]
-    # _logger.info(f"source: {src}")
-    # Test().visit(ast_f)
+
     fun_input_sig = context_sig if context_sig else _hash(args)
-    (all_args_hash, fis) = _inspect_fun(ast_f, gctx, fun_module, body_lines, fun_input_sig)
+    (all_args_hash, fis) = _inspect_fun(ast_f, gctx, fun_module, body_lines, fun_input_sig, fun_arg_context)
     # Find the outer interactions
     outputs = [tup for fi in fis for tup in fi.outputs]
-    _logger.info(f"outputs: {outputs}")
+    # _logger.info(f"_introspect: outputs: {outputs}")
     fun_return_sig = _hash([fun_body_sig, all_args_hash])
     res = FunctionInteractions(fun_body_sig, fun_return_sig,
                                 fun_context_input_sig=context_sig,
@@ -130,31 +148,17 @@ def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[
     return res
 
 
-# class Test(ast.NodeVisitor):
-#     def __init__(self):
-#         pass
-#
-#     def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:
-#         # _logger.debug(f"function: {node.name} {node.args} {node.body}")
-#         self.generic_visit(node)
-#
-#     def visit_Expr(self, node: ast.Expr) -> Any:
-#         # _logger.debug(f"expr: {node}, {node.value}")
-#         self.generic_visit(node)
-#
-#     def visit_Call(self, node: ast.Call) -> Any:
-#         # _logger.debug(f"call: {node}, {_function_name(node.func)} {node.args} {node.keywords}")
-#         self.generic_visit(node)
-
-
 class IntroVisitor(ast.NodeVisitor):
 
     def __init__(self, start_mod: ModuleType,
-                 gctx: GlobalContext, function_body_lines: List[str],
-                 function_args_hash: PyHash):
+                 gctx: GlobalContext,
+                 function_body_lines: List[str],
+                 function_args_hash: PyHash,
+                 function_var_names: List[str]):
         # TODO: start_mod is in the global context
         self._start_mod = start_mod
         self._gctx = gctx
+        self._function_var_names = set(function_var_names)
         self._body_lines = function_body_lines
         self._args_hash = function_args_hash
         self.inters: List[FunctionInteractions] = []
@@ -162,7 +166,7 @@ class IntroVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)}")
         function_body_hash = _hash(self._body_lines[:node.lineno + 1])
-        fi = _inspect_call(node, self._gctx, self._start_mod, function_body_hash, self._args_hash)
+        fi = _inspect_call(node, self._gctx, self._start_mod, function_body_hash, self._args_hash, self._function_var_names)
         if fi:
             self.inters.append(fi)
         self.generic_visit(node)
@@ -193,6 +197,22 @@ class ExternalVarsVisitor(ast.NodeVisitor):
             self.vars.add(cpath)
         else:
             _logger.debug(f"Skipping unauthorized name: {node.id}: {cpath}")
+            pass
+
+
+class LocalVarsVisitor(ast.NodeVisitor):
+    """
+    A brute-force attempt to find all the variables defined in the scope of a module.
+    """
+
+    def __init__(self, existing_vars: List[str]):
+        self.vars: Set[str] = set(existing_vars)
+
+    def visit_Name(self, node: ast.Name) -> Any:
+        # _logger.debug(f"visit_vars: {node.id} {node.ctx}")
+        if isinstance(node.ctx, ast.Store):
+            self.vars.add(node.id)
+        self.generic_visit(node)
 
 
 def _function_name(node) -> List[str]:
@@ -216,13 +236,18 @@ def _inspect_fun(node: ast.FunctionDef,
                  gctx: GlobalContext,
                  mod: ModuleType,
                  function_body_lines: List[str],
-                 function_args_hash: PyHash) -> Tuple[PyHash, List[FunctionInteractions]]:
-    _logger.debug(f"function: {node.name} {node.args} {node.body}")
+                 function_args_hash: PyHash,
+                 arg_ctx: FunctionArgContext) -> Tuple[PyHash, List[FunctionInteractions]]:
+    # _logger.debug(f"function: {node.name} {node.args} {node.body}")
     # Find all the outer dependencies to hash them
     vdeps = ExternalVarsVisitor(mod, gctx)
     vdeps.visit(node)
     ext_vars = sorted(list(vdeps.vars))
-    _logger.debug(f"external: {ext_vars}")
+    # _logger.debug(f"external: {ext_vars}")
+    lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()))
+    lvars_v.visit(node)
+    lvars = sorted(list(lvars_v.vars))
+    _logger.debug(f"local vars: {lvars}")
     fun_args = []
     for ev in ext_vars:
         fun_args.append(ev)
@@ -230,21 +255,25 @@ def _inspect_fun(node: ast.FunctionDef,
         # TODO: compute the hash of all the arguments, here, instead of in pieces around
     function_all_args_hash = _hash([function_args_hash, fun_args])
     # assert False, "add visitors"
-    visitor = IntroVisitor(mod, gctx, function_body_lines, function_all_args_hash)
+    visitor = IntroVisitor(mod, gctx, function_body_lines, function_all_args_hash, lvars)
     visitor.visit(node)
-    return (function_all_args_hash, visitor.inters)
+    return function_all_args_hash, visitor.inters
 
 
 def _inspect_call(node: ast.Call,
                   gctx: GlobalContext,
                   mod: ModuleType,
                   function_body_hash: PyHash,
-                  function_args_hash: PyHash) -> Optional[FunctionInteractions]:
+                  function_args_hash: PyHash,
+                  var_names: Set[str]) -> Optional[FunctionInteractions]:
     fname = _function_name(node.func)
     _logger.debug(f"_inspect_call: fname: {fname}")
     # Do not try to parse the builtins
     if len(fname) == 1 and fname[0] in builtins.__dict__:
         _logger.debug(f"_inspect_call: skipping builtin")
+        return None
+    if fname[0] in var_names:
+        _logger.debug(f"_inspect_call: skipping local var")
         return None
     obj_called = _retrieve_object(fname, mod, gctx, None)
     if obj_called is None:
@@ -255,13 +284,6 @@ def _inspect_call(node: ast.Call,
     canon_path = _canonical_path(fname, mod)
     _logger.debug(f"_inspect_call: canon_path: {canon_path}")
 
-    # Inspect in all cases since it can call primary functions deeper.
-    # if not _is_primary_function(canon_path):
-    #     _logger.debug(f"_inspect_call: {canon_path}: primary function")
-    #     return None
-    # # Parse the arguments to find the function that is called
-    # if not node.args:
-    #     raise KSException("Wrong number of args")
     if node.keywords:
         raise NotImplementedError(node)
     store_path: Optional[DDSPath] = None
@@ -269,9 +291,9 @@ def _inspect_call(node: ast.Call,
     if fname[-1] == Functions.Keep:
         if len(node.args) < 2:
             raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
-        store_path_symbol = node.args[0].id
+        store_path_symbol: str = node.args[0].id
         _logger.debug(f"_inspect_call: Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}")
-        store_path = _retrieve_path(store_path_symbol, mod)
+        store_path = _retrieve_path(store_path_symbol, mod, gctx)
         f_called = node.args[1].id
     elif fname[-1] == Functions.Cache:
         if len(node.args) < 2:
@@ -279,8 +301,6 @@ def _inspect_call(node: ast.Call,
         f_called = node.args[0].id
     else:
         f_called = fname[-1]
-    # if not f_called:
-    #     raise NotImplementedError((fname[-1], node))
 
     # We just use the context in the function
     fun_called = _retrieve_object([f_called], mod, gctx, FunctionType)
@@ -300,10 +320,41 @@ def _retrieve_object(
         path: List[str],
         mod: ModuleType,
         gctx: GlobalContext,
-        expected_type: Optional[Type]) -> Union[None, FunctionType]:
+        expected_type: Optional[Type]) -> Optional[Any]:
+    """
+    Returns an object, recursively traversing the hierarchy.
+    """
     assert path
     fname = path[0]
-    _logger.debug(f"_retrieve_object: {path} {mod}")
+    if fname not in mod.__dict__:
+        # In some cases (old versions of jupyter) the module is not listed
+        # -> try to load it from the root
+        _logger.debug(f"_retrieve_object: Could not find {fname} in {mod}, attempting a direct load")
+        try:
+            loaded_mod = importlib.import_module(fname)
+        except ModuleNotFoundError:
+            loaded_mod = None
+        if loaded_mod is None:
+            _logger.debug(f"_retrieve_object: Could not load name {fname}, looking into the globals")
+            if fname in gctx.start_globals:
+                _logger.debug(f"_retrieve_object: Found {fname} in start_globals")
+                return gctx.start_globals[fname]
+            else:
+                _logger.debug(f"_retrieve_object: {fname} not found in start_globals")
+                return None
+        return _retrieve_object_rec(path[1:], loaded_mod, gctx, expected_type)
+    else:
+        return _retrieve_object_rec(path, mod, gctx, expected_type)
+
+
+def _retrieve_object_rec(
+        path: List[str],
+        mod: ModuleType,
+        gctx: GlobalContext,
+        expected_type: Optional[Type]) -> Optional[Any]:
+    assert path
+    fname = path[0]
+    _logger.debug(f"_retrieve_object_rec: {path} {mod}")
     if fname not in mod.__dict__:
         # If the name is not in scope, it is assumed to be defined in the function body -> skipped
         # (it is included with the code lines)
@@ -320,7 +371,7 @@ def _retrieve_object(
     if obj_mod is not None:
         obj_mod_path = _mod_path(obj_mod)
         if not gctx.is_authorized_path(obj_mod_path):
-            _logger.debug(f"Actual module {obj_mod_path} for obj {obj} is unauthorized")
+            _logger.debug(f"Actual module {obj_mod_path} for obj {obj} is not authorized")
             return None
         else:
             _logger.debug(f"Actual module {obj_mod_path} for obj {obj}: authorized")
@@ -344,6 +395,23 @@ def _retrieve_object(
 
 
 def _canonical_path(path: List[str], mod: ModuleType) -> CanonicalPath:
+    if not path:
+        # Return the path of the module
+        return _mod_path(mod)
+    assert path
+    fname = path[0]
+    if fname not in mod.__dict__:
+        _logger.debug(f"Path {path} not found in {mod} -> attempting direct load")
+        loaded_mod = importlib.import_module(fname)
+        if loaded_mod is None:
+            _logger.debug(f"Could not load name {fname}")
+            raise KSException(f"Object {fname} not found in module {mod}. Choices are {mod.__dict__.keys()}")
+        return _canonical_path_rec(path[1:], loaded_mod)
+    else:
+        return _canonical_path_rec(path, mod)
+
+
+def _canonical_path_rec(path: List[str], mod: ModuleType) -> CanonicalPath:
     """
     The canonical path of an entity in the python module hierarchy.
     """
@@ -367,10 +435,15 @@ def _canonical_path(path: List[str], mod: ModuleType) -> CanonicalPath:
         return _canonical_path(path, ref_module)
 
 
-def _retrieve_path(fname: str, mod: ModuleType) -> DDSPath:
+def _retrieve_path(fname: str, mod: ModuleType, gctx: GlobalContext) -> DDSPath:
     if fname not in mod.__dict__:
-        raise KSException(f"Expected path {fname} not found in module {mod}. Choices are {mod.__dict__}")
-    obj = mod.__dict__[fname]
+        # Look in the global context to see it is defined there (happens with some REPLs like Databricks)
+        if fname not in gctx.start_globals:
+            raise KSException(f"Expected path {fname} not found in module {mod} or globals. Choices are {mod.__dict__.keys()} or globals {gctx.start_globals.keys()}")
+        else:
+            obj = gctx.start_globals[fname]
+    else:
+        obj = mod.__dict__[fname]
     if not isinstance(obj, str):
         raise KSException(f"Object {fname} is not a function but of type {type(obj)}")
     return DDSPath(obj)
