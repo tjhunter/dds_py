@@ -11,7 +11,7 @@ from types import ModuleType, FunctionType
 import builtins
 from functools import total_ordering
 from typing import Tuple, Callable, Any, Dict, Set, Union, FrozenSet, Optional, \
-    List, Type, NewType, NamedTuple, OrderedDict
+    List, Type, NewType, NamedTuple, OrderedDict as OrderedDictType
 
 from .structures import PyHash, DDSPath, FunctionInteractions, KSException
 
@@ -113,7 +113,7 @@ class GlobalContext(object):
 
 class FunctionArgContext(NamedTuple):
     # The keys of the arguments that are known at call time
-    named_args: OrderedDict[str, Optional[PyHash]]
+    named_args: OrderedDictType[str, Optional[PyHash]]
     # The key of the environment when calling the function
     inner_call_key: Optional[PyHash]
 
@@ -133,7 +133,7 @@ def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[
     body_lines = src.split("\n")
     ast_f = ast_src.body[0]
     fun_body_sig = _hash(src)
-    fun_module = sys.modules[f.__module__]
+    fun_module = inspect.getmodule(f)
 
     fun_input_sig = context_sig if context_sig else _hash(args)
     (all_args_hash, fis) = _inspect_fun(ast_f, gctx, fun_module, body_lines, fun_input_sig, fun_arg_context)
@@ -150,7 +150,8 @@ def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[
 
 class IntroVisitor(ast.NodeVisitor):
 
-    def __init__(self, start_mod: ModuleType,
+    def __init__(self,
+                 start_mod: ModuleType,
                  gctx: GlobalContext,
                  function_body_lines: List[str],
                  function_args_hash: PyHash,
@@ -190,6 +191,10 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         if isinstance(obj, ModuleType) or isinstance(obj, Callable):
             # Modules and callables are tracked separately
             _logger.debug(f"visit name {node.id}: skipping (fun/mod)")
+            return
+        # If this an object that
+        if not _is_authorized_type(type(obj), self._gctx):
+            _logger.debug(f"Type {type(obj)} of object {node.id} not authorized")
             return
         cpath = _canonical_path([node.id], self._start_mod, self._gctx)
         if self._gctx.is_authorized_path(cpath):
@@ -232,6 +237,31 @@ def _fun_path(f: Callable) -> CanonicalPath:
     return CanonicalPath(_mod_path(mod)._path + [f.__name__])
 
 
+def _is_authorized_type(tpe: Type, gctx: GlobalContext) -> bool:
+    """
+    True if the type is defined within the whitelisted hierarchy
+    """
+    if tpe is None:
+        return True
+    if tpe in (int, float, str, bytes):
+        return True
+    if issubclass(tpe, object):
+        mod = inspect.getmodule(tpe)
+        if mod is None:
+            _logger.debug(f"_is_authorized_type: type {tpe} has no module")
+            return False
+        mod_path = _mod_path(mod)
+        if gctx.is_authorized_path(mod_path):
+            msg = f"Type {tpe} ({mod_path}) is authorized: not implemented"
+            _logger.warning(msg)
+            raise NotImplementedError(msg)
+        return False
+    else:
+        msg = f"Type {tpe} is not implemented"
+        _logger.warning(msg)
+        raise NotImplementedError(msg)
+
+
 def _inspect_fun(node: ast.FunctionDef,
                  gctx: GlobalContext,
                  mod: ModuleType,
@@ -254,7 +284,6 @@ def _inspect_fun(node: ast.FunctionDef,
         fun_args.append(gctx.get_hash(ev))
         # TODO: compute the hash of all the arguments, here, instead of in pieces around
     function_all_args_hash = _hash([function_args_hash, fun_args])
-    # assert False, "add visitors"
     visitor = IntroVisitor(mod, gctx, function_body_lines, function_all_args_hash, lvars)
     visitor.visit(node)
     return function_all_args_hash, visitor.inters
@@ -275,19 +304,18 @@ def _inspect_call(node: ast.Call,
     if fname[0] in var_names:
         _logger.debug(f"skipping local var")
         return None
+    # The object that is being used to make the call.
     obj_called = _retrieve_object(fname, mod, gctx, None)
     if obj_called is None:
         # This is not an object to consider
         _logger.debug(f"skipping none")
         return None
     _logger.debug(f"ln:{node.lineno} {node} {obj_called}")
-    # canon_path = _canonical_path(fname, mod, gctx)
-    # _logger.debug(f"canon_path: {canon_path}")
 
     if node.keywords:
         raise NotImplementedError(node)
     store_path: Optional[DDSPath] = None
-    f_called: str = ""
+    f_called: str
     if fname[-1] == Functions.Keep:
         if len(node.args) < 2:
             raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
@@ -323,6 +351,9 @@ def _retrieve_object(
         expected_type: Optional[Type]) -> Optional[Any]:
     """
     Returns an object, recursively traversing the hierarchy.
+
+    Only returns objects that are authorized, None otherwise.
+    Throws error if the object does not exist
     """
     assert path
     fname = path[0]
@@ -363,9 +394,12 @@ def _retrieve_object_rec(
         # raise KSException(f"Object {fname} not found in module {mod}. Choices are {mod.__dict__}")
     obj = mod.__dict__[fname]
     if len(path) >= 2:
-        if not isinstance(obj, ModuleType):
-            raise KSException(f"Object {fname} is not a module but of type {type(obj)}")
-        return _retrieve_object(path[1:], obj, gctx, expected_type)
+        if isinstance(obj, ModuleType):
+            return _retrieve_object(path[1:], obj, gctx, expected_type)
+        if _is_authorized_type(type(obj), gctx):
+            raise NotImplementedError(f"Object {fname} of type {type(obj)} is authorized")
+        _logger.debug(f"Object {fname} of type {type(obj)} is authorized, skipping path {path}")
+        return None
     # Check the real module of the object, if available (such as for functions)
     obj_mod = inspect.getmodule(obj)
     if obj_mod is not None:
