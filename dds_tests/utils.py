@@ -6,6 +6,8 @@ import shutil
 from pathlib import Path
 
 dds.whitelist_module("dds_tests.test_refs")
+dds.whitelist_module("dds_tests.test_basic")
+dds.whitelist_module("dds_tests.test_sklearn")
 _logger = logging.getLogger(__name__)
 
 

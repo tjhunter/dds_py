@@ -1,3 +1,5 @@
+from functools import total_ordering
+
 from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional, Dict, List, Tuple, Type
 
 
@@ -71,4 +73,42 @@ class CodecProtocol(object):
 class BlobMetaData(NamedTuple):
     protocol: ProtocolRef
     # TODO: creation date?
+
+
+@total_ordering
+class CanonicalPath(object):
+
+    def __init__(self, p: List[str]):
+        self._path = p
+
+    def __hash__(self):
+        return hash(tuple(self._path))
+
+    def append(self, s: str) -> "CanonicalPath":
+        return CanonicalPath(self._path + [s])
+
+    def head(self) -> str:
+        return self._path[0]
+
+    def tail(self) -> "CanonicalPath":
+        return CanonicalPath(self._path[1:])
+
+    def get(self, i: int) -> str:
+        return self._path[i]
+
+    def __len__(self):
+        return len(self._path)
+
+    def __repr__(self):
+        x = ".".join(self._path)
+        return f"<{x}>"
+
+    def __eq__(self, other):
+        return repr(self) == repr(other)
+
+    def __ne__(self, other):
+        return not (repr(self) == repr(other))
+
+    def __lt__(self, other):
+        return repr(self) < repr(other)
 

@@ -87,5 +87,5 @@ class LocalFileStore(Store):
             else:
                 if os.path.exists(loc):
                     os.remove(loc)
-                _logger.debug(f"Link {loc} -> {loc_blob}")
+                _logger.info(f"Link {loc} -> {loc_blob}")
                 os.symlink(loc_blob, loc)

@@ -23,3 +23,10 @@ def test_1():
 def test_2():
     assert dds.eval(f2_wrap) == "A"
 
+def fun_3(i):
+    return "A" + str(i)
+
+@pytest.mark.usefixtures("cleandir")
+def test_3():
+    assert dds.eval(fun_3, 3) == "A3"
+
