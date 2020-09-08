@@ -68,6 +68,7 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
         # TODO: detect if we are running in databricks to account for this hack.
         local_vars = inspect.currentframe().f_back.f_locals
         _logger.debug(f"locals: {sorted(local_vars.keys())}")
+        # TODO: use the arg context in the call
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
         inters = introspect(fun, local_vars)
