@@ -1,21 +1,6 @@
 import dds
-import logging
 import pytest
-
-dds.whitelist_module("dds_tests")
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(filename)s:%(lineno)s %(funcName)s %(message)s'
-                    )
-_logger = logging.getLogger(__name__)
-
-
-@pytest.fixture
-def cleandir():
-    _logger.debug(f"Before ***")
-    yield
-    _logger.debug(f"After ***")
-
+from .utils import cleandir
 
 path_1 = "/path_1"
 
@@ -37,3 +22,4 @@ def test_1():
 @pytest.mark.usefixtures("cleandir")
 def test_2():
     assert dds.eval(f2_wrap) == "A"
+

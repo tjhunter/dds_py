@@ -3,6 +3,7 @@ pandas>=0.23.2,<1.1.0
 pyarrow>=0.10
 matplotlib>=3.0.0,<3.3.0
 numpy>=1.14,<1.19.0
+pytest
 
 # Optional dependencies in Koalas.
 mlflow>=1.0
