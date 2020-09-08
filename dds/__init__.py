@@ -6,6 +6,7 @@ import inspect
 from .introspect import introspect, whitelist_module
 from .store import LocalFileStore, Store
 from .structures import DDSPath, PyHash, FunctionInteractions, KSException, EvalContext
+from .fun_args import get_arg_ctx
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
@@ -34,14 +35,16 @@ def keep(path: Union[str, DDSPath], fun: Callable[[_In], _Out], *args, **kwargs)
 
 
 def load(path: DDSPath) -> Any:
-    _logger.info(f"Performing load from {path}")
-    return None
+    raise NotImplementedError()
+    # _logger.info(f"Performing load from {path}")
+    # return None
 
 
 def cache(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
-    res = fun(*args, **kwargs)
-    _logger.info(f"Evaluating (cache) fun {fun} with args {args} kwargs {kwargs} -> {res}")
-    return res
+    raise NotImplementedError()
+    # res = fun(*args, **kwargs)
+    # _logger.info(f"Evaluating (cache) fun {fun} with args {args} kwargs {kwargs} -> {res}")
+    # return res
 
 
 def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
@@ -65,6 +68,8 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
         # TODO: detect if we are running in databricks to account for this hack.
         local_vars = inspect.currentframe().f_back.f_locals
         _logger.debug(f"locals: {sorted(local_vars.keys())}")
+        arg_ctx = get_arg_ctx(fun, args, kwargs)
+        _logger.debug(f"arg_ctx: {arg_ctx}")
         inters = introspect(fun, local_vars)
         _eval_ctx = EvalContext(requested_paths=dict(inters.outputs))
         for (p, key) in inters.outputs:

@@ -13,7 +13,8 @@ from functools import total_ordering
 from typing import Tuple, Callable, Any, Dict, Set, Union, FrozenSet, Optional, \
     List, Type, NewType, NamedTuple, OrderedDict as OrderedDictType
 
-from .structures import PyHash, DDSPath, FunctionInteractions, KSException
+from .structures import PyHash, DDSPath, FunctionInteractions, KSException, CanonicalPath
+from .fun_args import dds_hash as _hash, FunctionArgContext
 
 _logger = logging.getLogger(__name__)
 
@@ -36,43 +37,6 @@ class Functions(str, Enum):
     Cache = "cache"
     Eval = "eval"
 
-
-@total_ordering
-class CanonicalPath(object):
-
-    def __init__(self, p: List[str]):
-        self._path = p
-
-    def __hash__(self):
-        return hash(tuple(self._path))
-
-    def append(self, s: str) -> "CanonicalPath":
-        return CanonicalPath(self._path + [s])
-
-    def head(self) -> str:
-        return self._path[0]
-
-    def tail(self) -> "CanonicalPath":
-        return CanonicalPath(self._path[1:])
-
-    def get(self, i: int) -> str:
-        return self._path[i]
-
-    def __len__(self):
-        return len(self._path)
-
-    def __repr__(self):
-        x = ".".join(self._path)
-        return f"<{x}>"
-
-    def __eq__(self, other):
-        return repr(self) == repr(other)
-
-    def __ne__(self, other):
-        return not (repr(self) == repr(other))
-
-    def __lt__(self, other):
-        return repr(self) < repr(other)
 
 
 class GlobalContext(object):
@@ -109,13 +73,6 @@ class GlobalContext(object):
             if ".".join(cp._path[:idx]) in self.whitelisted_packages:
                 return True
         return False
-
-
-class FunctionArgContext(NamedTuple):
-    # The keys of the arguments that are known at call time
-    named_args: OrderedDictType[str, Optional[PyHash]]
-    # The key of the environment when calling the function
-    inner_call_key: Optional[PyHash]
 
 
 def _introspect(f: Callable[[Any], Any], args: List[Any], context_sig: Optional[PyHash],
@@ -500,21 +457,6 @@ def _is_primary_function(path: CanonicalPath) -> bool:
             raise KSException("invalid call to eval")
         return path.get(1) in (Functions.Keep, Functions.Load, Functions.Cache)
     return False
-
-
-def _hash(x: Any) -> PyHash:
-    def algo_str(s: str) -> PyHash:
-        return PyHash(hashlib.sha256(s.encode()).hexdigest())
-
-    if isinstance(x, str):
-        return algo_str(x)
-    if isinstance(x, int):
-        return algo_str(str(x))
-    if isinstance(x, list):
-        return algo_str("|".join([_hash(y) for y in x]))
-    if isinstance(x, CanonicalPath):
-        return algo_str(repr(x))
-    raise NotImplementedError(str(type(x)))
 
 
 _whitelisted_packages: Set[Package] = {Package("dds"), Package("__main__")}
