@@ -340,89 +340,6 @@ class InspectFunction(object):
         return _introspect(caller_fun, args=[], context_sig=context_sig, gctx=gctx)
 
 
-# def _inspect_fun(node: ast.FunctionDef,
-#                  gctx: GlobalContext,
-#                  mod: ModuleType,
-#                  function_body_lines: List[str],
-#                  function_args_hash: PyHash,
-#                  arg_ctx: FunctionArgContext) -> FunctionInteractions:
-#     # _logger.debug(f"function: {node.name} {node.args} {node.body}")
-#     # Find all the outer dependencies to hash them
-#     vdeps = ExternalVarsVisitor(mod, gctx)
-#     vdeps.visit(node)
-#     ext_vars = sorted(list(vdeps.vars))
-#     # _logger.debug(f"external: {ext_vars}")
-#     lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()))
-#     lvars_v.visit(node)
-#     lvars = sorted(list(lvars_v.vars))
-#     _logger.debug(f"local vars: {lvars}")
-#     fun_args = []
-#     for ev in ext_vars:
-#         fun_args.append(ev)
-#         fun_args.append(gctx.get_hash(ev, None))
-#         # TODO: compute the hash of all the arguments, here, instead of in pieces around
-#     function_all_args_hash = _hash([function_args_hash, fun_args])
-#     visitor = IntroVisitor(mod, gctx, function_body_lines, function_all_args_hash, lvars)
-#     visitor.visit(node)
-#     return function_all_args_hash, visitor.inters
-
-
-# TODO: remove
-# def _inspect_call(node: ast.Call,
-#                   gctx: GlobalContext,
-#                   mod: ModuleType,
-#                   function_body_hash: PyHash,
-#                   function_args_hash: PyHash,
-#                   var_names: Set[str]) -> Optional[FunctionInteractions]:
-#     fname = _function_name(node.func)
-#     _logger.debug(f"fname: {fname}")
-#     # Do not try to parse the builtins
-#     if len(fname) == 1 and fname[0] in builtins.__dict__:
-#         _logger.debug(f"skipping builtin")
-#         return None
-#     if fname[0] in var_names:
-#         _logger.debug(f"skipping local var")
-#         return None
-#     # The object that is being used to make the call.
-#     obj_called = _retrieve_object(fname, mod, gctx, None)
-#     if obj_called is None:
-#         # This is not an object to consider
-#         _logger.debug(f"skipping none")
-#         return None
-#     _logger.debug(f"ln:{node.lineno} {node} {obj_called}")
-#
-#     if node.keywords:
-#         raise NotImplementedError(node)
-#     store_path: Optional[DDSPath] = None
-#     f_called: str
-#     if fname[-1] == Functions.Keep:
-#         if len(node.args) < 2:
-#             raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
-#         store_path_symbol: str = node.args[0].id
-#         _logger.debug(f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}")
-#         store_path = _retrieve_path(store_path_symbol, mod, gctx)
-#         f_called = node.args[1].id
-#     elif fname[-1] == Functions.Cache:
-#         if len(node.args) < 2:
-#             raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
-#         f_called = node.args[0].id
-#     else:
-#         f_called = fname[-1]
-#
-#     # We just use the context in the function
-#     fun_called = _retrieve_object([f_called], mod, gctx, FunctionType)
-#     can_path = _fun_path(fun_called)
-#     _logger.debug(f"fun_called: {fun_called} : {can_path}")
-#     # _logger.debug(f"Introspecting function")
-#     context_sig = _hash([function_body_hash, function_args_hash, node.lineno])
-#     inner_intro = _introspect(fun_called, args=[], context_sig=context_sig, gctx=gctx)
-#     # _logger.debug(f"Introspecting function finished: {inner_intro}")
-#     _logger.debug(f"keep: {store_path} <- {can_path}: {inner_intro.fun_return_sig}")
-#     if store_path:
-#         inner_intro.outputs.append((store_path, inner_intro.fun_return_sig))
-#     return inner_intro
-
-
 class ObjectRetrieval(object):
 
     @classmethod
@@ -669,3 +586,86 @@ def whitelist_module(module: Union[str, ModuleType]):
         module = module.__name__
     assert isinstance(module, str), (module, type(module))
     _whitelisted_packages.add(Package(module))
+
+
+# def _inspect_fun(node: ast.FunctionDef,
+#                  gctx: GlobalContext,
+#                  mod: ModuleType,
+#                  function_body_lines: List[str],
+#                  function_args_hash: PyHash,
+#                  arg_ctx: FunctionArgContext) -> FunctionInteractions:
+#     # _logger.debug(f"function: {node.name} {node.args} {node.body}")
+#     # Find all the outer dependencies to hash them
+#     vdeps = ExternalVarsVisitor(mod, gctx)
+#     vdeps.visit(node)
+#     ext_vars = sorted(list(vdeps.vars))
+#     # _logger.debug(f"external: {ext_vars}")
+#     lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()))
+#     lvars_v.visit(node)
+#     lvars = sorted(list(lvars_v.vars))
+#     _logger.debug(f"local vars: {lvars}")
+#     fun_args = []
+#     for ev in ext_vars:
+#         fun_args.append(ev)
+#         fun_args.append(gctx.get_hash(ev, None))
+#         # TODO: compute the hash of all the arguments, here, instead of in pieces around
+#     function_all_args_hash = _hash([function_args_hash, fun_args])
+#     visitor = IntroVisitor(mod, gctx, function_body_lines, function_all_args_hash, lvars)
+#     visitor.visit(node)
+#     return function_all_args_hash, visitor.inters
+
+
+# TODO: remove
+# def _inspect_call(node: ast.Call,
+#                   gctx: GlobalContext,
+#                   mod: ModuleType,
+#                   function_body_hash: PyHash,
+#                   function_args_hash: PyHash,
+#                   var_names: Set[str]) -> Optional[FunctionInteractions]:
+#     fname = _function_name(node.func)
+#     _logger.debug(f"fname: {fname}")
+#     # Do not try to parse the builtins
+#     if len(fname) == 1 and fname[0] in builtins.__dict__:
+#         _logger.debug(f"skipping builtin")
+#         return None
+#     if fname[0] in var_names:
+#         _logger.debug(f"skipping local var")
+#         return None
+#     # The object that is being used to make the call.
+#     obj_called = _retrieve_object(fname, mod, gctx, None)
+#     if obj_called is None:
+#         # This is not an object to consider
+#         _logger.debug(f"skipping none")
+#         return None
+#     _logger.debug(f"ln:{node.lineno} {node} {obj_called}")
+#
+#     if node.keywords:
+#         raise NotImplementedError(node)
+#     store_path: Optional[DDSPath] = None
+#     f_called: str
+#     if fname[-1] == Functions.Keep:
+#         if len(node.args) < 2:
+#             raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
+#         store_path_symbol: str = node.args[0].id
+#         _logger.debug(f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}")
+#         store_path = _retrieve_path(store_path_symbol, mod, gctx)
+#         f_called = node.args[1].id
+#     elif fname[-1] == Functions.Cache:
+#         if len(node.args) < 2:
+#             raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
+#         f_called = node.args[0].id
+#     else:
+#         f_called = fname[-1]
+#
+#     # We just use the context in the function
+#     fun_called = _retrieve_object([f_called], mod, gctx, FunctionType)
+#     can_path = _fun_path(fun_called)
+#     _logger.debug(f"fun_called: {fun_called} : {can_path}")
+#     # _logger.debug(f"Introspecting function")
+#     context_sig = _hash([function_body_hash, function_args_hash, node.lineno])
+#     inner_intro = _introspect(fun_called, args=[], context_sig=context_sig, gctx=gctx)
+#     # _logger.debug(f"Introspecting function finished: {inner_intro}")
+#     _logger.debug(f"keep: {store_path} <- {can_path}: {inner_intro.fun_return_sig}")
+#     if store_path:
+#         inner_intro.outputs.append((store_path, inner_intro.fun_return_sig))
+#     return inner_intro
