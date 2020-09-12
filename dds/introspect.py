@@ -133,21 +133,24 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         # TODO: rename to deps
         self.vars: Dict[LocalDepPath, ExternalDep] = {}
 
-    # def visit_Call(self, node: ast.Call) -> Any:
-    #     # TODO: this is too coarse, it should visit the subtree of the call still.
-    #     _logger.debug(f"ExternalVarsVisitor: skip call")
-
     def visit_Name(self, node: ast.Name) -> Any:
         local_dep_path = LocalDepPath(PurePosixPath(node.id))
+        _logger.debug(f"ExternalVarsVisitor:visit_Name: id: {node.id} local_dep_path:{local_dep_path}")
+        if not isinstance(node.ctx, ast.Load):
+            _logger.debug(f"ExternalVarsVisitor:visit_Name: id: {node.id} skipping ctx: {node.ctx}")
+            return
         # If it is a var that is already part of the function, do not introspect
         if len(local_dep_path.parts) == 1:
             v = str(local_dep_path)
             if v in self._local_vars:
+                _logger.debug(f"ExternalVarsVisitor:visit_Name: id: {node.id} skipping, in vars")
                 return
         if local_dep_path in self.vars:
             return
         # TODO: this will fail in submodule
-        if local_dep_path not in self._start_mod.__dict__ or local_dep_path in self.vars:
+        if str(local_dep_path) not in self._start_mod.__dict__:
+            _logger.debug(f"ExternalVarsVisitor:visit_Name: local_dep_path {local_dep_path} "
+                          f"not found in module {self._start_mod}: {self._start_mod.__dict__.keys()}")
             return
         res = ObjectRetrieval.retrieve_object(local_dep_path, self._start_mod, self._gctx)
         if res is None:
@@ -158,6 +161,11 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         if isinstance(obj, Callable):
             # Modules and callables are tracked separately
             _logger.debug(f"visit name {local_dep_path}: skipping (fun)")
+            return
+        if isinstance(obj, ModuleType):
+            # Modules and callables are tracked separately
+            # TODO: this is not accurate, as a variable could be called in a submodule
+            _logger.debug(f"visit name {local_dep_path}: skipping (module)")
             return
         sig = self._gctx.get_hash(path, obj)
         self.vars[local_dep_path] = ExternalDep(local_path=local_dep_path, path=path, sig=sig)
@@ -201,7 +209,7 @@ def _is_authorized_type(tpe: Type, gctx: GlobalContext) -> bool:
     """
     if tpe is None:
         return True
-    if tpe in (int, float, str, bytes):
+    if tpe in (int, float, str, bytes, PurePosixPath, Callable, ModuleType):
         return True
     if issubclass(tpe, object):
         mod = inspect.getmodule(tpe)
@@ -284,7 +292,7 @@ class InspectFunction(object):
                      function_args_hash: PyHash,
                      var_names: Set[str]) -> Optional[FunctionInteractions]:
         if node.keywords:
-            raise NotImplementedError(node)
+            raise NotImplementedError((_function_name(node.func), node, node.keywords))
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
         _logger.debug(f"inspect_call: local_path: {local_path}")
         if str(local_path) in var_names:
@@ -399,12 +407,14 @@ class ObjectRetrieval(object):
             obj_mod_path = _mod_path(context_mod)
             obj_path = obj_mod_path.append(fname)
             if gctx.is_authorized_path(obj_path):
-                _logger.debug(f"Object {fname} of path {obj_path} is authorized,")
-                return obj, obj_path
-            elif _is_authorized_type(type(obj), gctx):
-                _logger.debug(f"Object {fname} of type {type(obj)} is authorized, keeping path {obj_path}")
+                # TODO: simplify the authorized types
+                if _is_authorized_type(type(obj), gctx) or isinstance(obj, (Callable, ModuleType)):
+                    _logger.debug(f"Object {fname} of path {obj_path} is authorized,")
+                    return obj, obj_path
+                else:
+                    _logger.debug(f"Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}")
             else:
-                _logger.debug(f"Object {fname} of type {type(obj)} and path {obj_path} is not authorized")
+                _logger.debug(f"Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)")
                 return None
 
         # More to explore
@@ -415,7 +425,7 @@ class ObjectRetrieval(object):
         # The rest is not authorized for now.
         msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
         _logger.debug(msg)
-        raise NotImplementedError(msg)
+        return None
 
 
 def _retrieve_object(
