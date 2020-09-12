@@ -1,7 +1,8 @@
-import hashlib
+
 import hashlib
 import inspect
 import logging
+from pathlib import PurePosixPath
 from collections import OrderedDict
 from inspect import Parameter
 
@@ -30,6 +31,10 @@ def dds_hash(x: Any) -> PyHash:
         return algo_str("|".join([dds_hash(y) for y in x]))
     if isinstance(x, CanonicalPath):
         return algo_str(repr(x))
+    if isinstance(x, tuple):
+        return dds_hash(list(x))
+    if isinstance(x, PurePosixPath):
+        return algo_str(str(x))
     raise NotImplementedError(str(type(x)))
 
 
