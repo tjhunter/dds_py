@@ -1,35 +1,21 @@
-import ast
 import hashlib
-import importlib
+import hashlib
 import inspect
 import logging
-from inspect import Parameter
-import abc
-import sys
 from collections import OrderedDict
-from enum import Enum
-from types import ModuleType, FunctionType
-import builtins
-from functools import total_ordering
-from typing import Tuple, Callable, Any, Dict, Set, Union, FrozenSet, Optional, \
-    List, Type, NewType, NamedTuple, OrderedDict as OrderedDictType
+from inspect import Parameter
 
-from .structures import PyHash, DDSPath, FunctionInteractions, KSException, CanonicalPath
+from .structures import CanonicalPath
+
+
+from typing import Tuple, Callable, Any, Dict, Optional, \
+    NamedTuple, OrderedDict as OrderedDictType
+
+
+from .structures import PyHash, FunctionArgContext
+
 
 _logger = logging.getLogger(__name__)
-
-from typing import Tuple, Callable, Any, Dict, Set, Union, FrozenSet, Optional, \
-    List, Type, NewType, NamedTuple, OrderedDict as OrderedDictType
-
-
-from .structures import PyHash, DDSPath, FunctionInteractions, KSException
-
-
-class FunctionArgContext(NamedTuple):
-    # The keys of the arguments that are known at call time
-    named_args: OrderedDictType[str, Optional[PyHash]]
-    # The key of the environment when calling the function
-    inner_call_key: Optional[PyHash]
 
 
 def dds_hash(x: Any) -> PyHash:
