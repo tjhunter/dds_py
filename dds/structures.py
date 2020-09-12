@@ -1,7 +1,8 @@
 from functools import total_ordering
 from pathlib import PurePosixPath
+from collections import OrderedDict
 
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional, Dict, List, Tuple, Type, Union, OrderedDict as OrderedDictType
+from typing import TypeVar, Callable, Any, NewType, NamedTuple, FrozenSet, Optional, Dict, List, Tuple, Type, Union, OrderedDict as OrderedDictType
 # from .fun_args import FunctionArgContext
 
 # A path to an object in the DDS store.
@@ -134,4 +135,15 @@ class FunctionInteractions(NamedTuple):
     parsed_body: List[Union["FunctionInteractions"]]
     # The path, if the output is expected to be stored
     store_path: Optional[DDSPath]
+
+    @classmethod
+    def all_store_paths(cls, fi: "FunctionInteractions") -> OrderedDictType[DDSPath, PyHash]:
+        res: List[Tuple[DDSPath, PyHash]] = []
+        if fi.store_path is not None:
+            res.append((fi.store_path, fi.fun_return_sig))
+        for fi0 in fi.parsed_body:
+            if isinstance(fi0, FunctionInteractions):
+                res += cls.all_store_paths(fi0).items()
+        return OrderedDict(res)
+
 
