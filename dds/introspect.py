@@ -291,8 +291,6 @@ class InspectFunction(object):
                      function_body_hash: PyHash,
                      function_args_hash: PyHash,
                      var_names: Set[str]) -> Optional[FunctionInteractions]:
-        if node.keywords:
-            raise NotImplementedError((_function_name(node.func), node, node.keywords))
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
         _logger.debug(f"inspect_call: local_path: {local_path}")
         if str(local_path) in var_names:
@@ -331,8 +329,10 @@ class InspectFunction(object):
                 # Not sure what to do yet in this case.
                 raise NotImplementedError(f"Invalid called_z: {called_local_path} {mod}")
             called_fun, call_fun_path = called_z
-            context_sig = _hash([function_body_hash, function_args_hash, node.lineno])
+            context_sig = _hash([function_body_hash, function_args_hash])
             # TODO: deal with the arguments here
+            if node.keywords:
+                raise NotImplementedError((_function_name(node.func), node, node.keywords))
             inner_intro = _introspect(called_fun, args=[], context_sig=context_sig, gctx=gctx)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
@@ -344,7 +344,7 @@ class InspectFunction(object):
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here
-        context_sig = _hash([function_body_hash, function_args_hash, node.lineno])
+        context_sig = _hash([function_body_hash, function_args_hash])
         return _introspect(caller_fun, args=[], context_sig=context_sig, gctx=gctx)
 
 
