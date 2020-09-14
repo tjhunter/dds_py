@@ -32,3 +32,9 @@ class Counter(object):
 
     def increment(self):
         self.value += 1
+
+
+unreachable_var = 0
+
+def unreachable():
+    return str(unreachable_var)
