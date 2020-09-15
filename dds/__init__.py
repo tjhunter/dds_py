@@ -72,8 +72,8 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
         inters = introspect(fun, local_vars)
-        _logger.debug(f"Interaction tree:")
-        FunctionInteractions.pprint_tree(inters, printer=lambda s: _logger.debug(s))
+        _logger.info(f"Interaction tree:")
+        FunctionInteractions.pprint_tree(inters, printer=lambda s: _logger.info(s))
         store_paths = FunctionInteractions.all_store_paths(inters)
         _eval_ctx = EvalContext(requested_paths=store_paths)
         for (p, key) in store_paths.items():
