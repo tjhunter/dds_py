@@ -21,14 +21,15 @@ _logger = logging.getLogger(__name__)
 
 
 class PySparkDatabricksCodec(CodecProtocol):
-
-    def ref(self): return ProtocolRef("default.pyspark")
+    def ref(self):
+        return ProtocolRef("default.pyspark")
 
     # TODO: just use strings, it will be faster
-    def handled_types(self): return [pyspark.sql.DataFrame]
+    def handled_types(self):
+        return [pyspark.sql.DataFrame]
 
     def serialize_into(self, blob: DataFrame, loc: GenericLocation):
-        assert isinstance(blob, DataFrame), (type(blob))
+        assert isinstance(blob, DataFrame), type(blob)
         blob.write.parquet(loc)
         _logger.debug(f"Committed dataframe to parquet: {loc}")
 
@@ -41,13 +42,14 @@ class PySparkDatabricksCodec(CodecProtocol):
 
 
 class StringDBFSCodec(CodecProtocol):
-
     def __init__(self, dbutils: Any):
         self._dbutils = dbutils
 
-    def ref(self): return ProtocolRef("default.string")
+    def ref(self):
+        return ProtocolRef("default.string")
 
-    def handled_types(self): return [str]
+    def handled_types(self):
+        return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation):
         # try:
@@ -60,15 +62,18 @@ class StringDBFSCodec(CodecProtocol):
 
 
 class DBFSStore(Store):
-
     def __init__(self, internal_dir: str, data_dir: str, dbutils: Any):
         internal_dir = Path(internal_dir)
         data_dir = Path(data_dir)
-        _logger.debug(f"Created DBFSStore: internal_dir: {internal_dir} data_dir: {data_dir}")
+        _logger.debug(
+            f"Created DBFSStore: internal_dir: {internal_dir} data_dir: {data_dir}"
+        )
         self._internal_dir: Path = internal_dir
         self._data_dir: Path = data_dir
         self._dbutils = dbutils
-        self._registry = CodecRegistry([PySparkDatabricksCodec(), StringDBFSCodec(dbutils)])
+        self._registry = CodecRegistry(
+            [PySparkDatabricksCodec(), StringDBFSCodec(dbutils)]
+        )
 
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
         p = self._internal_dir.joinpath("blobs", key)
@@ -103,7 +108,9 @@ class DBFSStore(Store):
             redir_p = Path("_dds_meta/").joinpath("./" + dds_p)
             redir_path = self._physical_path(redir_p)
             # Try to read the redirection information:
-            _logger.debug(f"Attempting to read metadata for key {key}: {redir_path} {redir_p} {dds_p}")
+            _logger.debug(
+                f"Attempting to read metadata for key {key}: {redir_path} {redir_p} {dds_p}"
+            )
             meta: Optional[str] = None
             try:
                 meta = self._head(redir_path)
@@ -115,7 +122,9 @@ class DBFSStore(Store):
             else:
                 redir_key = None
             if redir_key is None or redir_key != key:
-                _logger.debug(f"Path {dds_p} needs update (registered key {redir_key} != {key})")
+                _logger.debug(
+                    f"Path {dds_p} needs update (registered key {redir_key} != {key})"
+                )
                 blob_path = self._blob_path(key)
                 obj_path = self._physical_path("./" + dds_p)
                 _logger.debug(f"Copying {blob_path} -> {obj_path}")
@@ -125,7 +134,9 @@ class DBFSStore(Store):
                     meta = json.dumps({"redirection_key": key})
                     self._put(redir_path, meta)
                 except Exception as e:
-                    _logger.warning(f"Failed to write blob metadata to {redir_path}: {e}")
+                    _logger.warning(
+                        f"Failed to write blob metadata to {redir_path}: {e}"
+                    )
                     raise e
             else:
                 _logger.debug(f"Path {dds_p} is up to ddate (key {key})")
@@ -152,4 +163,3 @@ class DBFSStore(Store):
 
     def _put(self, p: Path, blob: str):
         return self._dbutils.fs.put(str(p), blob, overwrite=True)
-

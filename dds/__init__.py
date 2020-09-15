@@ -19,7 +19,9 @@ _store: Store = LocalFileStore("/tmp", "/tmp/data/")
 _eval_ctx: Optional[EvalContext] = None
 
 
-def keep(path: Union[str, DDSPath], fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
+def keep(
+    path: Union[str, DDSPath], fun: Callable[[_In], _Out], *args, **kwargs
+) -> _Out:
     # TODO: clean and validate the path here
     if not _eval_ctx:
         raise NotImplementedError("Must call eval for now")
@@ -87,10 +89,11 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
 
 
 def set_store(
-        store: Union[str, Store],
-        internal_dir: Optional[str] = None,
-        data_dir: Optional[str] = None,
-        dbutils: Optional[Any] = None):
+    store: Union[str, Store],
+    internal_dir: Optional[str] = None,
+    data_dir: Optional[str] = None,
+    dbutils: Optional[Any] = None,
+):
     """
     Sets the store for the execution of the program.
 
@@ -116,8 +119,8 @@ def set_store(
         if dbutils is None:
             raise KSException("Missing dbutils argument")
         from .codecs.databricks import DBFSStore
+
         _store = DBFSStore(internal_dir, data_dir, dbutils)
     else:
         raise KSException(f"Unknown store {store}")
     _logger.debug(f"Setting the store to {_store}")
-

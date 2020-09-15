@@ -13,10 +13,11 @@ Local = CodecBackend("Local")
 
 
 class StringLocalCodec(CodecProtocol):
+    def ref(self):
+        return ProtocolRef("default.string")
 
-    def ref(self): return ProtocolRef("default.string")
-
-    def handled_types(self): return [str]
+    def handled_types(self):
+        return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation):
         assert isinstance(blob, str)
@@ -29,10 +30,11 @@ class StringLocalCodec(CodecProtocol):
 
 
 class PickleLocalCodec(CodecProtocol):
+    def ref(self):
+        return ProtocolRef("builtins.pickle")
 
-    def ref(self): return ProtocolRef("builtins.pickle")
-
-    def handled_types(self): return [object, sklearn.model_selection._search.GridSearchCV, type(None)]
+    def handled_types(self):
+        return [object, sklearn.model_selection._search.GridSearchCV, type(None)]
 
     def serialize_into(self, blob: Any, loc: GenericLocation):
         with open(loc, "wb") as f:

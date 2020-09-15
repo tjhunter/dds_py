@@ -2,7 +2,22 @@ from functools import total_ordering
 from pathlib import PurePosixPath
 from collections import OrderedDict
 
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, FrozenSet, Optional, Dict, List, Tuple, Type, Union, OrderedDict as OrderedDictType
+from typing import (
+    TypeVar,
+    Callable,
+    Any,
+    NewType,
+    NamedTuple,
+    FrozenSet,
+    Optional,
+    Dict,
+    List,
+    Tuple,
+    Type,
+    Union,
+    OrderedDict as OrderedDictType,
+)
+
 # from .fun_args import FunctionArgContext
 
 # A path to an object in the DDS store.
@@ -21,6 +36,7 @@ class EvalContext(NamedTuple):
     """
     The evaluation context created when evaluating a call.
     """
+
     requested_paths: Dict[DDSPath, PyHash]
 
 
@@ -35,7 +51,6 @@ CodecBackend = NewType("CodecBackend", str)
 
 
 class CodecProtocol(object):
-
     def ref(self) -> ProtocolRef:
         pass
 
@@ -61,7 +76,6 @@ class BlobMetaData(NamedTuple):
 
 @total_ordering
 class CanonicalPath(object):
-
     def __init__(self, p: List[str]):
         self._path = p
 
@@ -106,13 +120,13 @@ class ExternalDep(NamedTuple):
     """
     An external dependency to a function (not a function, this is tracked by FunctionInteraction)
     """
+
     # The local path, as called within the function
     local_path: LocalDepPath
     # The path of the object
     path: CanonicalPath
     # The signature of the object
     sig: PyHash
-
 
 
 class FunctionArgContext(NamedTuple):
@@ -139,7 +153,9 @@ class FunctionInteractions(NamedTuple):
     fun_path: CanonicalPath
 
     @classmethod
-    def all_store_paths(cls, fi: "FunctionInteractions") -> OrderedDictType[DDSPath, PyHash]:
+    def all_store_paths(
+        cls, fi: "FunctionInteractions"
+    ) -> OrderedDictType[DDSPath, PyHash]:
         res: List[Tuple[DDSPath, PyHash]] = []
         if fi.store_path is not None:
             res.append((fi.store_path, fi.fun_return_sig))
@@ -149,7 +165,7 @@ class FunctionInteractions(NamedTuple):
         return OrderedDict(res)
 
     @classmethod
-    def pprint_tree(cls, fi: "FunctionInteractions", printer: Callable[[str],None]):
+    def pprint_tree(cls, fi: "FunctionInteractions", printer: Callable[[str], None]):
         def pprint_tree_(node, file=None, _prefix="", _last=True):
             s = _prefix + ("`- " if _last else "|- ") + str(node.value)
             printer(s)
@@ -168,13 +184,14 @@ class FunctionInteractions(NamedTuple):
         def to_nodes(fi_: FunctionInteractions) -> Node:
             # TODO: add full path
             name = f"Fun {fi_.fun_path} {fi_.store_path} <- {fi_.fun_return_sig}"
-            nodes = (
-                [Node(value=f"dep: {ed.local_path} -> {ed.path}: {ed.sig}") for ed in fi_.external_deps]
-                + [to_nodes(fi0) for fi0 in fi_.parsed_body if isinstance(fi0, FunctionInteractions)]
-            )
+            nodes = [
+                Node(value=f"dep: {ed.local_path} -> {ed.path}: {ed.sig}")
+                for ed in fi_.external_deps
+            ] + [
+                to_nodes(fi0)
+                for fi0 in fi_.parsed_body
+                if isinstance(fi0, FunctionInteractions)
+            ]
             return Node(value=name, children=nodes)
 
         pprint_tree_(to_nodes(fi))
-
-
-
