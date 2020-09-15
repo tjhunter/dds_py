@@ -22,7 +22,8 @@ def fun_1_f():
     return None
 
 
-def fun_1_f1(): dds.keep(p, fun_1_f)
+def fun_1_f1():
+    dds.keep(p, fun_1_f)
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -34,12 +35,16 @@ def test_1():
 fun_2_obj = 0
 fun_2_counter = Counter()
 
+
 def fun_2_f():
     _ = fun_2_obj
     fun_2_counter.increment()
     return None
 
-def fun_2_f1(): dds.keep(p, fun_2_f)
+
+def fun_2_f1():
+    dds.keep(p, fun_2_f)
+
 
 @pytest.mark.usefixtures("cleandir")
 def test_2():
@@ -54,11 +59,15 @@ def test_2():
 fun_3_obj = UnsupportedOperation("a")
 fun_3_counter = Counter()
 
+
 def fun_3_f():
     _ = fun_3_obj
     fun_3_counter.increment()
 
-def fun_3_f1(): dds.keep(p, fun_3_f)
+
+def fun_3_f1():
+    dds.keep(p, fun_3_f)
+
 
 @pytest.mark.usefixtures("cleandir")
 def test_3():
@@ -74,18 +83,22 @@ fun_4_obj = 0
 fun_4_counter1 = Counter()
 fun_4_counter2 = Counter()
 
+
 def fun_4_f1():
     fun_4_counter1.increment()
     return None
+
 
 def fun_4_f2():
     _ = fun_4_obj
     fun_4_counter2.increment()
     return None
 
+
 def fun_4_f():
     dds.keep(p, fun_4_f1)
     dds.keep(p2, fun_4_f2)
+
 
 @pytest.mark.usefixtures("cleandir")
 def test_4():

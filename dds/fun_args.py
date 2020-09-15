@@ -1,4 +1,3 @@
-
 import hashlib
 import inspect
 import logging
@@ -9,8 +8,15 @@ from inspect import Parameter
 from .structures import CanonicalPath
 
 
-from typing import Tuple, Callable, Any, Dict, Optional, \
-    NamedTuple, OrderedDict as OrderedDictType
+from typing import (
+    Tuple,
+    Callable,
+    Any,
+    Dict,
+    Optional,
+    NamedTuple,
+    OrderedDict as OrderedDictType,
+)
 
 
 from .structures import PyHash, FunctionArgContext
@@ -38,7 +44,9 @@ def dds_hash(x: Any) -> PyHash:
     raise NotImplementedError(str(type(x)))
 
 
-def get_arg_ctx(f: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> FunctionArgContext:
+def get_arg_ctx(
+    f: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]
+) -> FunctionArgContext:
     if len(kwargs) > 0:
         raise NotImplementedError(f"kwargs")
     arg_sig = inspect.signature(f)
@@ -55,4 +63,3 @@ def get_arg_ctx(f: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> F
         h = dds_hash(args[idx])
         args_hashes.append((n, h))
     return FunctionArgContext(OrderedDict(args_hashes), None)
-

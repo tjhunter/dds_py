@@ -9,7 +9,6 @@ _logger = logging.getLogger(__name__)
 
 
 class CodecRegistry(object):
-
     def __init__(self, codecs: List[CodecProtocol]):
         self.codecs = list(codecs)
         self._handled_types: Dict[Type, CodecProtocol] = {}
@@ -25,7 +24,9 @@ class CodecRegistry(object):
         self._protocols[codec.ref()] = codec
 
     # TODO: add the location too.
-    def get_codec(self, obj_type: Optional[Type], ref: Optional[ProtocolRef]) -> CodecProtocol:
+    def get_codec(
+        self, obj_type: Optional[Type], ref: Optional[ProtocolRef]
+    ) -> CodecProtocol:
         # First the reference
         if ref:
             if ref not in self._protocols:
@@ -34,7 +35,9 @@ class CodecRegistry(object):
         # Then the object type
         if obj_type:
             if obj_type not in self._handled_types:
-                raise KSException(f"Requested protocol for type {obj_type}, which is not registered")
+                raise KSException(
+                    f"Requested protocol for type {obj_type}, which is not registered"
+                )
             return self._handled_types[obj_type]
         # Then finally the pickle codec if available, since it is a catch-all
         if object in self._handled_types:
@@ -46,6 +49,7 @@ def _build_default_registry() -> CodecRegistry:
     codecs = []
     if importlib.util.find_spec("pandas") is not None:
         from .codecs.pandas import PandasLocalCodec
+
         _logger.info(f"Loading pandas codecs")
         codecs.append(PandasLocalCodec())
     else:

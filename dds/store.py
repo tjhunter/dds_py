@@ -13,8 +13,8 @@ _logger = logging.getLogger(__name__)
 # /store/blobs/.../ -> the blobs
 # /
 
-class Store(object):
 
+class Store(object):
     def has_blob(self, key: PyHash) -> bool:
         pass
 
@@ -38,8 +38,8 @@ class Store(object):
 # TODO: add a notion of FileSystemType (Local, DBFS, S3)
 # We need to have a matrix between FS types and object types
 
-class LocalFileStore(Store):
 
+class LocalFileStore(Store):
     def __init__(self, internal_dir: str, data_dir: str):
         self._root = internal_dir
         self._data_root = data_dir
