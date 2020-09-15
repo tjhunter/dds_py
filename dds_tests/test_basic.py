@@ -6,13 +6,16 @@ from . import utils as u
 path_1 = "/path_1"
 
 
-def f1(i: int) -> int: return i
+def f1(i: int) -> int:
+    return i
 
 
-def f2() -> str: return "A"
+def f2() -> str:
+    return "A"
 
 
-def f2_wrap(): return dds.keep(path_1, f2)
+def f2_wrap():
+    return dds.keep(path_1, f2)
 
 
 @pytest.mark.usefixtures("cleandir")
@@ -24,8 +27,10 @@ def test_1():
 def test_2():
     assert dds.eval(f2_wrap) == "A"
 
+
 def fun_3(i):
     return "A" + str(i)
+
 
 @pytest.mark.usefixtures("cleandir")
 def test_3():
@@ -61,4 +66,3 @@ def test_5():
     assert dds.eval(f5_wrap) == "0"
     u.unreachable_var = 1
     assert dds.eval(f5_wrap) == "0"
-

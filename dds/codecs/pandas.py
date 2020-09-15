@@ -18,13 +18,15 @@ _logger = logging.getLogger(__name__)
 
 
 class PandasLocalCodec(CodecProtocol):
+    def ref(self):
+        return ProtocolRef("default.pandas_local")
 
-    def ref(self): return ProtocolRef("default.pandas_local")
-
-    def handled_backends(self): return [Local]
+    def handled_backends(self):
+        return [Local]
 
     # TODO: just use strings, it will be faster
-    def handled_types(self): return [pandas.DataFrame, pandas.core.frame.DataFrame]
+    def handled_types(self):
+        return [pandas.DataFrame, pandas.core.frame.DataFrame]
 
     def serialize_into(self, blob: pandas.DataFrame, loc: GenericLocation):
         assert isinstance(blob, pandas.DataFrame)

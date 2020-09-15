@@ -18,9 +18,7 @@ def cleandir():
     internal_dir.mkdir()
     data_dir = tdir.joinpath("data_dir")
     data_dir.mkdir()
-    dds.set_store("local",
-                  internal_dir=str(internal_dir),
-                  data_dir=str(data_dir))
+    dds.set_store("local", internal_dir=str(internal_dir), data_dir=str(data_dir))
     _logger.debug(f"data dir: {tdir}")
     yield
     shutil.rmtree(str(tdir), ignore_errors=True)
@@ -36,5 +34,7 @@ class Counter(object):
 
 def unreachable():
     # Will trigger a failure in the parsing
-    async def _f(): assert False
+    async def _f():
+        assert False
+
     return "0"
