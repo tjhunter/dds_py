@@ -129,12 +129,16 @@ class IntroVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)}")
         function_body_hash = _hash(self._body_lines[: node.lineno + 1])
+        # The list of all the previous interactions.
+        # This enforces the concept that the current call depends on previous calls.
+        function_inters_sig = _hash([fi.fun_return_sig for fi in self.inters])
         fi = InspectFunction.inspect_call(
             node,
             self._gctx,
             self._start_mod,
             function_body_hash,
             self._args_hash,
+            function_inters_sig,
             self._function_var_names,
         )
         if fi is not None:
@@ -343,6 +347,7 @@ class InspectFunction(object):
         mod: ModuleType,
         function_body_hash: PyHash,
         function_args_hash: PyHash,
+        function_inter_hash: PyHash,
         var_names: Set[str],
     ) -> Optional[FunctionInteractions]:
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
@@ -393,7 +398,9 @@ class InspectFunction(object):
                     f"Invalid called_z: {called_local_path} {mod}"
                 )
             called_fun, call_fun_path = called_z
-            context_sig = _hash([function_body_hash, function_args_hash])
+            context_sig = _hash(
+                [function_body_hash, function_args_hash, function_inter_hash]
+            )
             # TODO: deal with the arguments here
             if node.keywords:
                 raise NotImplementedError(
@@ -412,7 +419,9 @@ class InspectFunction(object):
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here
-        context_sig = _hash([function_body_hash, function_args_hash])
+        context_sig = _hash(
+            [function_body_hash, function_args_hash, function_inter_hash]
+        )
         return _introspect(caller_fun, args=[], context_sig=context_sig, gctx=gctx)
 
 
