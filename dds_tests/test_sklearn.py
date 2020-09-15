@@ -68,8 +68,8 @@ def pipeline():
     dds.keep(path_model_stats, model_stats, clf, X_test, y_test)
 
 
-# @pytest.mark.usefixtures("cleandir")
-# def test_sklearn():
-#     """ Unauthorized objects are not taken into account """
-#     dds.eval(pipeline)
-#     dds.eval(pipeline)
+@pytest.mark.usefixtures("cleandir")
+def test_sklearn():
+    """ Unauthorized objects are not taken into account """
+    dds.eval(pipeline)
+    dds.eval(pipeline)
