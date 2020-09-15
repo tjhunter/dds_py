@@ -34,7 +34,7 @@ class Counter(object):
         self.value += 1
 
 
-unreachable_var = 0
-
 def unreachable():
-    return str(unreachable_var)
+    # Will trigger a failure in the parsing
+    async def _f(): assert False
+    return "0"

@@ -179,6 +179,11 @@ class LocalVarsVisitor(ast.NodeVisitor):
     def __init__(self, existing_vars: List[str]):
         self.vars: Set[str] = set(existing_vars)
 
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> Any:
+        # TODO: make the error message more explicit
+        # TODO: this is used in tests. It would be better to have something more robust.
+        raise NotImplementedError(f"You cannot use async function with dds")
+
     def visit_Name(self, node: ast.Name) -> Any:
         # _logger.debug(f"visit_vars: {node.id} {node.ctx}")
         if isinstance(node.ctx, ast.Store):
@@ -385,17 +390,17 @@ class ObjectRetrieval(object):
             # The final position. It is the given module, if authorized.
             obj_mod_path = _mod_path(context_mod)
             if not gctx.is_authorized_path(obj_mod_path):
-                _logger.debug(f"Actual module {obj_mod_path} for obj {context_mod} is not authorized")
+                _logger.debug(f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod} is not authorized")
                 return None
             else:
-                _logger.debug(f"Actual module {obj_mod_path} for obj {context_mod}: authorized")
+                _logger.debug(f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod}: authorized")
             return context_mod, obj_mod_path
         # At least one more path to explore
         fname = local_path.parts[0]
         tail_path = LocalDepPath(PurePosixPath("/".join(local_path.parts[1:])))
         if fname not in context_mod.__dict__:
             # It should be in the context module, this was assumed to be taken care of
-            raise NotImplementedError(f"Object {fname} not found in module {context_mod}."
+            raise NotImplementedError(f"_retrieve_object_rec: Object {fname} not found in module {context_mod}."
                                       f"  {local_path} {context_mod.__dict__}")
         obj = context_mod.__dict__[fname]
 
@@ -404,6 +409,12 @@ class ObjectRetrieval(object):
             # If it is a module, continue recursion
             if isinstance(obj, ModuleType):
                 return cls._retrieve_object_rec(tail_path, obj, gctx)
+            # Special treatement for objects that may be defined in other modules but are redirected in this one.
+            if isinstance(obj, Callable):
+                mod_obj = inspect.getmodule(obj)
+                if mod_obj is not context_mod:
+                    _logger.debug(f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {mod_obj}")
+                    return cls._retrieve_object_rec(local_path, mod_obj, gctx)
             obj_mod_path = _mod_path(context_mod)
             obj_path = obj_mod_path.append(fname)
             if gctx.is_authorized_path(obj_path):

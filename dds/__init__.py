@@ -78,7 +78,6 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
         _eval_ctx = EvalContext(requested_paths=store_paths)
         for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
-        _logger.info(f"fun {fun}: {inters}")
         res = fun(*args, **kwargs)
         _logger.info(f"Evaluating (eval) fun {fun} with args {args} kwargs {kwargs}")
         _store.sync_paths(store_paths)
