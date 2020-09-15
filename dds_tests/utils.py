@@ -32,3 +32,9 @@ class Counter(object):
 
     def increment(self):
         self.value += 1
+
+
+def unreachable():
+    # Will trigger a failure in the parsing
+    async def _f(): assert False
+    return "0"

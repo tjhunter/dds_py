@@ -72,13 +72,15 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
         inters = introspect(fun, local_vars)
-        _eval_ctx = EvalContext(requested_paths=dict(inters.outputs))
-        for (p, key) in inters.outputs:
+        _logger.debug(f"Interaction tree:")
+        FunctionInteractions.pprint_tree(inters, printer=lambda s: _logger.debug(s))
+        store_paths = FunctionInteractions.all_store_paths(inters)
+        _eval_ctx = EvalContext(requested_paths=store_paths)
+        for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
-        _logger.info(f"fun {fun}: {inters}")
         res = fun(*args, **kwargs)
         _logger.info(f"Evaluating (eval) fun {fun} with args {args} kwargs {kwargs}")
-        _store.sync_paths(OrderedDict(inters.outputs))
+        _store.sync_paths(store_paths)
         return res
     finally:
         _eval_ctx = False

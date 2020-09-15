@@ -1,7 +1,9 @@
 from functools import total_ordering
+from pathlib import PurePosixPath
+from collections import OrderedDict
 
-from typing import TypeVar, Callable, Any, NewType, NamedTuple, OrderedDict, FrozenSet, Optional, Dict, List, Tuple, Type
-
+from typing import TypeVar, Callable, Any, NewType, NamedTuple, FrozenSet, Optional, Dict, List, Tuple, Type, Union, OrderedDict as OrderedDictType
+# from .fun_args import FunctionArgContext
 
 # A path to an object in the DDS store.
 DDSPath = NewType("Path", str)
@@ -9,24 +11,6 @@ DDSPath = NewType("Path", str)
 
 # The hash of a python object
 PyHash = NewType("PyHash", str)
-
-
-class FunctionInteractions(NamedTuple):
-    # The signature of the function (function body)
-    fun_body_sig: PyHash
-    # The signature of the return of the function (including the evaluated args)
-    fun_return_sig: PyHash
-    # If the function is called within a function, this is the signature of the input
-    # (currently depending on the input of the function)
-    fun_context_input_sig: Optional[PyHash]
-    # # The set of input paths for the function
-    # inputs: FrozenSet[Path]
-    # # The set of paths that will be committed by the function
-    outputs: List[Tuple[DDSPath, PyHash]]
-    # # The set of objects that will be read or committed to the cache
-    # cache: FrozenSet[PyHash]
-    # # The input of the function (with all the arguments), in case this is top level
-    # fun_inputs: OrderedDict[str, PyHash]
 
 
 class KSException(BaseException):
@@ -111,4 +95,86 @@ class CanonicalPath(object):
 
     def __lt__(self, other):
         return repr(self) < repr(other)
+
+
+# The path of a local dependency from the perspective of a function, as read from the AST
+# It is always a relative path without root.
+LocalDepPath = NewType("LocalDepPath", PurePosixPath)
+
+
+class ExternalDep(NamedTuple):
+    """
+    An external dependency to a function (not a function, this is tracked by FunctionInteraction)
+    """
+    # The local path, as called within the function
+    local_path: LocalDepPath
+    # The path of the object
+    path: CanonicalPath
+    # The signature of the object
+    sig: PyHash
+
+
+
+class FunctionArgContext(NamedTuple):
+    # The keys of the arguments that are known at call time
+    named_args: OrderedDictType[str, Optional[PyHash]]
+    # The key of the environment when calling the function
+    inner_call_key: Optional[PyHash]
+
+
+class FunctionInteractions(NamedTuple):
+    arg_input: FunctionArgContext
+    # The signature of the function (function body)
+    fun_body_sig: PyHash
+    # The signature of the return of the function (including the evaluated args)
+    fun_return_sig: PyHash
+    # The external dependencies
+    # TODO: merge it with parsed_body
+    external_deps: List[ExternalDep]
+    # In order, all the content from the parsed body of the function.
+    parsed_body: List[Union["FunctionInteractions"]]
+    # The path, if the output is expected to be stored
+    store_path: Optional[DDSPath]
+    # The path of the function
+    fun_path: CanonicalPath
+
+    @classmethod
+    def all_store_paths(cls, fi: "FunctionInteractions") -> OrderedDictType[DDSPath, PyHash]:
+        res: List[Tuple[DDSPath, PyHash]] = []
+        if fi.store_path is not None:
+            res.append((fi.store_path, fi.fun_return_sig))
+        for fi0 in fi.parsed_body:
+            if isinstance(fi0, FunctionInteractions):
+                res += cls.all_store_paths(fi0).items()
+        return OrderedDict(res)
+
+    @classmethod
+    def pprint_tree(cls, fi: "FunctionInteractions", printer: Callable[[str],None]):
+        def pprint_tree_(node, file=None, _prefix="", _last=True):
+            s = _prefix + ("`- " if _last else "|- ") + str(node.value)
+            printer(s)
+            _prefix += "   " if _last else "|  "
+            child_count = len(node.children)
+            for i, child in enumerate(node.children):
+                _last = i == (child_count - 1)
+                pprint_tree_(child, file, _prefix, _last)
+
+        class Node:
+            def __init__(self, value=None, children=None):
+                if children is None:
+                    children = []
+                self.value, self.children = value, children
+
+        def to_nodes(fi_: FunctionInteractions) -> Node:
+            # TODO: add full path
+            name = f"Fun {fi_.fun_path} {fi_.store_path} <- {fi_.fun_return_sig}"
+            nodes = (
+                [Node(value=f"dep: {ed.local_path} -> {ed.path}: {ed.sig}") for ed in fi_.external_deps]
+                + [to_nodes(fi0) for fi0 in fi_.parsed_body if isinstance(fi0, FunctionInteractions)]
+            )
+            return Node(value=name, children=nodes)
+
+        pprint_tree_(to_nodes(fi))
+
+
 
