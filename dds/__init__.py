@@ -30,8 +30,13 @@ def keep(
     if _store.has_blob(key):
         _logger.debug(f"Restoring path {path} from {key}")
         return _store.fetch_blob(key)
-    _logger.info(f"Evaluating (keep:{path}) fun {fun} with args {args} kwargs {kwargs}")
+    arg_repr = [str(type(arg)) for arg in args]
+    kwargs_repr = OrderedDict([(key, str(type(arg))) for (key, arg) in kwargs.items()])
+    _logger.info(
+        f"Evaluating (keep:{path}) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
+    )
     res = fun(*args, **kwargs)
+    _logger.info(f"Evaluating (keep:{path}) fun {fun}: completed")
     _store.store_blob(key, res)
     return res
 
@@ -80,8 +85,15 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
         _eval_ctx = EvalContext(requested_paths=store_paths)
         for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
+        arg_repr = [str(type(arg)) for arg in args]
+        kwargs_repr = OrderedDict(
+            [(key, str(type(arg))) for (key, arg) in kwargs.items()]
+        )
+        _logger.info(
+            f"Evaluating (eval) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
+        )
         res = fun(*args, **kwargs)
-        _logger.info(f"Evaluating (eval) fun {fun} with args {args} kwargs {kwargs}")
+        _logger.info(f"Evaluating (eval) fun {fun}: completed")
         _store.sync_paths(store_paths)
         return res
     finally:
