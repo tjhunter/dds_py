@@ -11,6 +11,7 @@ _ = cleandir
 
 
 p = "/path"
+p2 = "/path2"
 
 
 fun_1_obj = UnsupportedOperation()
@@ -69,4 +70,31 @@ def test_3():
     assert fun_3_counter.value == 1, fun_3_counter.value
 
 
+fun_4_obj = 0
+fun_4_counter1 = Counter()
+fun_4_counter2 = Counter()
 
+def fun_4_f1():
+    fun_4_counter1.increment()
+    return None
+
+def fun_4_f2():
+    _ = fun_4_obj
+    fun_4_counter2.increment()
+    return None
+
+def fun_4_f():
+    dds.keep(p, fun_4_f1)
+    dds.keep(p2, fun_4_f2)
+
+@pytest.mark.usefixtures("cleandir")
+def test_4():
+    """ Authorized objects are taken into account """
+    global fun_4_obj
+    assert dds.eval(fun_4_f) is None
+    assert fun_4_counter1.value == 1
+    assert fun_4_counter2.value == 1
+    fun_4_obj = 1
+    assert dds.eval(fun_4_f) is None
+    assert fun_4_counter1.value == 1
+    assert fun_4_counter2.value == 2
