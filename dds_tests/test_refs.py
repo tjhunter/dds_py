@@ -111,3 +111,37 @@ def test_4():
     assert dds.eval(fun_4_f) is None
     assert fun_4_counter1.value == 1
     assert fun_4_counter2.value == 2
+
+
+fun_5_obj = 0
+fun_5_counter1 = Counter()
+fun_5_counter2 = Counter()
+
+
+def fun_5_f1():
+    _ = fun_5_obj
+    fun_5_counter1.increment()
+    return None
+
+
+def fun_5_f2():
+    fun_5_counter2.increment()
+    return None
+
+
+def fun_5_f():
+    dds.keep(p, fun_5_f1)
+    dds.keep(p2, fun_5_f2)
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_5():
+    """ Chained calls are reevaluated """
+    global fun_5_obj
+    assert dds.eval(fun_5_f) is None
+    assert fun_5_counter1.value == 1
+    assert fun_5_counter2.value == 1
+    fun_5_obj = 1
+    assert dds.eval(fun_5_f) is None
+    assert fun_5_counter1.value == 2
+    assert fun_5_counter2.value == 2
