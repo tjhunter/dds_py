@@ -14,10 +14,12 @@ def _add_tests():
     Adds programmatically all the sub-test files to the whitelist.
     """
     import dds_tests
-    test_mods = [f"dds_tests.{m.name}" for m in pkgutil.iter_modules(dds_tests.__path__) if str(m.name).startswith("test_")]
+    test_mods = [f"dds_tests.{m.name}" for m in pkgutil.iter_modules(dds_tests.__path__) if
+                 str(m.name).startswith("test_")]
     _logger.info("XXX" + str(test_mods))
     for tm in test_mods:
         dds.whitelist_module(tm)
+
 
 _add_tests()
 
@@ -34,7 +36,10 @@ def cleandir():
     yield
     shutil.rmtree(str(tdir), ignore_errors=True)
 
+
+# A standard path
 spath = "/path"
+
 
 class Counter(object):
     def __init__(self):
