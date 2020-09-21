@@ -182,12 +182,12 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         if local_dep_path in self.vars:
             return
         # TODO: this will fail in submodule
-        if str(local_dep_path) not in self._start_mod.__dict__:
-            _logger.debug(
-                f"ExternalVarsVisitor:visit_Name: local_dep_path {local_dep_path} "
-                f"not found in module {self._start_mod}: {self._start_mod.__dict__.keys()}"
-            )
-            return
+        # if str(local_dep_path) not in self._start_mod.__dict__ or str(local_dep_path) not in self._gctx.start_globals:
+        #     _logger.debug(
+        #         f"ExternalVarsVisitor:visit_Name: local_dep_path {local_dep_path} "
+        #         f"not found in module {self._start_mod}: \n{self._start_mod.__dict__.keys()} \nor in start_globals: {self._gctx.start_globals}"
+        #     )
+        #     return
         res = ObjectRetrieval.retrieve_object(
             local_dep_path, self._start_mod, self._gctx
         )
@@ -447,7 +447,19 @@ class ObjectRetrieval(object):
                 _logger.debug(f"Could not load name {fname}, looking into the globals")
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
-                    return gctx.start_globals[fname]
+                    obj = gctx.start_globals[fname]
+                    obj_path = CanonicalPath(["__global__"] + [str(x) for x in local_path.parts])
+
+                    if _is_authorized_type(type(obj), gctx) or isinstance(
+                            obj, (Callable, ModuleType)
+                    ):
+                        _logger.debug(f"Object[start_globals] {fname} of path {obj_path} is authorized,")
+                        return obj, obj_path
+                    else:
+                        _logger.debug(
+                            f"Object[start_globals] {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
+                        )
+                        return None
                 else:
                     _logger.debug(f"{fname} not found in start_globals")
                     return None
