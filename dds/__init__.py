@@ -199,6 +199,10 @@ def _eval_new_ctx(fun: Callable[[_In], _Out],
         )
         res = fun(*args, **kwargs)
         _logger.info(f"_eval_new_ctx:Evaluating (eval) fun {fun}: completed")
+        key = None if path is None else _eval_ctx.requested_paths[path]
+        if key is not None:
+            _logger.info(f"_eval:Storing blob into key {key}")
+            _store.store_blob(key, res)
         _store.sync_paths(store_paths)
         return res
     finally:

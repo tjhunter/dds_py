@@ -72,7 +72,6 @@ class LocalFileStore(Store):
 
     def has_blob(self, key: PyHash) -> bool:
         p = os.path.join(self._root, "blobs", key)
-        _logger.debug(f"has_blob: {key}: {p} {os.path.exists(p)}")
         return os.path.exists(p)
 
     def sync_paths(self, paths):
