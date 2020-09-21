@@ -19,6 +19,7 @@ from .structures import (
     ExternalDep,
     LocalDepPath,
 )
+from ._print_ast import pformat
 
 _logger = logging.getLogger(__name__)
 
@@ -346,6 +347,8 @@ class InspectFunction(object):
         function_inter_hash: PyHash,
         var_names: Set[str],
     ) -> Optional[FunctionInteractions]:
+        _logger.debug(f"Inspect call:\n {pformat(node)}")
+
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
         _logger.debug(f"inspect_call: local_path: {local_path}")
         if str(local_path) in var_names:
