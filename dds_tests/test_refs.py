@@ -144,4 +144,5 @@ def test_5():
     fun_5_obj = 1
     assert dds.eval(fun_5_f) is None
     assert fun_5_counter1.value == 2
-    assert fun_5_counter2.value == 2
+    # This function comes later but has no argument -> no need to reevaluate
+    assert fun_5_counter2.value == 1

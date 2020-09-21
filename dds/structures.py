@@ -135,6 +135,17 @@ class FunctionArgContext(NamedTuple):
     # The key of the environment when calling the function
     inner_call_key: Optional[PyHash]
 
+    @staticmethod
+    def relevant_keys(fac: "FunctionArgContext") -> List[PyHash]:
+        # TODO: this just sends back a list of hashes. This is not great if the names change?
+        keys = [key for (_, key) in fac.named_args.items()]
+        if any([key is None for key in keys]):
+            # Missing some keys in the named arguments -> rely on the inner call key for the hash
+            # TODO: this should not be a bug because of the root context, but it would be good to check.
+            return [] if fac.inner_call_key is None else [fac.inner_call_key]
+        else:
+            return keys
+
 
 class FunctionInteractions(NamedTuple):
     arg_input: FunctionArgContext
