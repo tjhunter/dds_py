@@ -34,7 +34,7 @@ class PySparkDatabricksCodec(CodecProtocol):
         _logger.debug(f"Committed dataframe to parquet: {loc}")
 
     def deserialize_from(self, loc: GenericLocation) -> DataFrame:
-        session = pyspark.sql.SparkSession.getOrCreate()
+        session = pyspark.sql.SparkSession.getActiveSession()
         _logger.debug(f"Reading parquet from loc {loc} using session {session}")
         df = session.read.parquet(loc)
         _logger.debug(f"Done reading parquet from loc {loc}: {df}")
@@ -128,7 +128,7 @@ class DBFSStore(Store):
                 blob_path = self._blob_path(key)
                 obj_path = self._physical_path("./" + dds_p)
                 _logger.debug(f"Copying {blob_path} -> {obj_path}")
-                self._dbutils.fs.cp(str(blob_path), str(obj_path))
+                self._dbutils.fs.cp(str(blob_path), str(obj_path), recurse=True)
                 _logger.debug(f"Linking new file {obj_path}")
                 try:
                     meta = json.dumps({"redirection_key": key})
