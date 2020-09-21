@@ -312,14 +312,10 @@ class InspectFunction(object):
         vdeps.visit(node)
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         _logger.debug(f"inspect_fun: ext_deps: {ext_deps}")
-        sig_list = (
+        arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
+        sig_list: List[Any] = (
             [(ed.local_path, ed.sig) for ed in ext_deps]
-            + [
-                (arg_name, sig)
-                for (arg_name, sig) in arg_ctx.named_args.items()
-                if sig is not None
-            ]
-            + ([arg_ctx.inner_call_key] if arg_ctx.inner_call_key is not None else [])
+            + arg_keys
         )
         input_sig = _hash(sig_list)
         calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars)
