@@ -1,12 +1,13 @@
 import dds
 import pytest
+import pathlib
 from .utils import cleandir, Counter, spath
 
 _ = cleandir
 
 _c = Counter()
 
-_p = "/path2"
+_p = pathlib.Path("/path2")
 
 
 def _fun():
@@ -28,13 +29,20 @@ def f():
     fun()
 
 
+_p3 = pathlib.Path("/path3")
+
+
+def f2():
+    dds.keep(_p3, f1)
+
+
 @pytest.mark.usefixtures("cleandir")
 def test():
-    assert dds.eval(fun) == "a"
-    assert _c.value == 1
-    assert dds.keep(_p, fun) == "a"
+    fun()
     assert _c.value == 1
     dds.keep(_p, f)
     assert _c.value == 1
     dds.eval(f)
+    assert _c.value == 1
+    dds.eval(f2)
     assert _c.value == 1

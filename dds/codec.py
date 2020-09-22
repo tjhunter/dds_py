@@ -1,8 +1,8 @@
 import importlib.util
 import logging
-from typing import Optional, Dict, List, Type
+from typing import Optional, Dict, List, Type, Any
 
-from .codecs.builtins import StringLocalCodec, PickleLocalCodec, Local
+from .codecs.builtins import StringLocalCodec, PickleLocalCodec
 from .structures import KSException, CodecProtocol, ProtocolRef
 
 _logger = logging.getLogger(__name__)
@@ -11,12 +11,12 @@ _logger = logging.getLogger(__name__)
 class CodecRegistry(object):
     def __init__(self, codecs: List[CodecProtocol]):
         self.codecs = list(codecs)
-        self._handled_types: Dict[Type, CodecProtocol] = {}
+        self._handled_types: Dict[Type[Any], CodecProtocol] = {}
         self._protocols: Dict[ProtocolRef, CodecProtocol] = {}
         for c in codecs:
             self.add_codec(c)
 
-    def add_codec(self, codec: CodecProtocol):
+    def add_codec(self, codec: CodecProtocol) -> None:
         """ added codecs come on top """
         self.codecs.insert(0, codec)
         for t in codec.handled_types():
@@ -25,7 +25,7 @@ class CodecRegistry(object):
 
     # TODO: add the location too.
     def get_codec(
-        self, obj_type: Optional[Type], ref: Optional[ProtocolRef]
+        self, obj_type: Optional[Type[Any]], ref: Optional[ProtocolRef]
     ) -> CodecProtocol:
         # First the reference
         if ref:
@@ -46,7 +46,7 @@ class CodecRegistry(object):
 
 
 def _build_default_registry() -> CodecRegistry:
-    codecs = []
+    codecs: List[CodecProtocol] = []
     if importlib.util.find_spec("pandas") is not None:
         from .codecs.pandas import PandasLocalCodec
 

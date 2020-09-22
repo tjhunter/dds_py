@@ -11,6 +11,7 @@ def fun1():
     _c.increment()
     return "a"
 
+
 @pytest.mark.usefixtures("cleandir")
 def test():
     assert dds.keep(spath, fun1) == "a"
