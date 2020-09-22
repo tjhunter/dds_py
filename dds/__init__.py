@@ -1,5 +1,6 @@
 from types import ModuleType
 from typing import Tuple, Dict
+import pathlib
 from typing import TypeVar, Callable, Any, Optional, Union
 
 from ._api import (
@@ -19,7 +20,7 @@ _In = TypeVar("_In")
 
 
 def keep(
-    path: Union[str, DDSPath],
+    path: Union[str, DDSPath, pathlib.Path],
     fun: Union[Callable[[_In], _Out], Callable[[], _Out]],
     *args: Tuple[Any, ...],
     **kwargs: Dict[str, Any]

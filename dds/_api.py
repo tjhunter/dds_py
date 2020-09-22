@@ -3,6 +3,7 @@ The main API functions
 """
 
 import logging
+import pathlib
 from collections import OrderedDict
 from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union
 
@@ -23,7 +24,7 @@ _eval_ctx: Optional[EvalContext] = None
 
 
 def keep(
-    path: Union[str, DDSPath],
+    path: Union[str, DDSPath, pathlib.Path],
     fun: Union[Callable[[_In], _Out], Callable[[], _Out]],
     *args,
     **kwargs,
