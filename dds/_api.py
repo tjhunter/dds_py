@@ -128,9 +128,8 @@ def _eval_new_ctx(
     try:
         # Fetch the local vars from the call. This is required if running from an old IPython context
         # (like databricks for instance)
-        local_vars = _fetch_local_vars()
+        local_vars = _fetch_ipython_vars()
         _logger.debug(f"locals: {sorted(local_vars.keys())}")
-        # TODO: use the arg context in the call
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
         inters = introspect(fun, local_vars, arg_ctx)
@@ -172,7 +171,16 @@ def _eval_new_ctx(
         _eval_ctx = None
 
 
-def _fetch_local_vars() -> Dict[str, Any]:
-    # TODO: more robust
-    # TODO: detect if we are running in databricks to account for this hack.
-    return inspect.currentframe().f_back.f_back.f_back.f_locals
+def _fetch_ipython_vars() -> Dict[str, Any]:
+    """
+    Fetches variables from the ipython / jupyter environment. This is a best effort method.
+    """
+    try:
+        from IPython import get_ipython
+        ipython = get_ipython()
+        if ipython is None:
+            return {}
+        return dict(ipython.user_ns)
+    except ImportError:
+        _logger.debug("Failed to import IPython. No jupyter/ipython variables will be logged")
+        return {}
