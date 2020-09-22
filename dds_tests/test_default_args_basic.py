@@ -27,11 +27,19 @@ def fun3():
     return dds.keep(spath, _fun, False)
 
 
+def fun_outer1():
+    return dds.eval(fun2)
+
+
 @pytest.mark.usefixtures("cleandir")
 def test():
     fun1()
     assert _c.value == 1
     fun2()
     assert _c.value == 1
+    dds.eval(fun2)
+    assert _c.value == 1
     fun3()
+    assert _c.value == 2
+    dds.eval(fun3)
     assert _c.value == 2

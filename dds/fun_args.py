@@ -1,9 +1,11 @@
+from __future__ import annotations
 import hashlib
 import inspect
 import logging
 from pathlib import PurePosixPath
 from collections import OrderedDict
 from inspect import Parameter
+import ast
 
 from .structures import CanonicalPath
 
@@ -13,6 +15,7 @@ from typing import (
     Callable,
     Any,
     Dict,
+    List,
     Optional,
     NamedTuple,
     OrderedDict as OrderedDictType,
@@ -69,3 +72,39 @@ def get_arg_ctx(
             h = dds_hash(args[idx])
         args_hashes.append((n, h))
     return FunctionArgContext(OrderedDict(args_hashes), None)
+
+
+def get_arg_ctx_ast(
+    f: Callable, args: List[ast.AST]
+) -> OrderedDict[str, Optional[PyHash]]:
+    """
+    Gets the arg context based on the AST.
+    """
+    arg_sig = inspect.signature(f)
+    _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
+    args_hashes = []
+    for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
+        p: inspect.Parameter = p_
+        _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
+        if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
+            raise NotImplementedError(f"{p.kind} {f} {arg_sig}")
+        elif p.default != Parameter.empty and idx >= len(args):
+            # Use the default argument as an input
+            # This assumes that the user does not mutate the argument, which is
+            # a warning/errors in most linters.
+            h = dds_hash(p.default or "__none__")
+            # raise NotImplementedError(f"{p} {p.default} {f} {arg_sig}")
+        elif len(args) <= idx:
+            raise NotImplementedError(f"{f} {len(args)} {arg_sig}")
+        else:
+            # Get the AST node:
+            node = args[idx]
+            if isinstance(node, ast.Constant):
+                # We can deal with some constant nodes
+                default_ob = node.value if node.value is not None else "__none__"
+                h = dds_hash(default_ob)
+            else:
+                # Cannot deal with it for the time being
+                h = None
+        args_hashes.append((n, h))
+    return OrderedDict(args_hashes)

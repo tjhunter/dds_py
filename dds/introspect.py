@@ -10,7 +10,7 @@ from pathlib import PurePosixPath
 from types import ModuleType, FunctionType
 from typing import Tuple, Callable, Any, Dict, Set, Union, Optional, List, Type, NewType
 
-from .fun_args import dds_hash as _hash, FunctionArgContext
+from .fun_args import dds_hash as _hash, FunctionArgContext, get_arg_ctx_ast
 from .structures import (
     PyHash,
     DDSPath,
@@ -393,9 +393,10 @@ class InspectFunction(object):
                 raise NotImplementedError(
                     (_function_name(node.func), node, node.keywords)
                 )
-            # TODO: deal with the arguments
+            # For now, accept the constant arguments. This is enough for some basic objects.
             arg_ctx = FunctionArgContext(
-                named_args=OrderedDict([]), inner_call_key=context_sig
+                named_args=get_arg_ctx_ast(called_fun, node.args[2:]),
+                inner_call_key=context_sig,
             )
             inner_intro = _introspect(called_fun, arg_ctx, gctx=gctx)
             inner_intro = inner_intro._replace(store_path=store_path)
