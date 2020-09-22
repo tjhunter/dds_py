@@ -237,6 +237,16 @@ def _function_name(node) -> List[str]:
         return [node.id]
     if isinstance(node, ast.Attribute):
         return _function_name(node.value) + [node.attr]
+    if isinstance(node, ast.Call):
+        return _function_name(node.func)
+    if isinstance(node, ast.Constant):
+        s = str(node.value)
+        s = s[:4]
+        return [f"Str({s}...)"]
+    if isinstance(node, ast.Str):
+        s = str(node.s)
+        s = s[:4]
+        return [f"Str({s}...)"]
     assert False, (node, type(node))
 
 
@@ -314,10 +324,7 @@ class InspectFunction(object):
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         _logger.debug(f"inspect_fun: ext_deps: {ext_deps}")
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
-        sig_list: List[Any] = (
-            [(ed.local_path, ed.sig) for ed in ext_deps]
-            + arg_keys
-        )
+        sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)
         input_sig = _hash(sig_list)
         calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars)
         calls_v.visit(node)
@@ -447,16 +454,20 @@ class ObjectRetrieval(object):
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
                     obj = gctx.start_globals[fname]
-                    obj_path = CanonicalPath(["__global__"] + [str(x) for x in local_path.parts])
+                    obj_path = CanonicalPath(
+                        ["__global__"] + [str(x) for x in local_path.parts]
+                    )
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
-                            obj, (Callable, ModuleType)
+                        obj, (Callable, ModuleType)
                     ):
-                        _logger.debug(f"Object[start_globals] {fname} of path {obj_path} is authorized,")
+                        _logger.debug(
+                            f"Object[start_globals] {fname} of path {obj_path} is authorized,"
+                        )
                         return obj, obj_path
                     else:
                         _logger.debug(
-                            f"Object[start_globals] {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
+                            f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (type), dropping path {obj_path}"
                         )
                         return None
                 else:
@@ -504,6 +515,11 @@ class ObjectRetrieval(object):
             # Special treatement for objects that may be defined in other modules but are redirected in this one.
             if isinstance(obj, Callable):
                 mod_obj = inspect.getmodule(obj)
+                if mod_obj is None:
+                    _logger.debug(
+                        f"_retrieve_object_rec: cannot infer definition module: path: {local_path} mod: {context_mod} "
+                    )
+                    return None
                 if mod_obj is not context_mod:
                     _logger.debug(
                         f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {mod_obj}"

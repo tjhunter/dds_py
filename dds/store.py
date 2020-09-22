@@ -40,13 +40,21 @@ class Store(object):
 
 
 class LocalFileStore(Store):
-    def __init__(self, internal_dir: str, data_dir: str):
+    def __init__(self, internal_dir: str, data_dir: str, create_dirs: bool = True):
         self._root = internal_dir
         self._data_root = data_dir
         if not os.path.isdir(internal_dir):
-            raise KSException(f"Path {internal_dir} is not a directory")
+            if create_dirs:
+                _logger.debug(f"Creating dir {internal_dir}")
+                os.makedirs(internal_dir)
+            else:
+                raise KSException(f"Path {internal_dir} is not a directory")
         if not os.path.isdir(data_dir):
-            raise KSException(f"Path {data_dir} is not a directory")
+            if create_dirs:
+                _logger.debug(f"Creating dir {data_dir}")
+                os.makedirs(data_dir)
+            else:
+                raise KSException(f"Path {data_dir} is not a directory")
         p_blobs = os.path.join(self._root, "blobs")
         if not os.path.exists(p_blobs):
             os.makedirs(p_blobs)

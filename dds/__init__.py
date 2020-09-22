@@ -20,7 +20,10 @@ _eval_ctx: Optional[EvalContext] = None
 
 
 def keep(
-        path: Union[str, DDSPath], fun: Callable[[_In], _Out], *args, **kwargs
+    path: Union[str, DDSPath],
+    fun: Union[Callable[[_In], _Out], Callable[[], _Out]],
+    *args,
+    **kwargs,
 ) -> _Out:
     path = _checked_path(path)
     return _eval(fun, path, args, kwargs)
@@ -90,10 +93,10 @@ def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
 
 
 def set_store(
-        store: Union[str, Store],
-        internal_dir: Optional[str] = None,
-        data_dir: Optional[str] = None,
-        dbutils: Optional[Any] = None,
+    store: Union[str, Store],
+    internal_dir: Optional[str] = None,
+    data_dir: Optional[str] = None,
+    dbutils: Optional[Any] = None,
 ):
     """
     Sets the store for the execution of the program.
@@ -127,23 +130,28 @@ def set_store(
     _logger.debug(f"Setting the store to {_store}")
 
 
-def _eval(fun: Callable[[_In], _Out],
-          path: Optional[DDSPath],
-          args: Tuple[Any],
-          kwargs: Dict[str, Any]
-          ) -> _Out:
+def _eval(
+    fun: Callable[[_In], _Out],
+    path: Optional[DDSPath],
+    args: Tuple[Any],
+    kwargs: Dict[str, Any],
+) -> _Out:
     if not _eval_ctx:
         # Not in an evaluation context, create one and introspect
         return _eval_new_ctx(fun, path, args, kwargs)
     else:
         if not path:
-            raise KSException("Already in eval() context. Nested eval contexts are not supported")
+            raise KSException(
+                "Already in eval() context. Nested eval contexts are not supported"
+            )
         key = None if path is None else _eval_ctx.requested_paths[path]
         if key is not None and _store.has_blob(key):
             _logger.debug(f"_eval:Return cached {path} from {key}")
             return _store.fetch_blob(key)
         arg_repr = [str(type(arg)) for arg in args]
-        kwargs_repr = OrderedDict([(key, str(type(arg))) for (key, arg) in kwargs.items()])
+        kwargs_repr = OrderedDict(
+            [(key, str(type(arg))) for (key, arg) in kwargs.items()]
+        )
         _logger.info(
             f"_eval:Evaluating (keep:{path}) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
         )
@@ -155,11 +163,12 @@ def _eval(fun: Callable[[_In], _Out],
         return res
 
 
-def _eval_new_ctx(fun: Callable[[_In], _Out],
-                  path: Optional[DDSPath],
-                  args: Tuple[Any, ...],
-                  kwargs: Dict[str, Any]
-                  ) -> _Out:
+def _eval_new_ctx(
+    fun: Callable[[_In], _Out],
+    path: Optional[DDSPath],
+    args: Tuple[Any, ...],
+    kwargs: Dict[str, Any],
+) -> _Out:
     global _eval_ctx
     assert _eval_ctx is None, _eval_ctx
     _eval_ctx = EvalContext(requested_paths={})

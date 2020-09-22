@@ -13,16 +13,20 @@ def _fun():
     _c.increment()
     return "a"
 
+
 def fun():
     return dds.keep(spath, _fun)
+
 
 def f1():
     fun()
     fun()
 
+
 def f():
     f1()
     fun()
+
 
 @pytest.mark.usefixtures("cleandir")
 def test():

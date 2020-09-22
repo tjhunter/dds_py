@@ -1,3 +1,4 @@
+from __future__ import annotations
 from functools import total_ordering
 from pathlib import PurePosixPath
 from collections import OrderedDict
@@ -15,13 +16,13 @@ from typing import (
     Tuple,
     Type,
     Union,
-    OrderedDict as OrderedDictType,
+    # OrderedDict as OrderedDictType,
 )
 
 # from .fun_args import FunctionArgContext
 
 # A path to an object in the DDS store.
-DDSPath = NewType("Path", str)
+DDSPath = NewType("DDSPath", str)
 
 
 # The hash of a python object
@@ -54,11 +55,11 @@ class CodecProtocol(object):
     def ref(self) -> ProtocolRef:
         pass
 
-    def handled_types(self) -> List[Type]:
+    def handled_types(self) -> List[Type[Any]]:
         """ The list of types that this codec can handle """
         pass
 
-    def serialize_into(self, blob: Any, loc: GenericLocation):
+    def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         """
         Simple in-memory serialization
         """
@@ -131,7 +132,7 @@ class ExternalDep(NamedTuple):
 
 class FunctionArgContext(NamedTuple):
     # The keys of the arguments that are known at call time
-    named_args: OrderedDictType[str, Optional[PyHash]]
+    named_args: OrderedDict[str, Optional[PyHash]]
     # The key of the environment when calling the function
     inner_call_key: Optional[PyHash]
 
@@ -144,7 +145,7 @@ class FunctionArgContext(NamedTuple):
             # TODO: this should not be a bug because of the root context, but it would be good to check.
             return [] if fac.inner_call_key is None else [fac.inner_call_key]
         else:
-            return keys
+            return keys  # type: ignore
 
 
 class FunctionInteractions(NamedTuple):
@@ -157,7 +158,8 @@ class FunctionInteractions(NamedTuple):
     # TODO: merge it with parsed_body
     external_deps: List[ExternalDep]
     # In order, all the content from the parsed body of the function.
-    parsed_body: List[Union["FunctionInteractions"]]
+    # TODO: real type is FunctionInteractions but mypy does not support yet recursive types
+    parsed_body: List["Any"]  # type: ignore
     # The path, if the output is expected to be stored
     store_path: Optional[DDSPath]
     # The path of the function
@@ -166,7 +168,7 @@ class FunctionInteractions(NamedTuple):
     @classmethod
     def all_store_paths(
         cls, fi: "FunctionInteractions"
-    ) -> OrderedDictType[DDSPath, PyHash]:
+    ) -> OrderedDict[DDSPath, PyHash]:
         res: List[Tuple[DDSPath, PyHash]] = []
         if fi.store_path is not None:
             res.append((fi.store_path, fi.fun_return_sig))
@@ -176,33 +178,35 @@ class FunctionInteractions(NamedTuple):
         return OrderedDict(res)
 
     @classmethod
-    def pprint_tree(cls, fi: "FunctionInteractions", printer: Callable[[str], None]):
-        def pprint_tree_(node, file=None, _prefix="", _last=True):
-            s = _prefix + ("`- " if _last else "|- ") + str(node.value)
-            printer(s)
-            _prefix += "   " if _last else "|  "
-            child_count = len(node.children)
-            for i, child in enumerate(node.children):
-                _last = i == (child_count - 1)
-                pprint_tree_(child, file, _prefix, _last)
-
+    def pprint_tree(
+        cls, fi: "FunctionInteractions", printer: Callable[[str], None]
+    ) -> None:
         class Node:
             def __init__(self, value=None, children=None):
                 if children is None:
                     children = []
                 self.value, self.children = value, children
 
+        def pprint_tree_(node: Node, _prefix: str="", _last:bool=True) -> None:
+            s = _prefix + ("`- " if _last else "|- ") + str(node.value)
+            printer(s)
+            _prefix += "   " if _last else "|  "
+            child_count = len(node.children)
+            for i, child in enumerate(node.children):
+                _last = i == (child_count - 1)
+                pprint_tree_(child, _prefix, _last)
+
         def to_nodes(fi_: FunctionInteractions) -> Node:
             # TODO: add full path
             name = f"Fun {fi_.fun_path} {fi_.store_path} <- {fi_.fun_return_sig}"
             nodes = [
-                Node(value=f"dep: {ed.local_path} -> {ed.path}: {ed.sig}")
+                Node(value=f"dep: {ed.local_path} -> {ed.path}: {ed.sig}")  # type: ignore
                 for ed in fi_.external_deps
             ] + [
                 to_nodes(fi0)
                 for fi0 in fi_.parsed_body
                 if isinstance(fi0, FunctionInteractions)
             ]
-            return Node(value=name, children=nodes)
+            return Node(value=name, children=nodes)  # type: ignore
 
         pprint_tree_(to_nodes(fi))
