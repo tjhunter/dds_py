@@ -20,6 +20,10 @@ from ..store import Store
 _logger = logging.getLogger(__name__)
 
 
+def _pprint_exception(e: Exception) -> str:
+    return "".join(str(e).split("\n")[:3]).replace("\t", "")
+
+
 class PySparkDatabricksCodec(CodecProtocol):
     def ref(self):
         return ProtocolRef("default.pyspark")
@@ -52,10 +56,7 @@ class StringDBFSCodec(CodecProtocol):
         return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation):
-        # try:
         self._dbutils.fs.put(loc, blob, overwrite=True)
-        # except Exception as e:
-        #     _logger.warning(f"Suppresing exception when writing blob to {loc}: {e}")
 
     def deserialize_from(self, loc: GenericLocation) -> str:
         return self._dbutils.fs.head(loc)
@@ -93,7 +94,9 @@ class DBFSStore(Store):
             meta = json.dumps({"protocol": protocol.ref()})
             self._put(meta_p, meta)
         except Exception as e:
-            _logger.warning(f"Failed to write blob metadata to {meta_p}: {e}")
+            _logger.warning(
+                f"Failed to write blob metadata to {meta_p}: {_pprint_exception(e)}"
+            )
             raise e
         _logger.debug(f"Committed new blob in {key}")
 
@@ -115,7 +118,9 @@ class DBFSStore(Store):
             try:
                 meta = self._head(redir_path)
             except Exception as e:
-                _logger.debug(f"Could not read metadata for key {key}: {e}")
+                _logger.debug(
+                    f"Could not read metadata for key {key}: {_pprint_exception(e)}"
+                )
                 meta = None
             if meta is not None:
                 redir_key = json.loads(meta)["redirection_key"]
@@ -135,7 +140,7 @@ class DBFSStore(Store):
                     self._put(redir_path, meta)
                 except Exception as e:
                     _logger.warning(
-                        f"Failed to write blob metadata to {redir_path}: {e}"
+                        f"Failed to write blob metadata to {redir_path}: {_pprint_exception(e)}"
                     )
                     raise e
             else:
@@ -155,7 +160,9 @@ class DBFSStore(Store):
             _logger.debug(f"Attempting to read metadata for key {key}: meta = {meta}")
             return json.loads(meta)
         except Exception as e:
-            _logger.debug(f"Could not read metadata for key {key}: {e}")
+            _logger.debug(
+                f"Could not read metadata for key {key}: {_pprint_exception(e)}"
+            )
             return None
 
     def _head(self, p: Path) -> str:

@@ -2,7 +2,6 @@
 The main API functions
 """
 
-import inspect
 import logging
 from collections import OrderedDict
 from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union
@@ -177,10 +176,13 @@ def _fetch_ipython_vars() -> Dict[str, Any]:
     """
     try:
         from IPython import get_ipython
+
         ipython = get_ipython()
         if ipython is None:
             return {}
         return dict(ipython.user_ns)
     except ImportError:
-        _logger.debug("Failed to import IPython. No jupyter/ipython variables will be logged")
+        _logger.debug(
+            "Failed to import IPython. No jupyter/ipython variables will be logged"
+        )
         return {}

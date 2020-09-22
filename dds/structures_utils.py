@@ -86,8 +86,13 @@ class FunctionInteractionsUtils(object):
                 pprint_tree_(child, _prefix, _last)
 
         def to_nodes(fi_: FunctionInteractions) -> _PrintNode:
+            path = (
+                f"@ {fi_.fun_return_sig}"
+                if fi_.store_path is None
+                else f"{fi_.store_path} <- {fi_.fun_return_sig}"
+            )
             # TODO: add full path
-            name = f"Fun {fi_.fun_path} {fi_.store_path} <- {fi_.fun_return_sig}"
+            name = f"Fun {fi_.fun_path} {path}"
             call_ctx = fi_.arg_input.inner_call_key
             nodes = (
                 ([_PrintNode(value=f"Ctx {call_ctx}")] if call_ctx is not None else [])
