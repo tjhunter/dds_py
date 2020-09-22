@@ -187,7 +187,7 @@ class FunctionInteractions(NamedTuple):
                     children = []
                 self.value, self.children = value, children
 
-        def pprint_tree_(node: Node, _prefix: str="", _last:bool=True) -> None:
+        def pprint_tree_(node: Node, _prefix: str = "", _last: bool = True) -> None:
             s = _prefix + ("`- " if _last else "|- ") + str(node.value)
             printer(s)
             _prefix += "   " if _last else "|  "
