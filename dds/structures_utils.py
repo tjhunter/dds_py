@@ -101,7 +101,7 @@ class FunctionInteractionsUtils(object):
                     for (arg_name, arg_key) in fi_.arg_input.named_args.items()
                 ]
                 + [
-                    _PrintNode(value=f"Dep {ed.local_path} -> {ed.path}: {ed.sig}")  # type: ignore
+                    _PrintNode(value=f"Dep {ed.local_path} -> {ed.path}: {ed.sig}")
                     for ed in fi_.external_deps
                 ]
                 + [

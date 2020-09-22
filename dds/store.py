@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
-from typing import Any, Optional, OrderedDict
+from typing import Any, Optional
+from collections import OrderedDict
 
-from .codec import ProtocolRef, codec_registry
-from .structures import PyHash, DDSPath, KSException, GenericLocation
+from .codec import codec_registry
+from .structures import PyHash, DDSPath, KSException, GenericLocation, ProtocolRef
 
 _logger = logging.getLogger(__name__)
 
@@ -21,12 +24,14 @@ class Store(object):
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
         pass
 
-    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
+    def store_blob(
+        self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
+    ) -> None:
         """ idempotent
         """
         pass
 
-    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]):
+    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]) -> None:
         """
         Commits all the paths.
         """
@@ -69,7 +74,9 @@ class LocalFileStore(Store):
         codec = codec_registry().get_codec(None, ref)
         return codec.deserialize_from(GenericLocation(p))
 
-    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
+    def store_blob(
+        self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
+    ) -> None:
         protocol = codec_registry().get_codec(type(blob), codec)
         p = os.path.join(self._root, "blobs", key)
         protocol.serialize_into(blob, GenericLocation(p))

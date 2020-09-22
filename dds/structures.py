@@ -155,7 +155,7 @@ class FunctionInteractions(NamedTuple):
     external_deps: List[ExternalDep]
     # In order, all the content from the parsed body of the function.
     # TODO: real type is FunctionInteractions but mypy does not support yet recursive types
-    parsed_body: List["Any"]  # type: ignore
+    parsed_body: List["Any"]
     # The path, if the output is expected to be stored
     store_path: Optional[DDSPath]
     # The path of the function

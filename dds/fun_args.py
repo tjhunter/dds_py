@@ -48,7 +48,9 @@ def dds_hash(x: Any) -> PyHash:
 
 
 def get_arg_ctx(
-    f: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]
+    f: Callable,  # type: ignore
+    args: Tuple[Any, ...],
+    kwargs: Dict[str, Any],
 ) -> FunctionArgContext:
     if len(kwargs) > 0:
         raise NotImplementedError(f"kwargs")
@@ -75,17 +77,19 @@ def get_arg_ctx(
 
 
 def get_arg_ctx_ast(
-    f: Callable, args: List[ast.AST]
+    f: Callable,  # type: ignore
+    args: List[ast.AST],
 ) -> OrderedDict[str, Optional[PyHash]]:
     """
     Gets the arg context based on the AST.
     """
     arg_sig = inspect.signature(f)
     _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
-    args_hashes = []
+    args_hashes: List[Tuple[str, Optional[PyHash]]] = []
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
         _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
+        h: Optional[PyHash]
         if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
             raise NotImplementedError(f"{p.kind} {f} {arg_sig}")
         elif p.default != Parameter.empty and idx >= len(args):
