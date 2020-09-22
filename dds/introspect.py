@@ -1,6 +1,7 @@
 import abc
 import ast
 import importlib
+import pathlib
 import inspect
 import logging
 from collections import OrderedDict
@@ -20,6 +21,7 @@ from .structures import (
     LocalDepPath,
 )
 from ._print_ast import pformat
+from .structures_utils import DDSPathUtils
 
 _logger = logging.getLogger(__name__)
 
@@ -382,21 +384,9 @@ class InspectFunction(object):
             # - introspect the callee
             if len(node.args) < 2:
                 raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
-            store_path_symbol: str = node.args[0].id
-            _logger.debug(
-                f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}"
-            )
-            store_path_local_path = LocalDepPath(PurePosixPath(store_path_symbol))
+            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
             called_path_symbol = node.args[1].id
             called_local_path = LocalDepPath(PurePosixPath(called_path_symbol))
-            # Retrieve the store path value and the called function
-            store_z = ObjectRetrieval.retrieve_object(store_path_local_path, mod, gctx)
-            if not store_z:
-                # Not sure what to do yet in this case.
-                raise NotImplementedError(
-                    f"Invalid store_z: {store_path_local_path} {mod}"
-                )
-            store_path, _ = store_z
             called_z = ObjectRetrieval.retrieve_object(called_local_path, mod, gctx)
             if not called_z:
                 # Not sure what to do yet in this case.
@@ -430,6 +420,23 @@ class InspectFunction(object):
         )
         return _introspect(caller_fun, args=[], context_sig=context_sig, gctx=gctx)
 
+    @classmethod
+    def _retrieve_store_path(cls, local_path_node: ast.AST, mod: ModuleType, gctx: GlobalContext) -> DDSPath:
+        store_path_symbol: str = local_path_node.id
+        _logger.debug(
+            f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}"
+        )
+        store_path_local_path = LocalDepPath(PurePosixPath(store_path_symbol))
+        # Retrieve the store path value and the called function
+        store_z = ObjectRetrieval.retrieve_object(store_path_local_path, mod, gctx)
+        if not store_z:
+            # Not sure what to do yet in this case.
+            raise NotImplementedError(
+                f"Invalid store_z: {store_path_local_path} {mod}"
+            )
+        store_path, _ = store_z
+        return DDSPathUtils.create(store_path)
+
 
 class ObjectRetrieval(object):
     @classmethod
@@ -459,10 +466,10 @@ class ObjectRetrieval(object):
                     )
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
-                        obj, (Callable, ModuleType)
+                        obj, (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath)
                     ):
                         _logger.debug(
-                            f"Object[start_globals] {fname} of path {obj_path} is authorized,"
+                            f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
                         )
                         return obj, obj_path
                     else:
@@ -530,9 +537,9 @@ class ObjectRetrieval(object):
             if gctx.is_authorized_path(obj_path):
                 # TODO: simplify the authorized types
                 if _is_authorized_type(type(obj), gctx) or isinstance(
-                    obj, (Callable, ModuleType)
+                    obj, (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath)
                 ):
-                    _logger.debug(f"Object {fname} of path {obj_path} is authorized,")
+                    _logger.debug(f"Object {fname} ({type(obj)}) of path {obj_path} is authorized,")
                     return obj, obj_path
                 else:
                     _logger.debug(

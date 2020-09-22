@@ -4,6 +4,7 @@ The main API functions
 
 import inspect
 import logging
+import pathlib
 from collections import OrderedDict
 from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union
 
@@ -11,6 +12,7 @@ from .fun_args import get_arg_ctx
 from .introspect import introspect
 from .store import LocalFileStore, Store
 from .structures import DDSPath, FunctionInteractions, KSException, EvalContext
+from .structures_utils import DDSPathUtils
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
@@ -28,7 +30,7 @@ def keep(
     *args,
     **kwargs,
 ) -> _Out:
-    path = _checked_path(path)
+    path = DDSPathUtils.create(path)
     return _eval(fun, path, args, kwargs)
 
 
@@ -176,11 +178,3 @@ def _fetch_local_vars() -> Dict[str, Any]:
     # TODO: detect if we are running in databricks to account for this hack.
     return inspect.currentframe().f_back.f_back.f_back.f_locals
 
-
-def _checked_path(p: Union[str, DDSPath]) -> DDSPath:
-    if isinstance(p, str):
-        # TODO: more checks
-        return DDSPath(p)
-    if isinstance(p, DDSPath):
-        return p
-    raise NotImplementedError(f"{type(p)}")
