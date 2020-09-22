@@ -10,30 +10,28 @@ _c = Counter()
 _p = pathlib.Path("/path2")
 
 
-def _fun():
+def _fun(x=True):
     _c.increment()
-    return "a"
+    return "a" + str(x)
 
 
-def fun():
+def fun1():
     return dds.keep(spath, _fun)
 
 
-def f1():
-    fun()
-    fun()
+def fun2():
+    return dds.keep(spath, _fun, True)
 
 
-def f():
-    f1()
-    fun()
+def fun3():
+    return dds.keep(spath, _fun, False)
 
 
 @pytest.mark.usefixtures("cleandir")
 def test():
-    assert dds.eval(fun) == "a"
+    fun1()
     assert _c.value == 1
-    assert dds.keep(_p, fun) == "a"
+    fun2()
     assert _c.value == 1
-    dds.keep(_p, f)
-    assert _c.value == 1
+    fun3()
+    assert _c.value == 2

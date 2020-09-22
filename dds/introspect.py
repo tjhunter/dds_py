@@ -32,7 +32,7 @@ LocalVar = NewType("LocalVar", str)
 
 
 def introspect(
-    f: Callable[[Any], Any], start_globals: Dict[str, Any]
+    f: Callable[[Any], Any], start_globals: Dict[str, Any], arg_ctx: FunctionArgContext
 ) -> FunctionInteractions:
     # TODO: exposed the whitelist
     # TODO: add the arguments of the function
@@ -41,7 +41,7 @@ def introspect(
         whitelisted_packages=_whitelisted_packages,
         start_globals=start_globals,
     )
-    return _introspect(f, [], None, gctx)
+    return _introspect(f, arg_ctx, gctx)
 
 
 class Functions(str, Enum):
@@ -83,20 +83,11 @@ class GlobalContext(object):
 
 
 def _introspect(
-    f: Callable[[Any], Any],
-    args: List[Any],
-    context_sig: Optional[PyHash],
-    gctx: GlobalContext,
+    f: Callable[[Any], Any], arg_ctx: FunctionArgContext, gctx: GlobalContext,
 ) -> FunctionInteractions:
     # TODO: remove args for now?
     arg_sig = inspect.signature(f)
     _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig}")
-    assert not args, ("Not implemented", args)
-    fun_arg_context = FunctionArgContext(
-        # TODO: bind the arguments to their slots
-        named_args=OrderedDict(list((n, None) for n in arg_sig.parameters.keys())),
-        inner_call_key=context_sig,
-    )
     src = inspect.getsource(f)
     ast_src = ast.parse(src)
     body_lines = src.split("\n")
@@ -106,7 +97,7 @@ def _introspect(
     fun_path = _fun_path(f)
 
     fis = InspectFunction.inspect_fun(
-        ast_f, gctx, fun_module, body_lines, fun_arg_context, fun_path
+        ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
     )
     _logger.debug(f"End _introspect: {f}: {fis}")
     return fis
@@ -402,9 +393,11 @@ class InspectFunction(object):
                 raise NotImplementedError(
                     (_function_name(node.func), node, node.keywords)
                 )
-            inner_intro = _introspect(
-                called_fun, args=[], context_sig=context_sig, gctx=gctx
+            # TODO: deal with the arguments
+            arg_ctx = FunctionArgContext(
+                named_args=OrderedDict([]), inner_call_key=context_sig
             )
+            inner_intro = _introspect(called_fun, arg_ctx, gctx=gctx)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
         if caller_fun_path == CanonicalPath(["dds", "eval"]):
@@ -418,10 +411,15 @@ class InspectFunction(object):
         context_sig = _hash(
             [function_body_hash, function_args_hash, function_inter_hash]
         )
-        return _introspect(caller_fun, args=[], context_sig=context_sig, gctx=gctx)
+        arg_ctx = FunctionArgContext(
+            named_args=OrderedDict([]), inner_call_key=context_sig
+        )
+        return _introspect(caller_fun, arg_ctx, gctx=gctx)
 
     @classmethod
-    def _retrieve_store_path(cls, local_path_node: ast.AST, mod: ModuleType, gctx: GlobalContext) -> DDSPath:
+    def _retrieve_store_path(
+        cls, local_path_node: ast.AST, mod: ModuleType, gctx: GlobalContext
+    ) -> DDSPath:
         store_path_symbol: str = local_path_node.id
         _logger.debug(
             f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}"
@@ -431,9 +429,7 @@ class InspectFunction(object):
         store_z = ObjectRetrieval.retrieve_object(store_path_local_path, mod, gctx)
         if not store_z:
             # Not sure what to do yet in this case.
-            raise NotImplementedError(
-                f"Invalid store_z: {store_path_local_path} {mod}"
-            )
+            raise NotImplementedError(f"Invalid store_z: {store_path_local_path} {mod}")
         store_path, _ = store_z
         return DDSPathUtils.create(store_path)
 
@@ -466,7 +462,13 @@ class ObjectRetrieval(object):
                     )
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
-                        obj, (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath)
+                        obj,
+                        (
+                            Callable,
+                            ModuleType,
+                            pathlib.PosixPath,
+                            pathlib.PurePosixPath,
+                        ),
                     ):
                         _logger.debug(
                             f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
@@ -537,9 +539,12 @@ class ObjectRetrieval(object):
             if gctx.is_authorized_path(obj_path):
                 # TODO: simplify the authorized types
                 if _is_authorized_type(type(obj), gctx) or isinstance(
-                    obj, (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath)
+                    obj,
+                    (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath),
                 ):
-                    _logger.debug(f"Object {fname} ({type(obj)}) of path {obj_path} is authorized,")
+                    _logger.debug(
+                        f"Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
+                    )
                     return obj, obj_path
                 else:
                     _logger.debug(

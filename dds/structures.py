@@ -4,12 +4,10 @@ from pathlib import PurePosixPath
 from collections import OrderedDict
 
 from typing import (
-    TypeVar,
     Callable,
     Any,
     NewType,
     NamedTuple,
-    FrozenSet,
     Optional,
     Dict,
     List,
@@ -162,49 +160,3 @@ class FunctionInteractions(NamedTuple):
     store_path: Optional[DDSPath]
     # The path of the function
     fun_path: CanonicalPath
-
-    @classmethod
-    def all_store_paths(
-        cls, fi: "FunctionInteractions"
-    ) -> OrderedDict[DDSPath, PyHash]:
-        res: List[Tuple[DDSPath, PyHash]] = []
-        if fi.store_path is not None:
-            res.append((fi.store_path, fi.fun_return_sig))
-        for fi0 in fi.parsed_body:
-            if isinstance(fi0, FunctionInteractions):
-                res += cls.all_store_paths(fi0).items()
-        return OrderedDict(res)
-
-    @classmethod
-    def pprint_tree(
-        cls, fi: "FunctionInteractions", printer: Callable[[str], None]
-    ) -> None:
-        class Node:
-            def __init__(self, value=None, children=None):
-                if children is None:
-                    children = []
-                self.value, self.children = value, children
-
-        def pprint_tree_(node: Node, _prefix: str = "", _last: bool = True) -> None:
-            s = _prefix + ("`- " if _last else "|- ") + str(node.value)
-            printer(s)
-            _prefix += "   " if _last else "|  "
-            child_count = len(node.children)
-            for i, child in enumerate(node.children):
-                _last = i == (child_count - 1)
-                pprint_tree_(child, _prefix, _last)
-
-        def to_nodes(fi_: FunctionInteractions) -> Node:
-            # TODO: add full path
-            name = f"Fun {fi_.fun_path} {fi_.store_path} <- {fi_.fun_return_sig}"
-            nodes = [
-                Node(value=f"dep: {ed.local_path} -> {ed.path}: {ed.sig}")  # type: ignore
-                for ed in fi_.external_deps
-            ] + [
-                to_nodes(fi0)
-                for fi0 in fi_.parsed_body
-                if isinstance(fi0, FunctionInteractions)
-            ]
-            return Node(value=name, children=nodes)  # type: ignore
-
-        pprint_tree_(to_nodes(fi))

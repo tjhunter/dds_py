@@ -50,16 +50,22 @@ def get_arg_ctx(
     if len(kwargs) > 0:
         raise NotImplementedError(f"kwargs")
     arg_sig = inspect.signature(f)
-    _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig}")
+    _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
     args_hashes = []
-    for (idx, (n, p)) in enumerate(arg_sig.parameters.items()):
-        p: inspect.Parameter = p
+    for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
+        p: inspect.Parameter = p_
+        _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
         if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
             raise NotImplementedError(f"{p.kind} {f} {arg_sig}")
-        if p.default != Parameter.empty:
-            raise NotImplementedError(f"{p} {p.default} {f} {arg_sig}")
-        if len(args) < idx:
+        elif p.default != Parameter.empty and idx >= len(args):
+            # Use the default argument as an input
+            # This assumes that the user does not mutate the argument, which is
+            # a warning/errors in most linters.
+            h = dds_hash(p.default or "__none__")
+            # raise NotImplementedError(f"{p} {p.default} {f} {arg_sig}")
+        elif len(args) <= idx:
             raise NotImplementedError(f"{len(args)} {arg_sig}")
-        h = dds_hash(args[idx])
+        else:
+            h = dds_hash(args[idx])
         args_hashes.append((n, h))
     return FunctionArgContext(OrderedDict(args_hashes), None)

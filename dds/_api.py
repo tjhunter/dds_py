@@ -4,15 +4,14 @@ The main API functions
 
 import inspect
 import logging
-import pathlib
 from collections import OrderedDict
 from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union
 
 from .fun_args import get_arg_ctx
 from .introspect import introspect
 from .store import LocalFileStore, Store
-from .structures import DDSPath, FunctionInteractions, KSException, EvalContext
-from .structures_utils import DDSPathUtils
+from .structures import DDSPath, KSException, EvalContext
+from .structures_utils import DDSPathUtils, FunctionInteractionsUtils
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
@@ -134,12 +133,12 @@ def _eval_new_ctx(
         # TODO: use the arg context in the call
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
-        inters = introspect(fun, local_vars)
+        inters = introspect(fun, local_vars, arg_ctx)
         # Also add the current path, if requested:
         if path is not None:
             inters = inters._replace(store_path=path)
         _logger.info(f"Interaction tree:")
-        FunctionInteractions.pprint_tree(inters, printer=lambda s: _logger.info(s))
+        FunctionInteractionsUtils.pprint_tree(inters, printer=lambda s: _logger.info(s))
 
         # If the blob for that node already exists, we have compute the path already.
         # No need to go further.
@@ -149,7 +148,7 @@ def _eval_new_ctx(
             _logger.debug(f"_eval_new_ctx:Return cached signature {current_sig}")
             return _store.fetch_blob(current_sig)
 
-        store_paths = FunctionInteractions.all_store_paths(inters)
+        store_paths = FunctionInteractionsUtils.all_store_paths(inters)
         _eval_ctx = EvalContext(requested_paths=store_paths)
         for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
@@ -177,4 +176,3 @@ def _fetch_local_vars() -> Dict[str, Any]:
     # TODO: more robust
     # TODO: detect if we are running in databricks to account for this hack.
     return inspect.currentframe().f_back.f_back.f_back.f_locals
-
