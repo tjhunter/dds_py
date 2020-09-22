@@ -11,7 +11,7 @@ def f1(i: int) -> int:
 
 
 def f2() -> str:
-    return "A"
+    return "{x}".format(x="A")
 
 
 def f2_wrap():

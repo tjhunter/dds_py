@@ -40,6 +40,7 @@ setup(
     name='dds_py',
     version=VERSION,
     packages=['dds', 'dds.codecs'],
+    package_data={"dds": ["py.typed"]},
     extras_require={
         'pandas': ['pandas>=0.23.1', 'pyarrow>=0.10'],
         'spark': ['pyspark>=2.4.0']
@@ -53,7 +54,7 @@ setup(
     url="https://github.com/tjhunter/dds_py",
     project_urls={
         'Bug Tracker': 'https://github.com/tjhunter/dds_py/issues',
-        # 'Documentation': 'https://koalas.readthedocs.io/',
+        # 'Documentation': 'https://XXX.readthedocs.io/',
         'Source Code': 'https://github.com/tjhunter/dds_py'
     },
     description=DESCRIPTION,

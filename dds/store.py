@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
-from typing import Any, Optional, OrderedDict
+from typing import Any, Optional
+from collections import OrderedDict
 
-from .codec import ProtocolRef, codec_registry
-from .structures import PyHash, DDSPath, KSException, GenericLocation
+from .codec import codec_registry
+from .structures import PyHash, DDSPath, KSException, GenericLocation, ProtocolRef
 
 _logger = logging.getLogger(__name__)
 
@@ -21,12 +24,14 @@ class Store(object):
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
         pass
 
-    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
+    def store_blob(
+        self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
+    ) -> None:
         """ idempotent
         """
         pass
 
-    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]):
+    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]) -> None:
         """
         Commits all the paths.
         """
@@ -40,13 +45,21 @@ class Store(object):
 
 
 class LocalFileStore(Store):
-    def __init__(self, internal_dir: str, data_dir: str):
+    def __init__(self, internal_dir: str, data_dir: str, create_dirs: bool = True):
         self._root = internal_dir
         self._data_root = data_dir
         if not os.path.isdir(internal_dir):
-            raise KSException(f"Path {internal_dir} is not a directory")
+            if create_dirs:
+                _logger.debug(f"Creating dir {internal_dir}")
+                os.makedirs(internal_dir)
+            else:
+                raise KSException(f"Path {internal_dir} is not a directory")
         if not os.path.isdir(data_dir):
-            raise KSException(f"Path {data_dir} is not a directory")
+            if create_dirs:
+                _logger.debug(f"Creating dir {data_dir}")
+                os.makedirs(data_dir)
+            else:
+                raise KSException(f"Path {data_dir} is not a directory")
         p_blobs = os.path.join(self._root, "blobs")
         if not os.path.exists(p_blobs):
             os.makedirs(p_blobs)
@@ -61,7 +74,9 @@ class LocalFileStore(Store):
         codec = codec_registry().get_codec(None, ref)
         return codec.deserialize_from(GenericLocation(p))
 
-    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
+    def store_blob(
+        self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
+    ) -> None:
         protocol = codec_registry().get_codec(type(blob), codec)
         p = os.path.join(self._root, "blobs", key)
         protocol.serialize_into(blob, GenericLocation(p))
