@@ -732,7 +732,7 @@ def _is_primary_function(path: CanonicalPath) -> bool:
 _whitelisted_packages: Set[Package] = {Package("dds"), Package("__main__")}
 
 
-def whitelist_module(module: Union[str, ModuleType]):
+def whitelist_module(module: Union[str, ModuleType]) -> None:
     global _whitelisted_packages
     if isinstance(module, ModuleType):
         module = module.__name__
