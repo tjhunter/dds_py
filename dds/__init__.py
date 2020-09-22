@@ -1,6 +1,7 @@
-from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union, List
+from types import ModuleType
+from typing import Tuple, Dict
+from typing import TypeVar, Callable, Any, Optional, Union
 
-from .structures import DDSPath
 from ._api import (
     keep as _keep,
     eval as _eval,
@@ -8,9 +9,7 @@ from ._api import (
 )
 from .introspect import whitelist_module as _whitelist_module
 from .store import Store
-from types import ModuleType
-from typing import Tuple, Dict
-
+from .structures import DDSPath
 
 __all__ = ["DDSPath", "keep", "eval", "whitelist_module", "set_store"]
 

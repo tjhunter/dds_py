@@ -4,7 +4,7 @@ The string protocol.
 import pickle
 import sklearn.model_selection._search  # type: ignore
 
-from typing import Any
+from typing import Any, Optional
 
 from ..structures import (
     CodecProtocol,
@@ -46,9 +46,9 @@ class PickleLocalCodec(CodecProtocol):
         with open(loc, "wb") as f:
             pickle.dump(blob, f)
 
-    def deserialize_from(self, loc: GenericLocation) -> str:
+    def deserialize_from(self, loc: GenericLocation) -> Optional[str]:
         with open(loc, "rb") as f:
             res = pickle.load(f)
-            if isinstance(res, str):
+            if res is None or isinstance(res, str):
                 return res
             raise KSException(f"Expected str, got {type(res)}")

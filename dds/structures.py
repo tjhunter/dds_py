@@ -1,17 +1,15 @@
 from __future__ import annotations
+
+from collections import OrderedDict
 from functools import total_ordering
 from pathlib import PurePosixPath
-from collections import OrderedDict
-
 from typing import (
-    Callable,
     Any,
     NewType,
     NamedTuple,
     Optional,
     Dict,
     List,
-    Tuple,
     Type,
 )
 

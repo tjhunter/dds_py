@@ -2,7 +2,7 @@ import importlib.util
 import logging
 from typing import Optional, Dict, List, Type, Any
 
-from .codecs.builtins import StringLocalCodec, PickleLocalCodec, Local
+from .codecs.builtins import StringLocalCodec, PickleLocalCodec
 from .structures import KSException, CodecProtocol, ProtocolRef
 
 _logger = logging.getLogger(__name__)

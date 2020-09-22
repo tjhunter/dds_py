@@ -1,15 +1,12 @@
 from __future__ import annotations
+
+import ast
 import hashlib
 import inspect
 import logging
-from pathlib import PurePosixPath
 from collections import OrderedDict
 from inspect import Parameter
-import ast
-
-from .structures import CanonicalPath
-
-
+from pathlib import PurePosixPath
 from typing import (
     Tuple,
     Callable,
@@ -17,13 +14,10 @@ from typing import (
     Dict,
     List,
     Optional,
-    NamedTuple,
-    OrderedDict as OrderedDictType,
 )
 
-
+from .structures import CanonicalPath
 from .structures import PyHash, FunctionArgContext
-
 
 _logger = logging.getLogger(__name__)
 

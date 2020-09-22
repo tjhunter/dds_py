@@ -2,32 +2,23 @@
 Utilities related to structures
 """
 from __future__ import annotations
+
 import pathlib
+from collections import OrderedDict
+from typing import (
+    Callable,
+    Any,
+    Optional,
+    List,
+    Tuple,
+)
+from typing import Union
 
 from .structures import (
     DDSPath,
     KSException,
     FunctionInteractions,
     PyHash,
-    ExternalDep,
-    CanonicalPath,
-)
-
-from typing import Union
-from functools import total_ordering
-from pathlib import PurePosixPath
-from collections import OrderedDict
-
-from typing import (
-    Callable,
-    Any,
-    NewType,
-    NamedTuple,
-    Optional,
-    Dict,
-    List,
-    Tuple,
-    Type,
 )
 
 

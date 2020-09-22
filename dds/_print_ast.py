@@ -3,14 +3,10 @@
 
 import ast
 import contextlib
-import sys
 from typing import Any
 from typing import Generator
-from typing import Optional
-from typing import Sequence
 from typing import Tuple
 from typing import Type
-from typing import TYPE_CHECKING
 from typing import Union
 
 # if TYPE_CHECKING:

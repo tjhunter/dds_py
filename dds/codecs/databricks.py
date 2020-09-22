@@ -2,20 +2,18 @@
 
 """
 
-import logging
-from typing import Any, Optional, OrderedDict
-import os
-from pathlib import Path
 import json
-
+import logging
+from pathlib import Path
+from typing import Any, Optional, OrderedDict
 
 import pyspark.sql
 from pyspark.sql import DataFrame
 
-from ..structures import CodecProtocol, ProtocolRef, GenericLocation
-from ..structures import PyHash, DDSPath, KSException, GenericLocation
 from ..codec import CodecRegistry
 from ..store import Store
+from ..structures import CodecProtocol, ProtocolRef
+from ..structures import PyHash, DDSPath, GenericLocation
 
 _logger = logging.getLogger(__name__)
 
