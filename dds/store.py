@@ -31,7 +31,7 @@ class Store(object):
         """
         pass
 
-    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]) -> None:
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
         """
         Commits all the paths.
         """

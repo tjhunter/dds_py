@@ -126,7 +126,7 @@ class ExternalDep(NamedTuple):
 
 class FunctionArgContext(NamedTuple):
     # The keys of the arguments that are known at call time
-    named_args: OrderedDict[str, Optional[PyHash]]
+    named_args: "OrderedDict[str, Optional[PyHash]]"
     # The key of the environment when calling the function
     inner_call_key: Optional[PyHash]
 
