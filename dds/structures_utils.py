@@ -1,7 +1,7 @@
 """
 Utilities related to structures
 """
-from __future__ import annotations
+# from __future__ import annotations
 
 import pathlib
 from collections import OrderedDict
@@ -43,7 +43,7 @@ class DDSPathUtils(object):
 
 class _PrintNode(object):
     def __init__(
-        self, value: Optional[Any] = None, children: Optional[List[_PrintNode]] = None
+        self, value: Optional[Any] = None, children: "Optional[List[_PrintNode]]" = None
     ):
         if children is None:
             children = []
@@ -52,7 +52,9 @@ class _PrintNode(object):
 
 class FunctionInteractionsUtils(object):
     @classmethod
-    def all_store_paths(cls, fi: FunctionInteractions) -> OrderedDict[DDSPath, PyHash]:
+    def all_store_paths(
+        cls, fi: FunctionInteractions
+    ) -> "OrderedDict[DDSPath, PyHash]":
         res: List[Tuple[DDSPath, PyHash]] = []
         if fi.store_path is not None:
             res.append((fi.store_path, fi.fun_return_sig))
