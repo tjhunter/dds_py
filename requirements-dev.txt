@@ -3,18 +3,6 @@ pandas>=0.23.2,<1.1.0
 pyarrow>=0.10
 matplotlib>=3.0.0,<3.3.0
 numpy>=1.14,<1.19.0
-pytest
-
-# Optional dependencies in Koalas.
-mlflow>=1.0
-
-# Documentation build.
-sphinx>=2.0.0,<3.1.0
-nbsphinx
-numpydoc==0.8
-pypandoc
-ipython
-pydata-sphinx-theme
 
 # Linter
 mypy
@@ -27,6 +15,7 @@ black==19.10b0
 pytest
 pytest-cov
 scikit-learn
-openpyxl
-xlrd
-plotly>=4.8
+requests
+#openpyxl
+#xlrd
+#plotly>=4.8

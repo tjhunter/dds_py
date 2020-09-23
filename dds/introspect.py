@@ -232,7 +232,7 @@ def _function_name(node) -> List[str]:
         return _function_name(node.value) + [node.attr]
     if isinstance(node, ast.Call):
         return _function_name(node.func)
-    if isinstance(node, ast.Constant):
+    if isinstance(node, (ast.Constant, ast.NameConstant)):
         s = str(node.value)
         s = s[:4]
         return [f"Str({s}...)"]

@@ -1,4 +1,4 @@
-from __future__ import annotations
+# from __future__ import annotations
 
 import ast
 import hashlib
@@ -73,7 +73,7 @@ def get_arg_ctx(
 def get_arg_ctx_ast(
     f: Callable,  # type: ignore
     args: List[ast.AST],
-) -> OrderedDict[str, Optional[PyHash]]:
+) -> "OrderedDict[str, Optional[PyHash]]":
     """
     Gets the arg context based on the AST.
     """
@@ -97,7 +97,8 @@ def get_arg_ctx_ast(
         else:
             # Get the AST node:
             node = args[idx]
-            if isinstance(node, ast.Constant):
+            # NameConstant for python 3.5 - 3.7
+            if isinstance(node, (ast.Constant, ast.NameConstant)):
                 # We can deal with some constant nodes
                 default_ob = node.value if node.value is not None else "__none__"
                 h = dds_hash(default_ob)

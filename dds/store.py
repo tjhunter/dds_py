@@ -1,4 +1,4 @@
-from __future__ import annotations
+# from __future__ import annotations
 
 import json
 import logging
@@ -31,7 +31,7 @@ class Store(object):
         """
         pass
 
-    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]) -> None:
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
         """
         Commits all the paths.
         """
