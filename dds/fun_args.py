@@ -73,7 +73,7 @@ def get_arg_ctx(
 def get_arg_ctx_ast(
     f: Callable,  # type: ignore
     args: List[ast.AST],
-) -> OrderedDict[str, Optional[PyHash]]:
+) -> "OrderedDict[str, Optional[PyHash]]":
     """
     Gets the arg context based on the AST.
     """
