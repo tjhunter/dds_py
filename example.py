@@ -11,7 +11,8 @@ path = "/tmp/1"
 external = "other"
 
 
-def f1a(i: int) -> int: return i * 2
+def f1a(i: int) -> int:
+    return i * 2
 
 
 def f1():
@@ -19,7 +20,7 @@ def f1():
 
 
 def f4():
-    return pd.DataFrame(data={"x":[3]})
+    return pd.DataFrame(data={"x": [3]})
 
 
 def f2():
