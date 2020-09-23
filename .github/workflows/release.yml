@@ -14,6 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - uses: bluwy/substitute-string-action@v1
+        id: version_project
+        with:
+          _input-text: ${{ github.ref }}
+          v: ''
       - name: Build project
         run: |
           python setup.py bdist_wheel
@@ -37,9 +42,10 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ steps.version_project.outputs.result }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./my-artifact.zip
-          asset_name: my-artifact.zip
+          asset_path: ./dist/dds_py-${{version}}-py3-none-any.whl
+          asset_name: dds_py-${{version}}-py3-none-any.whl
           asset_content_type: application/zip
 
