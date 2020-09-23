@@ -1,7 +1,7 @@
 """
 Utilities related to structures
 """
-from __future__ import annotations
+# from __future__ import annotations
 
 import pathlib
 from collections import OrderedDict
@@ -43,7 +43,7 @@ class DDSPathUtils(object):
 
 class _PrintNode(object):
     def __init__(
-        self, value: Optional[Any] = None, children: Optional[List[_PrintNode]] = None
+        self, value: Optional[Any] = None, children: "Optional[List[_PrintNode]]" = None
     ):
         if children is None:
             children = []
