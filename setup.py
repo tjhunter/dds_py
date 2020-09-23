@@ -45,7 +45,7 @@ setup(
         'pandas': ['pandas>=0.23.1', 'pyarrow>=0.10'],
         'spark': ['pyspark>=2.4.0']
     },
-    python_requires='>=3.5,<3.9',
+    python_requires='>=3.6,<3.9',
     install_requires=[
     ],
     author="Tim Hunter",
