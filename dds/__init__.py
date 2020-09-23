@@ -3,6 +3,8 @@ from typing import Tuple, Dict
 import pathlib
 from typing import TypeVar, Callable, Any, Optional, Union
 
+
+from ._version import version
 from ._api import (
     keep as _keep,
     eval as _eval,
@@ -12,8 +14,9 @@ from .introspect import whitelist_module as _whitelist_module
 from .store import Store
 from .structures import DDSPath
 
-__all__ = ["DDSPath", "keep", "eval", "whitelist_module", "set_store"]
+__all__ = ["DDSPath", "keep", "eval", "whitelist_module", "set_store", "__version__"]
 
+__version__ = version
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
