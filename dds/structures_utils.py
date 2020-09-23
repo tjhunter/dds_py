@@ -52,7 +52,9 @@ class _PrintNode(object):
 
 class FunctionInteractionsUtils(object):
     @classmethod
-    def all_store_paths(cls, fi: FunctionInteractions) -> "OrderedDict[DDSPath, PyHash]":
+    def all_store_paths(
+        cls, fi: FunctionInteractions
+    ) -> "OrderedDict[DDSPath, PyHash]":
         res: List[Tuple[DDSPath, PyHash]] = []
         if fi.store_path is not None:
             res.append((fi.store_path, fi.fun_return_sig))
