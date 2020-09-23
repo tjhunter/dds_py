@@ -33,6 +33,8 @@ jobs:
       - name: Build project
         run: |
           python setup.py bdist_wheel
+          echo ${{ github.ref }}
+          ls ./dist/dds_py*-py3-none-any.whl
           cp ./dist/dds_py*-py3-none-any.whl ./dds_py-${{ github.ref }}-py3-none-any.whl
 
       - name: Create Release
