@@ -13,8 +13,6 @@ from typing import (
     Type,
 )
 
-# from .fun_args import FunctionArgContext
-
 # A path to an object in the DDS store.
 DDSPath = NewType("DDSPath", str)
 

@@ -22,7 +22,7 @@ from io import open
 from setuptools import setup
 from os import path
 
-DESCRIPTION = "PyDDS: data-driven programing"
+DESCRIPTION = "dds: data-driven software"
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
@@ -32,7 +32,7 @@ try:
     exec(open("dds/_version.py").read())
 except IOError:
     print(
-        "Failed to load Koalas version file for packaging. You must be in dds root dir.",
+        "Failed to load version file for packaging. You must be in dds root dir.",
         file=sys.stderr,
     )
     sys.exit(-1)
