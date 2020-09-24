@@ -425,6 +425,9 @@ class InspectFunction(object):
         if isinstance(local_path_node, ast.Constant):
             # Just a string, directly access it.
             return DDSPathUtils.create(local_path_node.value)
+        elif isinstance(local_path_node, ast.Str):
+            # Just a string, directly access it.
+            return DDSPathUtils.create(local_path_node.s)
         elif isinstance(local_path_node, ast.Name):
             store_path_symbol = local_path_node.id
         else:
