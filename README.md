@@ -27,12 +27,13 @@ import dds
 import requests 
 
 def data_creator() -> str:
-  return requests.get("hello_world")
+  url = "https://gist.githubusercontent.com/bigsnarfdude/515849391ad37fe593997fe0db98afaa/raw/f663366d17b7d05de61a145bbce7b2b961b3b07f/weather.csv"
+  return requests.get(url=url, verify=False).content.decode("utf-8")
 
 data: str = dds.keep("/hello_data", data_creator)
 ```
 This example does the following:
-- it defines a source of data, from the internet. This source is defined as the function `data_creator`
+- it defines a source of data, here a piece of weather data from the internet. This source is defined as the function `data_creator`
 - it assigns the data produced by this source into a variable (`data`) and also to a path in a storage system (`/hello_data`) 
 
 The DDS library guarantees the following after evaluation of the code:
