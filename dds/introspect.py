@@ -87,8 +87,8 @@ def _introspect(
 ) -> FunctionInteractions:
     # TODO: remove args for now?
     arg_sig = inspect.signature(f)
-    _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig}")
     src = inspect.getsource(f)
+    _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig} src={src}")
     ast_src = ast.parse(src)
     body_lines = src.split("\n")
     ast_f = ast_src.body[0]
@@ -421,7 +421,16 @@ class InspectFunction(object):
     def _retrieve_store_path(
         cls, local_path_node: ast.AST, mod: ModuleType, gctx: GlobalContext
     ) -> DDSPath:
-        store_path_symbol: str = local_path_node.id
+        called_path_symbol: str
+        if isinstance(local_path_node, ast.Constant):
+            # Just a string, directly access it.
+            return DDSPathUtils.create(local_path_node.value)
+        elif isinstance(local_path_node, ast.Name):
+            store_path_symbol = local_path_node.id
+        else:
+            raise NotImplementedError(
+                f"{type(local_path_node)} {pformat(local_path_node)}"
+            )
         _logger.debug(
             f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}"
         )
