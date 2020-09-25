@@ -483,6 +483,11 @@ class ObjectRetrieval(object):
                         obj_path = CanonicalPath(
                             ["__global__"] + [str(x) for x in local_path.parts]
                         )
+                    if not gctx.is_authorized_path(obj_path):
+                        _logger.debug(
+                            f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (path), dropping path {obj_path}"
+                        )
+                        return None
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
                         obj,
