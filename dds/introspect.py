@@ -570,19 +570,20 @@ class ObjectRetrieval(object):
                     (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath),
                 ):
                     _logger.debug(
-                        f"Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
+                        f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
                     )
                     return obj, obj_path
                 else:
                     _logger.debug(
-                        f"Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
+                        f"_retrieve_object_rec: Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
                     )
             else:
                 _logger.debug(
-                    f"Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
+                    f"_retrieve_object_rec: Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
                 )
                 return None
 
+        _logger.debug(f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path}")
         # More to explore
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):
