@@ -525,7 +525,7 @@ class ObjectRetrieval(object):
             return context_mod, obj_mod_path
         # At least one more path to explore
         fname = local_path.parts[0]
-        tail_path = LocalDepPath(PurePosixPath("/".join(local_path.parts[1:])))
+        tail_path = LocalDepPathUtils.tail(local_path)
         if fname not in context_mod.__dict__:
             # It should be in the context module, this was assumed to be taken care of
             raise NotImplementedError(
@@ -534,7 +534,7 @@ class ObjectRetrieval(object):
             )
         obj = context_mod.__dict__[fname]
 
-        if not tail_path.parts:
+        if LocalDepPathUtils.empty(tail_path):
             # Final path.
             # If it is a module, continue recursion
             if isinstance(obj, ModuleType):
@@ -578,6 +578,15 @@ class ObjectRetrieval(object):
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):
             return cls._retrieve_object_rec(tail_path, obj, gctx)
+
+        # We still have a path but we have reached a callable.
+        # In this case, determine if the function is allowed. If this is the case, stop here.
+        # (the rest of the path is method calls)
+        if isinstance(obj, Callable):
+            obj_mod_path = _mod_path(context_mod)
+            obj_path = obj_mod_path.append(fname)
+            if gctx.is_authorized_path(obj_path):
+                return obj, obj_path
 
         # The rest is not authorized for now.
         msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
