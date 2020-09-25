@@ -583,7 +583,7 @@ class ObjectRetrieval(object):
                 )
                 return None
 
-        _logger.debug(f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path}")
+        _logger.debug(f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, Callable)}")
         # More to explore
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):
@@ -599,7 +599,7 @@ class ObjectRetrieval(object):
                 return obj, obj_path
 
         # The rest is not authorized for now.
-        msg = f"Failed to consider object {obj} type {type(obj)} at path {local_path} context_mod: {context_mod}"
+        msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
         _logger.debug(msg)
         return None
 
