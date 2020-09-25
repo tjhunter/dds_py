@@ -599,7 +599,7 @@ class ObjectRetrieval(object):
                 return obj, obj_path
 
         # The rest is not authorized for now.
-        msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
+        msg = f"Failed to consider object {obj} type {type(obj)} at path {local_path} context_mod: {context_mod}"
         _logger.debug(msg)
         return None
 
