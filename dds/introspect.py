@@ -476,9 +476,13 @@ class ObjectRetrieval(object):
                         # Redirect the search to the module
                         _logger.debug(f"{fname} is module {obj}, checking for {sub_path}")
                         return cls.retrieve_object(sub_path, obj, gctx)
-                    obj_path = CanonicalPath(
-                        ["__global__"] + [str(x) for x in local_path.parts]
-                    )
+                    if isinstance(obj, ModuleType):
+                        # Fully resolve the name of the module:
+                        obj_path = _mod_path(obj)
+                    else:
+                        obj_path = CanonicalPath(
+                            ["__global__"] + [str(x) for x in local_path.parts]
+                        )
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
                         obj,
