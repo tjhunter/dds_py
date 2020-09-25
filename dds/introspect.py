@@ -471,9 +471,10 @@ class ObjectRetrieval(object):
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
                     obj = gctx.start_globals[fname]
-                    if isinstance(obj, ModuleType):
+                    if isinstance(obj, ModuleType) and len(sub_path.parts) >= 0:
                         # Referring to function from an imported module.
                         # Redirect the search to the module
+                        _logger.debug(f"{fname} is module {obj}, checking for {sub_path}")
                         return cls.retrieve_object(sub_path, obj, gctx)
                     obj_path = CanonicalPath(
                         ["__global__"] + [str(x) for x in local_path.parts]
