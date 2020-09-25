@@ -108,3 +108,11 @@ class LocalDepPathUtils(object):
     def tail(p: LocalDepPath) -> LocalDepPath:
         ps = p.parts[1:]
         return LocalDepPath(pathlib.PurePosixPath("/".join(ps)))
+
+    @staticmethod
+    def empty(p: LocalDepPath) -> bool:
+        ps = p.parts
+        if not ps or (len(ps) == 1 and ps[0] == 1):
+            return True
+        return False
+
