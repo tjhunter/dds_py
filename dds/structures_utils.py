@@ -1,7 +1,6 @@
 """
 Utilities related to structures
 """
-# from __future__ import annotations
 
 import pathlib
 from collections import OrderedDict
@@ -14,12 +13,7 @@ from typing import (
 )
 from typing import Union
 
-from .structures import (
-    DDSPath,
-    KSException,
-    FunctionInteractions,
-    PyHash,
-)
+from .structures import DDSPath, KSException, FunctionInteractions, PyHash, LocalDepPath
 
 
 class DDSPathUtils(object):
@@ -107,3 +101,10 @@ class FunctionInteractionsUtils(object):
             return _PrintNode(value=name, children=nodes)
 
         pprint_tree_(to_nodes(fi))
+
+
+class LocalDepPathUtils(object):
+    @staticmethod
+    def tail(p: LocalDepPath) -> LocalDepPath:
+        ps = p.parts[1:]
+        return LocalDepPath(pathlib.PurePosixPath("/".join(ps)))

@@ -21,7 +21,7 @@ from .structures import (
     LocalDepPath,
 )
 from ._print_ast import pformat
-from .structures_utils import DDSPathUtils
+from .structures_utils import DDSPathUtils, LocalDepPathUtils
 
 _logger = logging.getLogger(__name__)
 
@@ -455,6 +455,7 @@ class ObjectRetrieval(object):
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
         fname = local_path.parts[0]
+        sub_path = LocalDepPathUtils.tail(local_path)
         if fname not in context_mod.__dict__:
             # In some cases (old versions of jupyter) the module is not listed
             # -> try to load it from the root
@@ -470,6 +471,10 @@ class ObjectRetrieval(object):
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
                     obj = gctx.start_globals[fname]
+                    if isinstance(obj, ModuleType):
+                        # Referring to function from an imported module.
+                        # Redirect the search to the module
+                        return cls.retrieve_object(sub_path, obj, gctx)
                     obj_path = CanonicalPath(
                         ["__global__"] + [str(x) for x in local_path.parts]
                     )
@@ -495,7 +500,6 @@ class ObjectRetrieval(object):
                 else:
                     _logger.debug(f"{fname} not found in start_globals")
                     return None
-            sub_path = LocalDepPath(PurePosixPath("/".join(local_path.parts[1:])))
             return cls._retrieve_object_rec(sub_path, loaded_mod, gctx)
         else:
             return cls._retrieve_object_rec(local_path, context_mod, gctx)
