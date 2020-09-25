@@ -18,5 +18,6 @@ dbc:
 
 release:
 	git remote update
+	git checkout origin/master
 	git git tag -a v$(python -c "import dds._version; print(dds._version.version)") -m "tag"
 	git push --tags
