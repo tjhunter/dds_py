@@ -15,3 +15,9 @@ lint:
 
 dbc:
 	databricks fs cp $(PWD)/dist/dds_py-0.1.0-py3-none-any.whl dbfs:/libs/dds_py-0.1.1-py3-none-any.whl --overwrite --profile dds
+
+release:
+	git remote update
+	git checkout origin/master
+	git git tag -a v$(python -c "import dds._version; print(dds._version.version)") -m "tag"
+	git push --tags
