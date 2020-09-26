@@ -87,7 +87,6 @@ class StringDBFSCodec(CodecProtocol):
         return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation) -> None:
-        print(f"blob: {blob}")
         self._dbutils.fs.put(loc, blob, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> str:
