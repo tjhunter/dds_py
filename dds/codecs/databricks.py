@@ -73,7 +73,7 @@ class BytesDBFSCodec(CodecProtocol):
         if self._encode:
             blob_enc = blob_str.encode("ascii")
             return base64.b64decode(blob_enc)
-        return bytes(blob_str, encoding="utf-8")
+        return bytes(blob_str, encoding="ascii")
 
 
 class StringDBFSCodec(CodecProtocol):
