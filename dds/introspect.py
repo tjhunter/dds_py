@@ -21,7 +21,7 @@ from .structures import (
     LocalDepPath,
 )
 from ._print_ast import pformat
-from .structures_utils import DDSPathUtils
+from .structures_utils import DDSPathUtils, LocalDepPathUtils
 
 _logger = logging.getLogger(__name__)
 
@@ -99,7 +99,6 @@ def _introspect(
     fis = InspectFunction.inspect_fun(
         ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
     )
-    _logger.debug(f"End _introspect: {f}: {fis}")
     return fis
 
 
@@ -190,7 +189,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
             _logger.debug(f"visit_Name: {local_dep_path}: skipping (unauthorized)")
             return
         (obj, path) = res
-        if isinstance(obj, Callable):
+        if isinstance(obj, FunctionType):
             # Modules and callables are tracked separately
             _logger.debug(f"visit name {local_dep_path}: skipping (fun)")
             return
@@ -247,7 +246,7 @@ def _mod_path(m: ModuleType) -> CanonicalPath:
     return CanonicalPath(m.__name__.split("."))
 
 
-def _fun_path(f: Callable) -> CanonicalPath:
+def _fun_path(f: FunctionType) -> CanonicalPath:
     mod = inspect.getmodule(f)
     return CanonicalPath(_mod_path(mod)._path + [f.__name__])
 
@@ -258,7 +257,7 @@ def _is_authorized_type(tpe: Type, gctx: GlobalContext) -> bool:
     """
     if tpe is None:
         return True
-    if tpe in (int, float, str, bytes, PurePosixPath, Callable, ModuleType):
+    if tpe in (int, float, str, bytes, PurePosixPath, FunctionType, ModuleType):
         return True
     if issubclass(tpe, object):
         mod = inspect.getmodule(tpe)
@@ -322,7 +321,6 @@ class InspectFunction(object):
         calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars)
         calls_v.visit(node)
         body_sig = _hash(function_body_lines)
-        _logger.debug(f"inspect_fun: interactions: {calls_v.inters}")
         return_sig = _hash(
             [input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters]
         )
@@ -361,9 +359,9 @@ class InspectFunction(object):
             _logger.debug(f"inspect_call: local_path: {local_path} is rejected")
             return
         caller_fun, caller_fun_path = z
-        if not isinstance(caller_fun, Callable):
+        if not isinstance(caller_fun, FunctionType):
             raise NotImplementedError(
-                f"Expected callable for {caller_fun_path}, got {type(caller_fun)}"
+                f"Expected FunctionType for {caller_fun_path}, got {type(caller_fun)}"
             )
 
         # Check if this is a call we should do something about.
@@ -455,6 +453,7 @@ class ObjectRetrieval(object):
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
         fname = local_path.parts[0]
+        sub_path = LocalDepPathUtils.tail(local_path)
         if fname not in context_mod.__dict__:
             # In some cases (old versions of jupyter) the module is not listed
             # -> try to load it from the root
@@ -470,14 +469,32 @@ class ObjectRetrieval(object):
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
                     obj = gctx.start_globals[fname]
-                    obj_path = CanonicalPath(
-                        ["__global__"] + [str(x) for x in local_path.parts]
-                    )
+                    if isinstance(obj, ModuleType) and not LocalDepPathUtils.empty(
+                        sub_path
+                    ):
+                        # Referring to function from an imported module.
+                        # Redirect the search to the module
+                        _logger.debug(
+                            f"{fname} is module {obj}, checking for {sub_path}"
+                        )
+                        return cls.retrieve_object(sub_path, obj, gctx)
+                    if isinstance(obj, ModuleType):
+                        # Fully resolve the name of the module:
+                        obj_path = _mod_path(obj)
+                    else:
+                        obj_path = CanonicalPath(
+                            ["__global__"] + [str(x) for x in local_path.parts]
+                        )
+                    if not gctx.is_authorized_path(obj_path):
+                        _logger.debug(
+                            f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (path), dropping path {obj_path}"
+                        )
+                        return None
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
                         obj,
                         (
-                            Callable,
+                            FunctionType,
                             ModuleType,
                             pathlib.PosixPath,
                             pathlib.PurePosixPath,
@@ -495,7 +512,6 @@ class ObjectRetrieval(object):
                 else:
                     _logger.debug(f"{fname} not found in start_globals")
                     return None
-            sub_path = LocalDepPath(PurePosixPath("/".join(local_path.parts[1:])))
             return cls._retrieve_object_rec(sub_path, loaded_mod, gctx)
         else:
             return cls._retrieve_object_rec(local_path, context_mod, gctx)
@@ -520,7 +536,7 @@ class ObjectRetrieval(object):
             return context_mod, obj_mod_path
         # At least one more path to explore
         fname = local_path.parts[0]
-        tail_path = LocalDepPath(PurePosixPath("/".join(local_path.parts[1:])))
+        tail_path = LocalDepPathUtils.tail(local_path)
         if fname not in context_mod.__dict__:
             # It should be in the context module, this was assumed to be taken care of
             raise NotImplementedError(
@@ -529,13 +545,13 @@ class ObjectRetrieval(object):
             )
         obj = context_mod.__dict__[fname]
 
-        if not tail_path.parts:
+        if LocalDepPathUtils.empty(tail_path):
             # Final path.
             # If it is a module, continue recursion
             if isinstance(obj, ModuleType):
                 return cls._retrieve_object_rec(tail_path, obj, gctx)
             # Special treatement for objects that may be defined in other modules but are redirected in this one.
-            if isinstance(obj, Callable):
+            if isinstance(obj, FunctionType):
                 mod_obj = inspect.getmodule(obj)
                 if mod_obj is None:
                     _logger.debug(
@@ -553,26 +569,45 @@ class ObjectRetrieval(object):
                 # TODO: simplify the authorized types
                 if _is_authorized_type(type(obj), gctx) or isinstance(
                     obj,
-                    (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath),
+                    (
+                        FunctionType,
+                        ModuleType,
+                        pathlib.PosixPath,
+                        pathlib.PurePosixPath,
+                    ),
                 ):
                     _logger.debug(
-                        f"Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
+                        f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
                     )
                     return obj, obj_path
                 else:
                     _logger.debug(
-                        f"Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
+                        f"_retrieve_object_rec: Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
                     )
             else:
                 _logger.debug(
-                    f"Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
+                    f"_retrieve_object_rec: Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
                 )
                 return None
 
+        _logger.debug(
+            f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)}"
+        )
         # More to explore
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):
             return cls._retrieve_object_rec(tail_path, obj, gctx)
+
+        # Some objects like types are also collables
+
+        # We still have a path but we have reached a callable.
+        # In this case, determine if the function is allowed. If this is the case, stop here.
+        # (the rest of the path is method calls)
+        if isinstance(obj, FunctionType):
+            obj_mod_path = _mod_path(context_mod)
+            obj_path = obj_mod_path.append(fname)
+            if gctx.is_authorized_path(obj_path):
+                return obj, obj_path
 
         # The rest is not authorized for now.
         msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"

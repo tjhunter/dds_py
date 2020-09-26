@@ -139,31 +139,32 @@ def _eval_new_ctx(
         _logger.info(f"Interaction tree:")
         FunctionInteractionsUtils.pprint_tree(inters, printer=lambda s: _logger.info(s))
 
-        # If the blob for that node already exists, we have compute the path already.
-        # No need to go further.
-        current_sig = inters.fun_return_sig
-        _logger.debug(f"_eval_new_ctx:current_sig: {current_sig}")
-        if _store.has_blob(current_sig):
-            _logger.debug(f"_eval_new_ctx:Return cached signature {current_sig}")
-            return _store.fetch_blob(current_sig)
-
         store_paths = FunctionInteractionsUtils.all_store_paths(inters)
         _eval_ctx = EvalContext(requested_paths=store_paths)
         for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
-        arg_repr = [str(type(arg)) for arg in args]
-        kwargs_repr = OrderedDict(
-            [(key, str(type(arg))) for (key, arg) in kwargs.items()]
-        )
-        _logger.info(
-            f"_eval_new_ctx:Evaluating (eval) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
-        )
-        res = fun(*args, **kwargs)
-        _logger.info(f"_eval_new_ctx:Evaluating (eval) fun {fun}: completed")
-        key = None if path is None else _eval_ctx.requested_paths[path]
-        if key is not None:
-            _logger.info(f"_eval:Storing blob into key {key}")
-            _store.store_blob(key, res)
+
+        # If the blob for that node already exists, we have computed the path already.
+        # We only need to check if the path is committed to the blob
+        current_sig = inters.fun_return_sig
+        _logger.debug(f"_eval_new_ctx:current_sig: {current_sig}")
+        if _store.has_blob(current_sig):
+            _logger.debug(f"_eval_new_ctx:Return cached signature {current_sig}")
+            res = _store.fetch_blob(current_sig)
+        else:
+            arg_repr = [str(type(arg)) for arg in args]
+            kwargs_repr = OrderedDict(
+                [(key, str(type(arg))) for (key, arg) in kwargs.items()]
+            )
+            _logger.info(
+                f"_eval_new_ctx:Evaluating (eval) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
+            )
+            res = fun(*args, **kwargs)
+            _logger.info(f"_eval_new_ctx:Evaluating (eval) fun {fun}: completed")
+            key = None if path is None else _eval_ctx.requested_paths[path]
+            if key is not None:
+                _logger.info(f"_eval:Storing blob into key {key}")
+                _store.store_blob(key, res)
         _store.sync_paths(store_paths)
         return res
     finally:

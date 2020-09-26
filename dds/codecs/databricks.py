@@ -5,9 +5,10 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Optional, OrderedDict
+from typing import Any, Optional
+from collections import OrderedDict
 
-import pyspark.sql
+import pyspark.sql  # type:ignore
 from pyspark.sql import DataFrame
 
 from ..codec import CodecRegistry
@@ -30,7 +31,7 @@ class PySparkDatabricksCodec(CodecProtocol):
     def handled_types(self):
         return [pyspark.sql.DataFrame]
 
-    def serialize_into(self, blob: DataFrame, loc: GenericLocation):
+    def serialize_into(self, blob: DataFrame, loc: GenericLocation) -> None:
         assert isinstance(blob, DataFrame), type(blob)
         blob.write.parquet(loc)
         _logger.debug(f"Committed dataframe to parquet: {loc}")
@@ -53,22 +54,20 @@ class StringDBFSCodec(CodecProtocol):
     def handled_types(self):
         return [str]
 
-    def serialize_into(self, blob: str, loc: GenericLocation):
+    def serialize_into(self, blob: str, loc: GenericLocation) -> None:
         self._dbutils.fs.put(loc, blob, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> str:
-        return self._dbutils.fs.head(loc)
+        return self._dbutils.fs.head(loc)  # type:ignore
 
 
 class DBFSStore(Store):
     def __init__(self, internal_dir: str, data_dir: str, dbutils: Any):
-        internal_dir = Path(internal_dir)
-        data_dir = Path(data_dir)
+        self._internal_dir: Path = Path(internal_dir)
+        self._data_dir: Path = Path(data_dir)
         _logger.debug(
-            f"Created DBFSStore: internal_dir: {internal_dir} data_dir: {data_dir}"
+            f"Created DBFSStore: internal_dir: {self._internal_dir} data_dir: {self._data_dir}"
         )
-        self._internal_dir: Path = internal_dir
-        self._data_dir: Path = data_dir
         self._dbutils = dbutils
         self._registry = CodecRegistry(
             [PySparkDatabricksCodec(), StringDBFSCodec(dbutils)]
@@ -83,7 +82,9 @@ class DBFSStore(Store):
         codec = self._registry.get_codec(None, ref)
         return codec.deserialize_from(GenericLocation(str(p)))
 
-    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None):
+    def store_blob(
+        self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
+    ) -> None:
         protocol = self._registry.get_codec(type(blob), codec)
         p = self._blob_path(key)
         protocol.serialize_into(blob, GenericLocation(str(p)))
@@ -101,7 +102,7 @@ class DBFSStore(Store):
     def has_blob(self, key: PyHash) -> bool:
         return self._fetch_meta(key) is not None
 
-    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]):
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
         # This is a brute force approach that copies all the data and writes extra meta data.
         for (dds_p, key) in paths.items():
             # Look for the redirection file associated to this file
@@ -129,7 +130,7 @@ class DBFSStore(Store):
                     f"Path {dds_p} needs update (registered key {redir_key} != {key})"
                 )
                 blob_path = self._blob_path(key)
-                obj_path = self._physical_path("./" + dds_p)
+                obj_path = self._physical_path(Path("./" + dds_p))
                 _logger.debug(f"Copying {blob_path} -> {obj_path}")
                 self._dbutils.fs.cp(str(blob_path), str(obj_path), recurse=True)
                 _logger.debug(f"Linking new file {obj_path}")
@@ -147,7 +148,7 @@ class DBFSStore(Store):
     def _blob_path(self, key: PyHash) -> Path:
         return self._internal_dir.joinpath("blobs", key)
 
-    def _physical_path(self, dds_p: DDSPath) -> Path:
+    def _physical_path(self, dds_p: Path) -> Path:
         return self._data_dir.joinpath(dds_p)
 
     def _fetch_meta(self, key: PyHash) -> Optional[Any]:
@@ -164,7 +165,7 @@ class DBFSStore(Store):
             return None
 
     def _head(self, p: Path) -> str:
-        return self._dbutils.fs.head(str(p))
+        return self._dbutils.fs.head(str(p))  # type:ignore
 
-    def _put(self, p: Path, blob: str):
+    def _put(self, p: Path, blob: str) -> Any:
         return self._dbutils.fs.put(str(p), blob, overwrite=True)
