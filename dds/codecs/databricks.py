@@ -123,8 +123,8 @@ class DBFSStore(Store):
             [
                 PySparkDatabricksCodec(),
                 StringDBFSCodec(dbutils),
-                PickleDBFSCodec(dbutils),
                 BytesDBFSCodec(dbutils, True),
+                PickleDBFSCodec(dbutils),
             ]
         )
 
