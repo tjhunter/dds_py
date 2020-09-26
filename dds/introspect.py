@@ -321,7 +321,6 @@ class InspectFunction(object):
         calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars)
         calls_v.visit(node)
         body_sig = _hash(function_body_lines)
-        _logger.debug(f"inspect_fun: interactions: {calls_v.inters}")
         return_sig = _hash(
             [input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters]
         )
