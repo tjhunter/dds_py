@@ -65,7 +65,7 @@ class BytesDBFSCodec(CodecProtocol):
             assert blob_enc.isascii()
             blob_str = blob_enc.decode("ascii")
         else:
-            blob_str = str(blob)
+            blob_str = blob.decode("utf-8")
         self._dbutils.fs.put(loc, blob_str, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> bytes:
@@ -73,7 +73,7 @@ class BytesDBFSCodec(CodecProtocol):
         if self._encode:
             blob_enc = blob_str.encode("ascii")
             return base64.b64decode(blob_enc)
-        return bytes(blob_str, encoding="ascii")
+        return bytes(blob_str, encoding="utf-8")
 
 
 class StringDBFSCodec(CodecProtocol):
