@@ -1,11 +1,13 @@
 """
-
+Databricks-specific storage implementation. It is based on the dbutils object
+which has to be provided at runtime.
 """
-
+import base64
 import json
+import pickle
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, List, Type
 from collections import OrderedDict
 
 import pyspark.sql  # type:ignore
@@ -25,7 +27,7 @@ def _pprint_exception(e: Exception) -> str:
 
 class PySparkDatabricksCodec(CodecProtocol):
     def ref(self):
-        return ProtocolRef("default.pyspark")
+        return ProtocolRef("dbfs.pyspark")
 
     # TODO: just use strings, it will be faster
     def handled_types(self):
@@ -44,21 +46,61 @@ class PySparkDatabricksCodec(CodecProtocol):
         return df
 
 
-class StringDBFSCodec(CodecProtocol):
-    def __init__(self, dbutils: Any):
+class BytesDBFSCodec(CodecProtocol):
+    def __init__(self, dbutils: Any, encode: bool = True):
         self._dbutils = dbutils
+        self._encode = encode
 
     def ref(self):
-        return ProtocolRef("default.string")
+        return ProtocolRef("dbfs.bytes")
 
     def handled_types(self):
+        return [bytes]
+
+    def serialize_into(self, blob: bytes, loc: GenericLocation) -> None:
+        # The DBFS layer does not provide guarantees about respecting the encoding
+        # For safety, the content is encoded first using base64
+        blob_enc = base64.b64encode(blob) if self._encode else blob
+        self._dbutils.fs.put(loc, blob_enc, overwrite=True)
+
+    def deserialize_from(self, loc: GenericLocation) -> bytes:
+        blob_enc = self._dbutils.fs.head(loc)  # type:ignore
+        return base64.b64decode(blob_enc) if self._encode else blob_enc
+
+
+class StringDBFSCodec(CodecProtocol):
+    def __init__(self, dbutils: Any):
+        self._codec = BytesDBFSCodec(dbutils, False)
+
+    def ref(self) -> ProtocolRef:
+        return ProtocolRef("dbfs.string")
+
+    def handled_types(self) -> List[Type[Any]]:
         return [str]
 
-    def serialize_into(self, blob: str, loc: GenericLocation) -> None:
-        self._dbutils.fs.put(loc, blob, overwrite=True)
+    def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
+        self._codec.serialize_into(blob, loc)
 
-    def deserialize_from(self, loc: GenericLocation) -> str:
-        return self._dbutils.fs.head(loc)  # type:ignore
+    def deserialize_from(self, loc: GenericLocation) -> Any:
+        return self._codec.deserialize_from(loc)
+
+
+class PickleDBFSCodec(CodecProtocol):
+    def __init__(self, dbutils: Any):
+        self._codec = BytesDBFSCodec(dbutils, True)
+
+    def ref(self) -> ProtocolRef:
+        return ProtocolRef("dbfs.pickle")
+
+    def handled_types(self) -> List[Type[Any]]:
+        return [object, type(None)]
+
+    def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
+
+        self._codec.serialize_into(pickle.dumps(blob), loc)
+
+    def deserialize_from(self, loc: GenericLocation) -> Any:
+        return pickle.loads(self._codec.deserialize_from(loc))
 
 
 class DBFSStore(Store):
@@ -70,7 +112,12 @@ class DBFSStore(Store):
         )
         self._dbutils = dbutils
         self._registry = CodecRegistry(
-            [PySparkDatabricksCodec(), StringDBFSCodec(dbutils)]
+            [
+                PySparkDatabricksCodec(),
+                StringDBFSCodec(dbutils),
+                PickleDBFSCodec(dbutils),
+                BytesDBFSCodec(dbutils, True),
+            ]
         )
 
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
