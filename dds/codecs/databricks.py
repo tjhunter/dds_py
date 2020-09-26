@@ -60,15 +60,20 @@ class BytesDBFSCodec(CodecProtocol):
     def serialize_into(self, blob: bytes, loc: GenericLocation) -> None:
         # The DBFS layer does not provide guarantees about respecting the encoding
         # For safety, the content is encoded first using base64
-        blob_enc = base64.b64encode(blob) if self._encode else blob
-        assert blob_enc.isascii()
-        blob_str = blob_enc.decode("ascii")
+        if self._encode:
+            blob_enc = base64.b64encode(blob) if self._encode else blob
+            assert blob_enc.isascii()
+            blob_str = blob_enc.decode("ascii")
+        else:
+            blob_str = str(blob)
         self._dbutils.fs.put(loc, blob_str, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> bytes:
         blob_str: str = self._dbutils.fs.head(loc)  # type:ignore
-        blob_enc = bytes(blob_str.encode("ascii"))
-        return base64.b64decode(blob_enc) if self._encode else blob_enc
+        if self._encode:
+            blob_enc = blob_str.encode("ascii")
+            return base64.b64decode(blob_enc)
+        return bytes(blob_str)
 
 
 class StringDBFSCodec(CodecProtocol):
@@ -81,11 +86,11 @@ class StringDBFSCodec(CodecProtocol):
     def handled_types(self) -> List[Type[Any]]:
         return [str]
 
-    def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
-        self._codec.serialize_into(blob, loc)
+    def serialize_into(self, blob: str, loc: GenericLocation) -> None:
+        self._codec.serialize_into(blob.encode("utf-8"), loc)
 
-    def deserialize_from(self, loc: GenericLocation) -> Any:
-        return self._codec.deserialize_from(loc)
+    def deserialize_from(self, loc: GenericLocation) -> str:
+        return self._codec.deserialize_from(loc).decode("utf-8")
 
 
 class PickleDBFSCodec(CodecProtocol):
