@@ -99,7 +99,6 @@ def _introspect(
     fis = InspectFunction.inspect_fun(
         ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
     )
-    _logger.debug(f"End _introspect: {f}: {fis}")
     return fis
 
 
