@@ -87,6 +87,8 @@ class StringDBFSCodec(CodecProtocol):
         return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation) -> None:
+        if not blob.isascii():
+            blob = str(blob.encode("utf-8"), encoding="ascii")
         self._dbutils.fs.put(loc, blob, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> str:
