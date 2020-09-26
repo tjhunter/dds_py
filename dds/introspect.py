@@ -501,7 +501,7 @@ class ObjectRetrieval(object):
                             ModuleType,
                             pathlib.PosixPath,
                             pathlib.PurePosixPath,
-                            str
+                            str,
                         ),
                     ):
                         _logger.debug(
@@ -793,7 +793,11 @@ def _is_primary_function(path: CanonicalPath) -> bool:
     return False
 
 
-_whitelisted_packages: Set[Package] = {Package("dds"), Package("__main__"), Package("__global__")}
+_whitelisted_packages: Set[Package] = {
+    Package("dds"),
+    Package("__main__"),
+    Package("__global__"),
+}
 
 
 def whitelist_module(module: Union[str, ModuleType]) -> None:
