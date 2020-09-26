@@ -78,7 +78,7 @@ class BytesDBFSCodec(CodecProtocol):
 
 class StringDBFSCodec(CodecProtocol):
     def __init__(self, dbutils: Any):
-        self._codec = BytesDBFSCodec(dbutils, False)
+        self._dbutils = dbutils
 
     def ref(self) -> ProtocolRef:
         return ProtocolRef("dbfs.string")
@@ -87,10 +87,10 @@ class StringDBFSCodec(CodecProtocol):
         return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation) -> None:
-        self._codec.serialize_into(blob.encode("utf-8"), loc)
+        self._dbutils.fs.put(loc, blob, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> str:
-        return self._codec.deserialize_from(loc).decode("utf-8")
+        return self._dbutils.fs.head(loc)  # type: ignore
 
 
 class PickleDBFSCodec(CodecProtocol):
