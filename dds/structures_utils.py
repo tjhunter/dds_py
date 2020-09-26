@@ -115,4 +115,3 @@ class LocalDepPathUtils(object):
         if not ps or (len(ps) == 1 and ps[0] == 1):
             return True
         return False
-

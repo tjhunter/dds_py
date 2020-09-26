@@ -471,10 +471,14 @@ class ObjectRetrieval(object):
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
                     obj = gctx.start_globals[fname]
-                    if isinstance(obj, ModuleType) and not LocalDepPathUtils.empty(sub_path):
+                    if isinstance(obj, ModuleType) and not LocalDepPathUtils.empty(
+                        sub_path
+                    ):
                         # Referring to function from an imported module.
                         # Redirect the search to the module
-                        _logger.debug(f"{fname} is module {obj}, checking for {sub_path}")
+                        _logger.debug(
+                            f"{fname} is module {obj}, checking for {sub_path}"
+                        )
                         return cls.retrieve_object(sub_path, obj, gctx)
                     if isinstance(obj, ModuleType):
                         # Fully resolve the name of the module:
@@ -567,7 +571,12 @@ class ObjectRetrieval(object):
                 # TODO: simplify the authorized types
                 if _is_authorized_type(type(obj), gctx) or isinstance(
                     obj,
-                    (FunctionType, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath),
+                    (
+                        FunctionType,
+                        ModuleType,
+                        pathlib.PosixPath,
+                        pathlib.PurePosixPath,
+                    ),
                 ):
                     _logger.debug(
                         f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
@@ -583,7 +592,9 @@ class ObjectRetrieval(object):
                 )
                 return None
 
-        _logger.debug(f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)}")
+        _logger.debug(
+            f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)}"
+        )
         # More to explore
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):

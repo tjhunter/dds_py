@@ -5,7 +5,8 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Optional, OrderedDict
+from typing import Any, Optional
+from collections import OrderedDict
 
 import pyspark.sql
 from pyspark.sql import DataFrame
@@ -101,9 +102,9 @@ class DBFSStore(Store):
     def has_blob(self, key: PyHash) -> bool:
         return self._fetch_meta(key) is not None
 
-    def sync_paths(self, paths: OrderedDict[DDSPath, PyHash]):
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]"):
         # This is a brute force approach that copies all the data and writes extra meta data.
-        for (dds_p, key) in paths.items():
+        for (dds_p, key) in paths.items():  # type: ignore
             # Look for the redirection file associated to this file
             # The paths are /.dds_links/path
             redir_p = Path("_dds_meta/").joinpath("./" + dds_p)
@@ -147,7 +148,7 @@ class DBFSStore(Store):
     def _blob_path(self, key: PyHash) -> Path:
         return self._internal_dir.joinpath("blobs", key)
 
-    def _physical_path(self, dds_p: DDSPath) -> Path:
+    def _physical_path(self, dds_p: Path) -> Path:
         return self._data_dir.joinpath(dds_p)
 
     def _fetch_meta(self, key: PyHash) -> Optional[Any]:
@@ -164,7 +165,7 @@ class DBFSStore(Store):
             return None
 
     def _head(self, p: Path) -> str:
-        return self._dbutils.fs.head(str(p))
+        return self._dbutils.fs.head(str(p))  # type:ignore
 
-    def _put(self, p: Path, blob: str):
+    def _put(self, p: Path, blob: str) -> Any:
         return self._dbutils.fs.put(str(p), blob, overwrite=True)
