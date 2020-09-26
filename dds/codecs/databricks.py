@@ -61,10 +61,13 @@ class BytesDBFSCodec(CodecProtocol):
         # The DBFS layer does not provide guarantees about respecting the encoding
         # For safety, the content is encoded first using base64
         blob_enc = base64.b64encode(blob) if self._encode else blob
-        self._dbutils.fs.put(loc, blob_enc, overwrite=True)
+        assert blob_enc.isascii()
+        blob_str = blob_enc.decode("ascii")
+        self._dbutils.fs.put(loc, blob_str, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> bytes:
-        blob_enc = self._dbutils.fs.head(loc)  # type:ignore
+        blob_str: str = self._dbutils.fs.head(loc)  # type:ignore
+        blob_enc = bytes(blob_str.encode("ascii"))
         return base64.b64decode(blob_enc) if self._encode else blob_enc
 
 
