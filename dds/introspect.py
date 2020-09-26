@@ -190,7 +190,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
             _logger.debug(f"visit_Name: {local_dep_path}: skipping (unauthorized)")
             return
         (obj, path) = res
-        if isinstance(obj, Callable):
+        if isinstance(obj, FunctionType):
             # Modules and callables are tracked separately
             _logger.debug(f"visit name {local_dep_path}: skipping (fun)")
             return
@@ -247,7 +247,7 @@ def _mod_path(m: ModuleType) -> CanonicalPath:
     return CanonicalPath(m.__name__.split("."))
 
 
-def _fun_path(f: Callable) -> CanonicalPath:
+def _fun_path(f: FunctionType) -> CanonicalPath:
     mod = inspect.getmodule(f)
     return CanonicalPath(_mod_path(mod)._path + [f.__name__])
 
@@ -258,7 +258,7 @@ def _is_authorized_type(tpe: Type, gctx: GlobalContext) -> bool:
     """
     if tpe is None:
         return True
-    if tpe in (int, float, str, bytes, PurePosixPath, Callable, ModuleType):
+    if tpe in (int, float, str, bytes, PurePosixPath, FunctionType, ModuleType):
         return True
     if issubclass(tpe, object):
         mod = inspect.getmodule(tpe)
@@ -361,9 +361,9 @@ class InspectFunction(object):
             _logger.debug(f"inspect_call: local_path: {local_path} is rejected")
             return
         caller_fun, caller_fun_path = z
-        if not isinstance(caller_fun, Callable):
+        if not isinstance(caller_fun, FunctionType):
             raise NotImplementedError(
-                f"Expected callable for {caller_fun_path}, got {type(caller_fun)}"
+                f"Expected FunctionType for {caller_fun_path}, got {type(caller_fun)}"
             )
 
         # Check if this is a call we should do something about.
@@ -492,7 +492,7 @@ class ObjectRetrieval(object):
                     if _is_authorized_type(type(obj), gctx) or isinstance(
                         obj,
                         (
-                            Callable,
+                            FunctionType,
                             ModuleType,
                             pathlib.PosixPath,
                             pathlib.PurePosixPath,
@@ -549,7 +549,7 @@ class ObjectRetrieval(object):
             if isinstance(obj, ModuleType):
                 return cls._retrieve_object_rec(tail_path, obj, gctx)
             # Special treatement for objects that may be defined in other modules but are redirected in this one.
-            if isinstance(obj, Callable):
+            if isinstance(obj, FunctionType):
                 mod_obj = inspect.getmodule(obj)
                 if mod_obj is None:
                     _logger.debug(
@@ -567,7 +567,7 @@ class ObjectRetrieval(object):
                 # TODO: simplify the authorized types
                 if _is_authorized_type(type(obj), gctx) or isinstance(
                     obj,
-                    (Callable, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath),
+                    (FunctionType, ModuleType, pathlib.PosixPath, pathlib.PurePosixPath),
                 ):
                     _logger.debug(
                         f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
@@ -583,16 +583,18 @@ class ObjectRetrieval(object):
                 )
                 return None
 
-        _logger.debug(f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, Callable)}")
+        _logger.debug(f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)}")
         # More to explore
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):
             return cls._retrieve_object_rec(tail_path, obj, gctx)
 
+        # Some objects like types are also collables
+
         # We still have a path but we have reached a callable.
         # In this case, determine if the function is allowed. If this is the case, stop here.
         # (the rest of the path is method calls)
-        if isinstance(obj, Callable):
+        if isinstance(obj, FunctionType):
             obj_mod_path = _mod_path(context_mod)
             obj_path = obj_mod_path.append(fname)
             if gctx.is_authorized_path(obj_path):
