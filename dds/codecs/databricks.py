@@ -153,14 +153,14 @@ class DBFSStore(Store):
         # This is a brute force approach that copies all the data and writes extra meta data.
         for (dds_p, key) in paths.items():
             # Look for the redirection file associated to this file
-            # The paths are /.dds_links/path
+            # The paths are /_dds_meta/path
             redir_p = Path("_dds_meta/").joinpath("./" + dds_p)
             redir_path = self._physical_path(redir_p)
             # Try to read the redirection information:
             _logger.debug(
                 f"Attempting to read metadata for key {key}: {redir_path} {redir_p} {dds_p}"
             )
-            meta: Optional[str] = None
+            meta: Optional[str]
             try:
                 meta = self._head(redir_path)
             except Exception as e:
