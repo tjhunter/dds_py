@@ -75,7 +75,7 @@ class GlobalContext(object):
         return self._hashes[path]
 
     def is_authorized_path(self, cp: CanonicalPath) -> bool:
-        _logger.debug(f"is_authorized_path: {self.whitelisted_packages}")
+        _logger.debug(f"is_authorized_path: {self.whitelisted_packages} {cp}")
         for idx in range(len(self.whitelisted_packages)):
             if ".".join(cp._path[:idx]) in self.whitelisted_packages:
                 return True
@@ -501,6 +501,7 @@ class ObjectRetrieval(object):
                             ModuleType,
                             pathlib.PosixPath,
                             pathlib.PurePosixPath,
+                            str
                         ),
                     ):
                         _logger.debug(
@@ -792,7 +793,7 @@ def _is_primary_function(path: CanonicalPath) -> bool:
     return False
 
 
-_whitelisted_packages: Set[Package] = {Package("dds"), Package("__main__")}
+_whitelisted_packages: Set[Package] = {Package("dds"), Package("__main__"), Package("__global__")}
 
 
 def whitelist_module(module: Union[str, ModuleType]) -> None:
