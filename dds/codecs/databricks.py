@@ -2,10 +2,11 @@
 Databricks-specific storage implementation. It is based on the dbutils object
 which has to be provided at runtime.
 """
-import base64
+import os
 import json
 import pickle
 import logging
+import tempfile
 from pathlib import Path
 from typing import Any, Optional, List, Type
 from collections import OrderedDict
@@ -47,9 +48,12 @@ class PySparkDatabricksCodec(CodecProtocol):
 
 
 class BytesDBFSCodec(CodecProtocol):
-    def __init__(self, dbutils: Any, encode: bool = True):
+    """
+    Handles byte arrays of arbitrary sizes (as long as they fit in memory).
+    """
+
+    def __init__(self, dbutils: Any):
         self._dbutils = dbutils
-        self._encode = encode
 
     def ref(self):
         return ProtocolRef("dbfs.bytes")
@@ -58,25 +62,34 @@ class BytesDBFSCodec(CodecProtocol):
         return [bytes]
 
     def serialize_into(self, blob: bytes, loc: GenericLocation) -> None:
-        # The DBFS layer does not provide guarantees about respecting the encoding
-        # For safety, the content is encoded first using base64
-        if self._encode:
-            blob_enc = base64.b64encode(blob) if self._encode else blob
-            assert blob_enc.isascii()
-            blob_str = blob_enc.decode("ascii")
-        else:
-            blob_str = blob.decode("utf-8")
-        self._dbutils.fs.put(loc, blob_str, overwrite=True)
+        with tempfile.NamedTemporaryFile() as f:
+            _logger.debug(
+                f": starting copy of {len(blob)} bytes to {loc} (temp: {f.name})"
+            )
+            f.write(blob)
+            self._dbutils.fs.cp("file:///" + f.name, loc, overwrite=True)
+            _logger.debug(f"copied {len(blob)} bytes to {loc}")
 
     def deserialize_from(self, loc: GenericLocation) -> bytes:
-        blob_str: str = self._dbutils.fs.head(loc)  # type:ignore
-        if self._encode:
-            blob_enc = blob_str.encode("ascii")
-            return base64.b64decode(blob_enc)
-        return bytes(blob_str, encoding="utf-8")
+        _, name = tempfile.mkstemp()
+        _logger.debug(f"starting retrieval of {loc} (temp: {name})")
+        try:
+            self._dbutils.fs.cp(loc, "file://" + name, overwrite=True)
+            with open(name, "rb") as f:
+                blob = f.read()
+                _logger.debug(f"copied {len(blob)} bytes from {loc}")
+                return blob
+        finally:
+            os.remove(name)
 
 
 class StringDBFSCodec(CodecProtocol):
+    """
+    Handles unicode strings.
+
+    TODO: handle larger strings than the dbutils buffer allows.
+    """
+
     def __init__(self, dbutils: Any):
         self._dbutils = dbutils
 
@@ -95,7 +108,7 @@ class StringDBFSCodec(CodecProtocol):
 
 class PickleDBFSCodec(CodecProtocol):
     def __init__(self, dbutils: Any):
-        self._codec = BytesDBFSCodec(dbutils, True)
+        self._codec = BytesDBFSCodec(dbutils)
 
     def ref(self) -> ProtocolRef:
         return ProtocolRef("dbfs.pickle")
@@ -123,7 +136,7 @@ class DBFSStore(Store):
             [
                 PySparkDatabricksCodec(),
                 StringDBFSCodec(dbutils),
-                BytesDBFSCodec(dbutils, True),
+                BytesDBFSCodec(dbutils),
                 PickleDBFSCodec(dbutils),
             ]
         )
