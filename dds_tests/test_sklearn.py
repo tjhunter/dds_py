@@ -40,8 +40,8 @@ def build_model(X_train, y_train):
         preprocessing.StandardScaler(), RandomForestRegressor(n_estimators=100)
     )
     hyperparameters = {
-        "randomforestregressor__max_features": ["auto", "sqrt", "log2"],
-        "randomforestregressor__max_depth": [None, 5, 3, 1],
+        "randomforestregressor__max_features": ["log2"],
+        "randomforestregressor__max_depth": [None, 1],
     }
 
     clf = GridSearchCV(pipeline_, hyperparameters, cv=2)
@@ -67,8 +67,8 @@ def pipeline():
     dds.keep(path_model_stats, model_stats, clf, X_test, y_test)
 
 
-# @pytest.mark.usefixtures("cleandir")
-# def test_sklearn():
-#     """ Unauthorized objects are not taken into account """
-#     dds.eval(pipeline)
-#     dds.eval(pipeline)
+@pytest.mark.usefixtures("cleandir")
+def test_sklearn():
+    """ Unauthorized objects are not taken into account """
+    dds.eval(pipeline)
+    dds.eval(pipeline)
