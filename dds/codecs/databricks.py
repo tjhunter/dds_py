@@ -67,6 +67,7 @@ class BytesDBFSCodec(CodecProtocol):
                 f": starting copy of {len(blob)} bytes to {loc} (temp: {f.name})"
             )
             f.write(blob)
+            f.flush()
             self._dbutils.fs.cp("file:///" + f.name, loc)
             _logger.debug(f"copied {len(blob)} bytes to {loc}")
 
