@@ -1,11 +1,14 @@
 """
-
+Databricks-specific storage implementation. It is based on the dbutils object
+which has to be provided at runtime.
 """
-
+import os
 import json
+import pickle
 import logging
+import tempfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, List, Type
 from collections import OrderedDict
 
 import pyspark.sql  # type:ignore
@@ -25,7 +28,7 @@ def _pprint_exception(e: Exception) -> str:
 
 class PySparkDatabricksCodec(CodecProtocol):
     def ref(self):
-        return ProtocolRef("default.pyspark")
+        return ProtocolRef("dbfs.pyspark")
 
     # TODO: just use strings, it will be faster
     def handled_types(self):
@@ -44,21 +47,82 @@ class PySparkDatabricksCodec(CodecProtocol):
         return df
 
 
-class StringDBFSCodec(CodecProtocol):
+class BytesDBFSCodec(CodecProtocol):
+    """
+    Handles byte arrays of arbitrary sizes (as long as they fit in memory).
+    """
+
     def __init__(self, dbutils: Any):
         self._dbutils = dbutils
 
     def ref(self):
-        return ProtocolRef("default.string")
+        return ProtocolRef("dbfs.bytes")
 
     def handled_types(self):
+        return [bytes]
+
+    def serialize_into(self, blob: bytes, loc: GenericLocation) -> None:
+        with tempfile.NamedTemporaryFile() as f:
+            _logger.debug(
+                f": starting copy of {len(blob)} bytes to {loc} (temp: {f.name})"
+            )
+            f.write(blob)
+            f.flush()
+            self._dbutils.fs.cp("file:///" + f.name, loc)
+            _logger.debug(f"copied {len(blob)} bytes to {loc}")
+
+    def deserialize_from(self, loc: GenericLocation) -> bytes:
+        _, name = tempfile.mkstemp()
+        _logger.debug(f"starting retrieval of {loc} (temp: {name})")
+        try:
+            self._dbutils.fs.cp(loc, "file://" + name)
+            with open(name, "rb") as f:
+                blob = f.read()
+                _logger.debug(f"copied {len(blob)} bytes from {loc}")
+                return blob
+        finally:
+            os.remove(name)
+
+
+class StringDBFSCodec(CodecProtocol):
+    """
+    Handles unicode strings.
+
+    TODO: handle larger strings than the dbutils buffer allows.
+    """
+
+    def __init__(self, dbutils: Any):
+        self._dbutils = dbutils
+
+    def ref(self) -> ProtocolRef:
+        return ProtocolRef("dbfs.string")
+
+    def handled_types(self) -> List[Type[Any]]:
         return [str]
 
     def serialize_into(self, blob: str, loc: GenericLocation) -> None:
         self._dbutils.fs.put(loc, blob, overwrite=True)
 
     def deserialize_from(self, loc: GenericLocation) -> str:
-        return self._dbutils.fs.head(loc)  # type:ignore
+        return self._dbutils.fs.head(loc)  # type: ignore
+
+
+class PickleDBFSCodec(CodecProtocol):
+    def __init__(self, dbutils: Any):
+        self._codec = BytesDBFSCodec(dbutils)
+
+    def ref(self) -> ProtocolRef:
+        return ProtocolRef("dbfs.pickle")
+
+    def handled_types(self) -> List[Type[Any]]:
+        return [object, type(None)]
+
+    def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
+
+        self._codec.serialize_into(pickle.dumps(blob), loc)
+
+    def deserialize_from(self, loc: GenericLocation) -> Any:
+        return pickle.loads(self._codec.deserialize_from(loc))
 
 
 class DBFSStore(Store):
@@ -70,7 +134,12 @@ class DBFSStore(Store):
         )
         self._dbutils = dbutils
         self._registry = CodecRegistry(
-            [PySparkDatabricksCodec(), StringDBFSCodec(dbutils)]
+            [
+                PySparkDatabricksCodec(),
+                StringDBFSCodec(dbutils),
+                BytesDBFSCodec(dbutils),
+                PickleDBFSCodec(dbutils),
+            ]
         )
 
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
@@ -106,14 +175,14 @@ class DBFSStore(Store):
         # This is a brute force approach that copies all the data and writes extra meta data.
         for (dds_p, key) in paths.items():
             # Look for the redirection file associated to this file
-            # The paths are /.dds_links/path
+            # The paths are /_dds_meta/path
             redir_p = Path("_dds_meta/").joinpath("./" + dds_p)
             redir_path = self._physical_path(redir_p)
             # Try to read the redirection information:
             _logger.debug(
                 f"Attempting to read metadata for key {key}: {redir_path} {redir_p} {dds_p}"
             )
-            meta: Optional[str] = None
+            meta: Optional[str]
             try:
                 meta = self._head(redir_path)
             except Exception as e:

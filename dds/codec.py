@@ -34,14 +34,13 @@ class CodecRegistry(object):
             return self._protocols[ref]
         # Then the object type
         if obj_type:
-            if obj_type not in self._handled_types:
+            # Try to use object as backup
+            cp = self._handled_types.get(obj_type) or self._handled_types.get(object)
+            if cp is None:
                 raise KSException(
                     f"Requested protocol for type {obj_type}, which is not registered"
                 )
-            return self._handled_types[obj_type]
-        # Then finally the pickle codec if available, since it is a catch-all
-        if object in self._handled_types:
-            return self._handled_types[object]
+            return cp
         raise KSException(f"No protocol found")
 
 
