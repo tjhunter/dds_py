@@ -67,14 +67,14 @@ class BytesDBFSCodec(CodecProtocol):
                 f": starting copy of {len(blob)} bytes to {loc} (temp: {f.name})"
             )
             f.write(blob)
-            self._dbutils.fs.cp("file:///" + f.name, loc, overwrite=True)
+            self._dbutils.fs.cp("file:///" + f.name, loc)
             _logger.debug(f"copied {len(blob)} bytes to {loc}")
 
     def deserialize_from(self, loc: GenericLocation) -> bytes:
         _, name = tempfile.mkstemp()
         _logger.debug(f"starting retrieval of {loc} (temp: {name})")
         try:
-            self._dbutils.fs.cp(loc, "file://" + name, overwrite=True)
+            self._dbutils.fs.cp(loc, "file://" + name)
             with open(name, "rb") as f:
                 blob = f.read()
                 _logger.debug(f"copied {len(blob)} bytes from {loc}")
