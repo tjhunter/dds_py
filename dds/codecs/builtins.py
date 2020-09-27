@@ -2,7 +2,6 @@
 The string protocol.
 """
 import pickle
-import sklearn.model_selection._search  # type: ignore
 
 from typing import Any, Optional
 
@@ -40,15 +39,12 @@ class PickleLocalCodec(CodecProtocol):
         return ProtocolRef("builtins.pickle")
 
     def handled_types(self):
-        return [object, sklearn.model_selection._search.GridSearchCV, type(None)]
+        return [object, type(None)]
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         with open(loc, "wb") as f:
             pickle.dump(blob, f)
 
-    def deserialize_from(self, loc: GenericLocation) -> Optional[str]:
+    def deserialize_from(self, loc: GenericLocation) -> Any:
         with open(loc, "rb") as f:
-            res = pickle.load(f)
-            if res is None or isinstance(res, str):
-                return res
-            raise KSException(f"Expected str, got {type(res)}")
+            return pickle.load(f)
