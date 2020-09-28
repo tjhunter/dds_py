@@ -146,3 +146,16 @@ def test_5():
     assert fun_5_counter1.value == 2
     # This function comes later but has no argument -> no need to reevaluate
     assert fun_5_counter2.value == 1
+
+
+fun_6_x = 0.5
+
+@dds.dds_function("/p")
+def fun_6_f():
+    return fun_6_x * 2
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_1():
+    """ Unauthorized objects do not trigger errors """
+    assert dds.eval(fun_6_f) == 1.0

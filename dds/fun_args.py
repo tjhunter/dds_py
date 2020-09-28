@@ -3,6 +3,7 @@
 import ast
 import hashlib
 import inspect
+import struct
 import logging
 from collections import OrderedDict
 from inspect import Parameter
@@ -24,12 +25,17 @@ _logger = logging.getLogger(__name__)
 
 def dds_hash(x: Any) -> PyHash:
     def algo_str(s: str) -> PyHash:
-        return PyHash(hashlib.sha256(s.encode()).hexdigest())
+        return algo_bytes(s.encode())
+    
+    def algo_bytes(b: bytes) -> PyHash:
+        return PyHash(hashlib.sha256(b).hexdigest())
 
     if isinstance(x, str):
         return algo_str(x)
+    if isinstance(x, float):
+        return algo_bytes(struct.pack("!d", x))
     if isinstance(x, int):
-        return algo_str(str(x))
+        return algo_bytes(struct.pack("!l", x))
     if isinstance(x, list):
         return algo_str("|".join([dds_hash(y) for y in x]))
     if isinstance(x, CanonicalPath):
