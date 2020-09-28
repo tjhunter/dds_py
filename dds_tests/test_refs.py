@@ -150,6 +150,7 @@ def test_5():
 
 fun_6_x = 0.5
 
+
 @dds.dds_function("/p")
 def fun_6_f():
     return fun_6_x * 2
