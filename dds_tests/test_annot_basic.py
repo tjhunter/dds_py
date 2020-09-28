@@ -22,11 +22,11 @@ def f1():
 
 @pytest.mark.usefixtures("cleandir")
 def test():
-    # assert f() == "a"
-    # assert _c.value == 1
-    # assert dds.eval(f) == "a"
-    # assert _c.value == 1
-    # assert f1() == "a"
-    # assert _c.value == 1
+    assert f() == "a"
+    assert _c.value == 1
+    assert dds.eval(f) == "a"
+    assert _c.value == 1
+    assert f1() == "a"
+    assert _c.value == 1
     assert dds.eval(f1) == "a"
     assert _c.value == 1
