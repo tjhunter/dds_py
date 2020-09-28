@@ -25,7 +25,7 @@ _logger = logging.getLogger(__name__)
 
 def dds_hash(x: Any) -> PyHash:
     def algo_str(s: str) -> PyHash:
-        return algo_bytes(s.encode())
+        return algo_bytes(s.encode("utf-8"))
 
     def algo_bytes(b: bytes) -> PyHash:
         return PyHash(hashlib.sha256(b).hexdigest())
