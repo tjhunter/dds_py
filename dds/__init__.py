@@ -13,8 +13,17 @@ from ._api import (
 from .introspect import whitelist_module as _whitelist_module
 from .store import Store
 from .structures import DDSPath
+from ._annotations import dds_function
 
-__all__ = ["DDSPath", "keep", "eval", "whitelist_module", "set_store", "__version__"]
+__all__ = [
+    "DDSPath",
+    "keep",
+    "eval",
+    "whitelist_module",
+    "set_store",
+    "__version__",
+    "dds_function",
+]
 
 __version__ = version
 

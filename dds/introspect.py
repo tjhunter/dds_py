@@ -92,6 +92,7 @@ def _introspect(
     ast_src = ast.parse(src)
     body_lines = src.split("\n")
     ast_f = ast_src.body[0]
+    _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     fun_module = inspect.getmodule(f)
 
     fun_path = _fun_path(f)
@@ -312,27 +313,63 @@ class InspectFunction(object):
         local_vars = set(cls.get_local_vars(node, arg_ctx))
         _logger.debug(f"inspect_fun: local_vars: {local_vars}")
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
-        vdeps.visit(node)
+        for n in node.body:
+            vdeps.visit(n)
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         _logger.debug(f"inspect_fun: ext_deps: {ext_deps}")
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
         sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)
         input_sig = _hash(sig_list)
         calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars)
-        calls_v.visit(node)
+        for n in node.body:
+            calls_v.visit(n)
         body_sig = _hash(function_body_lines)
         return_sig = _hash(
             [input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters]
         )
+
+        # Look at the annotations to see if there is a reference to a dds_function
+        store_path = cls._path_annotation(node, mod, gctx)
+        _logger.debug(f"inspect_fun: path from annotation: {store_path}")
+
         return FunctionInteractions(
             arg_input=arg_ctx,
             fun_body_sig=body_sig,
             fun_return_sig=return_sig,
             external_deps=ext_deps,
             parsed_body=calls_v.inters,
-            store_path=None,
+            store_path=store_path,
             fun_path=fun_path,
         )
+
+    @classmethod
+    def _path_annotation(
+        cls, node: ast.FunctionDef, mod: ModuleType, gctx: GlobalContext
+    ) -> Optional[DDSPath]:
+        for dec in node.decorator_list:
+            if isinstance(dec, ast.Call):
+                local_path = LocalDepPath(
+                    PurePosixPath("/".join(_function_name(dec.func)))
+                )
+                _logger.debug(f"_path_annotation: local_path: {local_path}")
+                z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
+                if z is None:
+                    _logger.debug(
+                        f"_path_annotation: local_path: {local_path} is rejected"
+                    )
+                    return None
+                caller_fun, caller_fun_path = z
+                _logger.debug(f"_path_annotation: caller_fun_path: {caller_fun_path}")
+                if caller_fun_path == CanonicalPath(
+                    ["dds", "_annotations", "dds_function"]
+                ):
+                    if len(dec.args) != 1:
+                        raise KSException(
+                            f"Wrong number of arguments for decorator: {pformat(dec)}"
+                        )
+                    store_path = cls._retrieve_store_path(dec.args[0], mod, gctx)
+                    return store_path
+        return None
 
     @classmethod
     def inspect_call(
@@ -345,7 +382,7 @@ class InspectFunction(object):
         function_inter_hash: PyHash,
         var_names: Set[str],
     ) -> Optional[FunctionInteractions]:
-        # _logger.debug(f"Inspect call:\n {pformat(node)}")
+        _logger.debug(f"Inspect call:\n {pformat(node)}")
 
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
         _logger.debug(f"inspect_call: local_path: {local_path}")
