@@ -110,7 +110,10 @@ def keep(
 
 
 def eval(
-    fun: Callable[[_In], _Out], *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
+    fun: Callable[[_In], _Out],
+    *args: Tuple[Any, ...],
+    dds_export_graph: Union[str, pathlib.Path, None] = None,
+    **kwargs: Dict[str, Any]
 ) -> _Out:
     """
     Evaluates a function. The result of the function is not stored in the data store, but the function itself may
@@ -122,6 +125,11 @@ def eval(
     enable automatic parallel execution of internal statements.
 
     See also the documentation of keep() for an example of eval().
+
+    :param dds_export_graph: if specified, a file with the dependency graph of the function will be exported.
+     NOTE: this requires the pydot or pydotplus package to be installed, as well as the graphviz program.
+     These packages must be installed separately. If they are not present, a runtime error will be triggered.
+
 
     Simple example.
 
@@ -141,7 +149,7 @@ def eval(
     :param kwargs: (keyworded arguments are currently unsupported)
     :return: the return value of the function.
     """
-    return _eval(fun, *args, **kwargs)
+    return _eval(fun, args, kwargs, dds_export_graph)
 
 
 def set_store(
