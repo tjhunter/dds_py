@@ -30,19 +30,27 @@ def keep(
     **kwargs,
 ) -> _Out:
     path = DDSPathUtils.create(path)
-    return _eval(fun, path, args, kwargs)
+    return _eval(fun, path, args, kwargs, None)
 
 
-def eval(fun: Callable[[_In], _Out], *args, **kwargs) -> _Out:
+def eval(
+    fun: Callable[[_In], _Out],
+    args: Tuple[Any, ...],
+    kwargs: Dict[str, Any],
+    dds_export_graph: Union[str, pathlib.Path, None],
+) -> _Out:
     """
     Evaluates a function that may cache data, without caching the result
     of the function itself.
     :param fun: the function
     :param args: arguments
     :param kwargs: argument
+    :param dds_export_graph: if specified, a file with the dependency graph of the function will be exported.
+     NOTE: this requires the pydot or pydotplus package to be installed, as well as the graphviz program.
+     These packages must be installed separately. If they are not present, a runtime error will be triggered.
     :return: the return value of the function
     """
-    return _eval(fun, None, args, kwargs)
+    return _eval(fun, None, args, kwargs, dds_export_graph)
 
 
 def set_store(
@@ -88,10 +96,16 @@ def _eval(
     path: Optional[DDSPath],
     args: Tuple[Any],
     kwargs: Dict[str, Any],
+    dds_export_graph: Union[str, pathlib.Path, type(None)],
 ) -> _Out:
+    if dds_export_graph is not None:
+        export_graph = pathlib.Path(dds_export_graph).absolute()
+    else:
+        export_graph = None
+
     if not _eval_ctx:
         # Not in an evaluation context, create one and introspect
-        return _eval_new_ctx(fun, path, args, kwargs)
+        return _eval_new_ctx(fun, path, args, kwargs, export_graph)
     else:
         if not path:
             raise KSException(
@@ -121,6 +135,7 @@ def _eval_new_ctx(
     path: Optional[DDSPath],
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
+    export_graph: Optional[pathlib.Path],
 ) -> _Out:
     global _eval_ctx
     assert _eval_ctx is None, _eval_ctx
@@ -138,6 +153,11 @@ def _eval_new_ctx(
             inters = inters._replace(store_path=path)
         _logger.info(f"Interaction tree:")
         FunctionInteractionsUtils.pprint_tree(inters, printer=lambda s: _logger.info(s))
+        if export_graph is not None:
+            # Attempt to run the export module:
+            from ._plotting import draw_graph
+
+            draw_graph(inters, export_graph)
 
         store_paths = FunctionInteractionsUtils.all_store_paths(inters)
         _eval_ctx = EvalContext(requested_paths=store_paths)
