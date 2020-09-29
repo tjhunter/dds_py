@@ -30,7 +30,7 @@ def keep(
     **kwargs,
 ) -> _Out:
     path = DDSPathUtils.create(path)
-    return _eval(fun, path, args, kwargs, None)
+    return _eval(fun, path, args, kwargs, None, None)
 
 
 def eval(
@@ -38,6 +38,7 @@ def eval(
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     dds_export_graph: Union[str, pathlib.Path, None],
+    dds_extra_debug: Optional[bool],
 ) -> _Out:
     """
     Evaluates a function that may cache data, without caching the result
@@ -50,7 +51,7 @@ def eval(
      These packages must be installed separately. If they are not present, a runtime error will be triggered.
     :return: the return value of the function
     """
-    return _eval(fun, None, args, kwargs, dds_export_graph)
+    return _eval(fun, None, args, kwargs, dds_export_graph, dds_extra_debug)
 
 
 def set_store(
@@ -97,15 +98,18 @@ def _eval(
     args: Tuple[Any],
     kwargs: Dict[str, Any],
     dds_export_graph: Union[str, pathlib.Path, type(None)],
+    dds_extra_debug: Optional[bool],
 ) -> _Out:
     if dds_export_graph is not None:
         export_graph = pathlib.Path(dds_export_graph).absolute()
     else:
         export_graph = None
 
+    extra_debug = dds_extra_debug or False
+
     if not _eval_ctx:
         # Not in an evaluation context, create one and introspect
-        return _eval_new_ctx(fun, path, args, kwargs, export_graph)
+        return _eval_new_ctx(fun, path, args, kwargs, export_graph, extra_debug)
     else:
         if not path:
             raise KSException(
@@ -136,6 +140,7 @@ def _eval_new_ctx(
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     export_graph: Optional[pathlib.Path],
+    extra_debug: bool,
 ) -> _Out:
     global _eval_ctx
     assert _eval_ctx is None, _eval_ctx
@@ -151,16 +156,25 @@ def _eval_new_ctx(
         # Also add the current path, if requested:
         if path is not None:
             inters = inters._replace(store_path=path)
+        store_paths = FunctionInteractionsUtils.all_store_paths(inters)
+        _eval_ctx = EvalContext(requested_paths=store_paths)
+        if extra_debug:
+            present_blobs = set(
+                [key for key in set(store_paths.values()) if _store.has_blob(key)]
+            )
+        else:
+            present_blobs = None
+
         _logger.info(f"Interaction tree:")
-        FunctionInteractionsUtils.pprint_tree(inters, printer=lambda s: _logger.info(s))
+        FunctionInteractionsUtils.pprint_tree(
+            inters, present_blobs, printer=lambda s: _logger.info(s)
+        )
         if export_graph is not None:
             # Attempt to run the export module:
             from ._plotting import draw_graph
 
-            draw_graph(inters, export_graph)
+            draw_graph(inters, export_graph, present_blobs)
 
-        store_paths = FunctionInteractionsUtils.all_store_paths(inters)
-        _eval_ctx = EvalContext(requested_paths=store_paths)
         for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
 

@@ -121,6 +121,7 @@ def eval(
     fun: Callable[..., _Out],
     *args: Tuple[Any, ...],
     dds_export_graph: Union[str, pathlib.Path, None] = None,
+    dds_extra_debug: Optional[bool] = None,
     **kwargs: Dict[str, Any]
 ) -> _Out:
     """
@@ -137,6 +138,9 @@ def eval(
     :param dds_export_graph: if specified, a file with the dependency graph of the function will be exported.
      NOTE: this requires the pydot or pydotplus package to be installed, as well as the graphviz program.
      These packages must be installed separately. If they are not present, a runtime error will be triggered.
+
+    :param dds_extra_debug: (default false). If true, will compute extra statistics to assist with debugging.
+      As implemented, it reaches to the store to check which blobs need to be computed.
 
 
     Simple example.
@@ -157,7 +161,7 @@ def eval(
     :param kwargs: (keyworded arguments are currently unsupported)
     :return: the return value of the function.
     """
-    return _eval(fun, args, kwargs, dds_export_graph)
+    return _eval(fun, args, kwargs, dds_export_graph, dds_extra_debug)
 
 
 def set_store(
