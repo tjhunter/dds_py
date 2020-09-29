@@ -1,19 +1,18 @@
+import pathlib
 from types import ModuleType
 from typing import Tuple, Dict
-import pathlib
 from typing import TypeVar, Callable, Any, Optional, Union
 
-
-from ._version import version
+from ._annotations import dds_function
 from ._api import (
     keep as _keep,
     eval as _eval,
     set_store as _set_store,
 )
+from ._version import version
 from .introspect import whitelist_module as _whitelist_module
 from .store import Store
 from .structures import DDSPath
-from ._annotations import dds_function
 
 __all__ = [
     "DDSPath",
@@ -33,7 +32,7 @@ _In = TypeVar("_In")
 
 def keep(
     path: Union[str, DDSPath, pathlib.Path],
-    fun: Union[Callable[[_In], _Out], Callable[[], _Out]],
+    fun: Callable[..., _Out],
     *args: Tuple[Any, ...],
     **kwargs: Dict[str, Any]
 ) -> _Out:
@@ -119,7 +118,7 @@ def keep(
 
 
 def eval(
-    fun: Callable[[_In], _Out], *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
+    fun: Callable[..., _Out], *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
 ) -> _Out:
     """
     Evaluates a function. The result of the function is not stored in the data store, but the function itself may
