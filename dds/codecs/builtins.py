@@ -2,17 +2,14 @@
 The string protocol.
 """
 import pickle
-
-from typing import Any, Optional
+from typing import Any
 
 from ..structures import (
     CodecProtocol,
     ProtocolRef,
     GenericLocation,
     CodecBackend,
-    KSException,
 )
-
 
 Local = CodecBackend("Local")
 
