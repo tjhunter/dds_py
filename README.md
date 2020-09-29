@@ -40,6 +40,23 @@ The DDS library guarantees the following after evaluation of the code:
 1. the path `/hello_data` contains a copy of the data returned by `data_creator`, as if the function `data_creator` had been called at this moment
 2. the function `data_creator` is only evaluated when its inputs, or its code, are modified (referential transparency)
 
+## How to use
+
+This package is not published on PyPI yet. To use the latest version, run:
+
+```
+pip install -U git+https://github.com/tjhunter/dds_py
+```
+
+This package is known to work on python 3.6, 3.7, 3.8. No other versions are officially supported. Python 3.4 and 3.5 might work but they are not supported.
+
+__Plotting dependencies__ If you want to plot the graph of data dependencies, you must install separately the `pydotplus` package, which requires `graphviz` on your system to work properly. Consult the documentation of the `pydotplus` package for more details. The `pydotplus` package is only required with the `dds_export_graph` option.
+
+__Databricks users:__ If you want to use this package with Databricks, some specific hooks for Spark are available. See this notebook for a complete example:
+https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/7816249071411394/4492656151009213/5450662050199348/latest.html
+
+## Programming model
+
 This model has profound consequences for the programmers:
 - computationally expensive data functions (such as building models) can be composed and built upon _very cheaply_, as if they were
 variables. DDS alleviates the need to decompose data pipelines into multiple stages because of technological requirments. 
