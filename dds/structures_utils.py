@@ -4,13 +4,7 @@ Utilities related to structures
 
 import pathlib
 from collections import OrderedDict
-from typing import (
-    Callable,
-    Any,
-    Optional,
-    List,
-    Tuple,
-)
+from typing import Callable, Any, Optional, List, Tuple, Set
 from typing import Union
 
 from .structures import DDSPath, KSException, FunctionInteractions, PyHash, LocalDepPath
@@ -59,7 +53,10 @@ class FunctionInteractionsUtils(object):
 
     @classmethod
     def pprint_tree(
-        cls, fi: FunctionInteractions, printer: Callable[[str], None]
+        cls,
+        fi: FunctionInteractions,
+        present_blobs: Optional[Set[PyHash]],
+        printer: Callable[[str], None],
     ) -> None:
         def pprint_tree_(
             node: _PrintNode, _prefix: str = "", _last: bool = True
@@ -73,22 +70,30 @@ class FunctionInteractionsUtils(object):
                 pprint_tree_(child, _prefix, _last)
 
         def to_nodes(fi_: FunctionInteractions) -> _PrintNode:
+            status = (
+                "-- "
+                if present_blobs is not None and fi_.fun_return_sig in present_blobs
+                else "<- *"
+            )
+            sig = str(fi_.fun_return_sig)[:10]
             path = (
-                f"@ {fi_.fun_return_sig}"
+                f"@ {sig}"
                 if fi_.store_path is None
-                else f"{fi_.store_path} <- {fi_.fun_return_sig}"
+                else f"{fi_.store_path} {status}{sig}"
             )
             # TODO: add full path
             name = f"Fun {fi_.fun_path} {path}"
-            call_ctx = fi_.arg_input.inner_call_key
+            call_ctx = str(fi_.arg_input.inner_call_key)[:10]
             nodes = (
                 ([_PrintNode(value=f"Ctx {call_ctx}")] if call_ctx is not None else [])
                 + [
-                    _PrintNode(value=f"Arg {arg_name}: {arg_key}")
+                    _PrintNode(value=f"Arg {arg_name}: {str(arg_key)[:10]}")
                     for (arg_name, arg_key) in fi_.arg_input.named_args.items()
                 ]
                 + [
-                    _PrintNode(value=f"Dep {ed.local_path} -> {ed.path}: {ed.sig}")
+                    _PrintNode(
+                        value=f"Dep {ed.local_path} -> {ed.path}: {str(ed.sig)[:10]}"
+                    )
                     for ed in fi_.external_deps
                 ]
                 + [

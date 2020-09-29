@@ -36,5 +36,5 @@ def test():
     assert _c.value == 1
     dds.keep(_p, f)
     assert _c.value == 1
-    dds.eval(f)
+    dds.eval(f, dds_extra_debug=True)
     assert _c.value == 1
