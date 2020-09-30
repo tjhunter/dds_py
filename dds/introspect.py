@@ -228,6 +228,8 @@ class LocalVarsVisitor(ast.NodeVisitor):
 def _function_name(node) -> List[str]:
     if isinstance(node, ast.Name):
         return [node.id]
+    if isinstance(node, ast.BinOp):
+        return [type(node).__name__.split(".")[-1]]
     if isinstance(node, ast.Attribute):
         return _function_name(node.value) + [node.attr]
     if isinstance(node, ast.Call):

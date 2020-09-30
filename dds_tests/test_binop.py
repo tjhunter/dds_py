@@ -6,10 +6,13 @@ _ = cleandir
 
 cst = 3
 
-def z(): return 4
+
+def z():
+    return 4
+
 
 def _fun():
-    x = (z() * 3).real
+    x = (z() * 3).real("")  # type:ignore
     return x
 
 
@@ -23,6 +26,10 @@ def f():
 
 @pytest.mark.usefixtures("cleandir")
 def test():
-    fun()
-    f()
-    dds.eval(f)
+    try:
+        fun()
+    except TypeError:
+        pass
+    # fun()
+    # f()
+    # dds.eval(f)
