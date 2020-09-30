@@ -23,8 +23,8 @@ This package is known to work on python 3.6, 3.7, 3.8. No other versions are off
 __Plotting dependencies__ If you want to plot the graph of data dependencies, you must install separately the `pydotplus` package, which requires `graphviz` on your system to work properly. Consult the documentation of the `pydotplus` package for more details. The `pydotplus` package is only required with the `dds_export_graph` option.
 
 __Databricks users:__ If you want to use this package with Databricks, some specific hooks for Spark are available. See this notebook for a complete example:
-https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/7816249071411394/4492656151009213/5450662050199348/latest.html
 
+https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/7816249071411394/4492656151009213/5450662050199348/latest.html
 
 ## Example
  
