@@ -30,6 +30,3 @@ def test():
         fun()
     except TypeError:
         pass
-    # fun()
-    # f()
-    # dds.eval(f)
