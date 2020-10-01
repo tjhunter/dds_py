@@ -141,6 +141,10 @@ class FunctionArgContext(NamedTuple):
         else:
             return keys  # type: ignore
 
+    @classmethod
+    def as_hashable(cls, arg_ctx: "FunctionArgContext") -> Any:
+        return arg_ctx.inner_call_key, tuple(list(arg_ctx.named_args.items()))
+
 
 class FunctionInteractions(NamedTuple):
     arg_input: FunctionArgContext

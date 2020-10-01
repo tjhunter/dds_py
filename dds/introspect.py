@@ -65,17 +65,23 @@ class GlobalContext(object):
         self.start_globals = start_globals
         # Hashes of all the static objects
         self._hashes: Dict[CanonicalPath, PyHash] = {}
+        self.cached_fun_interactions: Dict[
+            Tuple[CanonicalPath, FunctionArgContext], FunctionInteractions
+        ] = dict()
+        self.cached_objects: Dict[
+            Tuple[LocalDepPath, CanonicalPath], Optional[Tuple[Any, CanonicalPath]]
+        ] = dict()
 
     def get_hash(self, path: CanonicalPath, obj: Any) -> PyHash:
         if path not in self._hashes:
             key = _hash(obj)
-            _logger.debug(f"Cache key: {path}: {type(obj)} {key}")
+            _logger.debug(f"Cache key: %s: %s %s", path, type(obj), key)
             self._hashes[path] = key
             return key
         return self._hashes[path]
 
     def is_authorized_path(self, cp: CanonicalPath) -> bool:
-        _logger.debug(f"is_authorized_path: {self.whitelisted_packages} {cp}")
+        _logger.debug(f"is_authorized_path: %s %s", self.whitelisted_packages, cp)
         for idx in range(len(self.whitelisted_packages)):
             if ".".join(cp._path[:idx]) in self.whitelisted_packages:
                 return True
@@ -85,21 +91,26 @@ class GlobalContext(object):
 def _introspect(
     f: Callable[[Any], Any], arg_ctx: FunctionArgContext, gctx: GlobalContext,
 ) -> FunctionInteractions:
-    # TODO: remove args for now?
-    arg_sig = inspect.signature(f)
+    # Check if the function has already been evaluated.
+    fun_path = _fun_path(f)
+    fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
+    fis_ = gctx.cached_fun_interactions.get(fis_key)
+    if fis_ is not None:
+        return fis_
+
     src = inspect.getsource(f)
-    _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig} src={src}")
+    # _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig} src={src}")
     ast_src = ast.parse(src)
     body_lines = src.split("\n")
     ast_f = ast_src.body[0]
-    _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
+    # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     fun_module = inspect.getmodule(f)
-
-    fun_path = _fun_path(f)
 
     fis = InspectFunction.inspect_fun(
         ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
     )
+    # Cache the function interactions
+    gctx.cached_fun_interactions[fis_key] = fis
     return fis
 
 
@@ -158,11 +169,15 @@ class ExternalVarsVisitor(ast.NodeVisitor):
     def visit_Name(self, node: ast.Name) -> Any:
         local_dep_path = LocalDepPath(PurePosixPath(node.id))
         _logger.debug(
-            f"ExternalVarsVisitor:visit_Name: id: {node.id} local_dep_path:{local_dep_path}"
+            "ExternalVarsVisitor:visit_Name: id: %s local_dep_path:%s",
+            node.id,
+            local_dep_path,
         )
         if not isinstance(node.ctx, ast.Load):
             _logger.debug(
-                f"ExternalVarsVisitor:visit_Name: id: {node.id} skipping ctx: {node.ctx}"
+                "ExternalVarsVisitor:visit_Name: id: %s skipping ctx: %s",
+                node.id,
+                node.ctx,
             )
             return
         # If it is a var that is already part of the function, do not introspect
@@ -170,7 +185,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
             v = str(local_dep_path)
             if v in self._local_vars:
                 _logger.debug(
-                    f"ExternalVarsVisitor:visit_Name: id: {node.id} skipping, in vars"
+                    "ExternalVarsVisitor:visit_Name: id: %s skipping, in vars", node.id
                 )
                 return
         if local_dep_path in self.vars:
@@ -187,17 +202,17 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         )
         if res is None:
             # Nothing to do, it is not interesting.
-            _logger.debug(f"visit_Name: {local_dep_path}: skipping (unauthorized)")
+            _logger.debug("visit_Name: %s: skipping (unauthorized)", local_dep_path)
             return
         (obj, path) = res
         if isinstance(obj, FunctionType):
             # Modules and callables are tracked separately
-            _logger.debug(f"visit name {local_dep_path}: skipping (fun)")
+            _logger.debug(f"visit name %s: skipping (fun)", local_dep_path)
             return
         if isinstance(obj, ModuleType):
             # Modules and callables are tracked separately
             # TODO: this is not accurate, as a variable could be called in a submodule
-            _logger.debug(f"visit name {local_dep_path}: skipping (module)")
+            _logger.debug(f"visit name %s: skipping (module)", local_dep_path)
             return
         sig = self._gctx.get_hash(path, obj)
         self.vars[local_dep_path] = ExternalDep(
@@ -265,7 +280,7 @@ def _is_authorized_type(tpe: Type, gctx: GlobalContext) -> bool:
     if issubclass(tpe, object):
         mod = inspect.getmodule(tpe)
         if mod is None:
-            _logger.debug(f"_is_authorized_type: type {tpe} has no module")
+            _logger.debug(f"_is_authorized_type: type %s has no module", tpe)
             return False
         mod_path = _mod_path(mod)
         if gctx.is_authorized_path(mod_path):
@@ -287,7 +302,7 @@ class InspectFunction(object):
         lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()))
         lvars_v.visit(node)
         lvars = sorted(list(lvars_v.vars))
-        _logger.debug(f"local vars: {lvars}")
+        _logger.debug(f"local vars: %s", lvars)
         return [LocalVar(s) for s in lvars]
 
     @classmethod
@@ -313,12 +328,12 @@ class InspectFunction(object):
         fun_path: CanonicalPath,
     ) -> FunctionInteractions:
         local_vars = set(cls.get_local_vars(node, arg_ctx))
-        _logger.debug(f"inspect_fun: local_vars: {local_vars}")
+        _logger.debug(f"inspect_fun: local_vars: %s", local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
         for n in node.body:
             vdeps.visit(n)
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
-        _logger.debug(f"inspect_fun: ext_deps: {ext_deps}")
+        _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
         sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)
         input_sig = _hash(sig_list)
@@ -332,7 +347,7 @@ class InspectFunction(object):
 
         # Look at the annotations to see if there is a reference to a dds_function
         store_path = cls._path_annotation(node, mod, gctx)
-        _logger.debug(f"inspect_fun: path from annotation: {store_path}")
+        _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -353,15 +368,15 @@ class InspectFunction(object):
                 local_path = LocalDepPath(
                     PurePosixPath("/".join(_function_name(dec.func)))
                 )
-                _logger.debug(f"_path_annotation: local_path: {local_path}")
+                _logger.debug(f"_path_annotation: local_path: %s", local_path)
                 z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
                 if z is None:
                     _logger.debug(
-                        f"_path_annotation: local_path: {local_path} is rejected"
+                        f"_path_annotation: local_path: %s is rejected", local_path
                     )
                     return None
                 caller_fun, caller_fun_path = z
-                _logger.debug(f"_path_annotation: caller_fun_path: {caller_fun_path}")
+                _logger.debug(f"_path_annotation: caller_fun_path: %s", caller_fun_path)
                 if caller_fun_path == CanonicalPath(
                     ["dds", "_annotations", "dds_function"]
                 ):
@@ -384,18 +399,18 @@ class InspectFunction(object):
         function_inter_hash: PyHash,
         var_names: Set[str],
     ) -> Optional[FunctionInteractions]:
-        _logger.debug(f"Inspect call:\n {pformat(node)}")
+        # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
-        _logger.debug(f"inspect_call: local_path: {local_path}")
+        # _logger.debug(f"inspect_call: local_path: %s", local_path)
         if str(local_path) in var_names:
-            _logger.debug(
-                f"inspect_call: local_path: {local_path} is rejected (in vars)"
-            )
+            # _logger.debug(
+            #     f"inspect_call: local_path: %s is rejected (in vars)", local_path
+            # )
             return
         z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
         if z is None:
-            _logger.debug(f"inspect_call: local_path: {local_path} is rejected")
+            # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return
         caller_fun, caller_fun_path = z
         if not isinstance(caller_fun, FunctionType):
@@ -472,7 +487,9 @@ class InspectFunction(object):
                 f"{type(local_path_node)} {pformat(local_path_node)}"
             )
         _logger.debug(
-            f"Keep: store_path_symbol: {store_path_symbol} {type(store_path_symbol)}"
+            f"Keep: store_path_symbol: %s %s",
+            store_path_symbol,
+            type(store_path_symbol),
         )
         store_path_local_path = LocalDepPath(PurePosixPath(store_path_symbol))
         # Retrieve the store path value and the called function
@@ -491,6 +508,11 @@ class ObjectRetrieval(object):
     ) -> Optional[Tuple[Any, CanonicalPath]]:
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
+        mod_path = _mod_path(context_mod)
+        obj_key = (local_path, mod_path)
+        if obj_key in gctx.cached_objects:
+            return gctx.cached_objects[obj_key]
+
         fname = local_path.parts[0]
         sub_path = LocalDepPathUtils.tail(local_path)
         if fname not in context_mod.__dict__:
@@ -516,7 +538,9 @@ class ObjectRetrieval(object):
                         _logger.debug(
                             f"{fname} is module {obj}, checking for {sub_path}"
                         )
-                        return cls.retrieve_object(sub_path, obj, gctx)
+                        res = cls.retrieve_object(sub_path, obj, gctx)
+                        gctx.cached_objects[obj_key] = res
+                        return res
                     if isinstance(obj, ModuleType):
                         # Fully resolve the name of the module:
                         obj_path = _mod_path(obj)
@@ -531,6 +555,7 @@ class ObjectRetrieval(object):
                             f"Object[start_globals] {fname} of type {type(obj)} is not authorized (path),"
                             f" dropping path {obj_path}"
                         )
+                        gctx.cached_objects[obj_key] = None
                         return None
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
@@ -546,36 +571,45 @@ class ObjectRetrieval(object):
                         _logger.debug(
                             f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
                         )
-                        return obj, obj_path
+                        res = obj, obj_path
+                        gctx.cached_objects[obj_key] = res
+                        return res
                     else:
                         _logger.debug(
                             f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (type), dropping path {obj_path}"
                         )
+                        gctx.cached_objects[obj_key] = None
                         return None
                 else:
                     _logger.debug(f"{fname} not found in start_globals")
+                    gctx.cached_objects[obj_key] = None
                     return None
-            return cls._retrieve_object_rec(sub_path, loaded_mod, gctx)
+            res = cls._retrieve_object_rec(sub_path, loaded_mod, gctx)
+            gctx.cached_objects[obj_key] = res
+            return res
         else:
-            return cls._retrieve_object_rec(local_path, context_mod, gctx)
+            res = cls._retrieve_object_rec(local_path, context_mod, gctx)
+            gctx.cached_objects[obj_key] = res
+            return res
 
     @classmethod
     def _retrieve_object_rec(
         cls, local_path: LocalDepPath, context_mod: ModuleType, gctx: GlobalContext
     ) -> Optional[Tuple[Any, CanonicalPath]]:
-        _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")
+        # _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")
         if not local_path.parts:
             # The final position. It is the given module, if authorized.
             obj_mod_path = _mod_path(context_mod)
             if not gctx.is_authorized_path(obj_mod_path):
-                _logger.debug(
-                    f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod} is not authorized"
-                )
+                # _logger.debug(
+                #     f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod} is not authorized"
+                # )
                 return None
             else:
-                _logger.debug(
-                    f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod}: authorized"
-                )
+                # _logger.debug(
+                #     f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod}: authorized"
+                # )
+                pass
             return context_mod, obj_mod_path
         # At least one more path to explore
         fname = local_path.parts[0]
@@ -597,14 +631,14 @@ class ObjectRetrieval(object):
             if isinstance(obj, FunctionType):
                 mod_obj = inspect.getmodule(obj)
                 if mod_obj is None:
-                    _logger.debug(
-                        f"_retrieve_object_rec: cannot infer definition module: path: {local_path} mod: {context_mod} "
-                    )
+                    # _logger.debug(
+                    #     f"_retrieve_object_rec: cannot infer definition module: path: {local_path} mod: {context_mod} "
+                    # )
                     return None
                 if mod_obj is not context_mod:
-                    _logger.debug(
-                        f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {mod_obj}"
-                    )
+                    # _logger.debug(
+                    #     f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {mod_obj}"
+                    # )
                     return cls._retrieve_object_rec(local_path, mod_obj, gctx)
             obj_mod_path = _mod_path(context_mod)
             obj_path = obj_mod_path.append(fname)
@@ -619,23 +653,24 @@ class ObjectRetrieval(object):
                         pathlib.PurePosixPath,
                     ),
                 ):
-                    _logger.debug(
-                        f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
-                    )
+                    # _logger.debug(
+                    #     f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
+                    # )
                     return obj, obj_path
                 else:
-                    _logger.debug(
-                        f"_retrieve_object_rec: Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
-                    )
+                    # _logger.debug(
+                    #     f"_retrieve_object_rec: Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
+                    # )
+                    pass
             else:
-                _logger.debug(
-                    f"_retrieve_object_rec: Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
-                )
+                # _logger.debug(
+                #     f"_retrieve_object_rec: Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
+                # )
                 return None
 
-        _logger.debug(
-            f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)}"
-        )
+        # _logger.debug(
+        #     f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)}"
+        # )
         # More to explore
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):
@@ -653,8 +688,8 @@ class ObjectRetrieval(object):
                 return obj, obj_path
 
         # The rest is not authorized for now.
-        msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
-        _logger.debug(msg)
+        # msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
+        # _logger.debug(msg)
         return None
 
 
@@ -672,18 +707,18 @@ def _retrieve_object(
     if fname not in mod.__dict__:
         # In some cases (old versions of jupyter) the module is not listed
         # -> try to load it from the root
-        _logger.debug(f"Could not find {fname} in {mod}, attempting a direct load")
+        # _logger.debug(f"Could not find {fname} in {mod}, attempting a direct load")
         try:
             loaded_mod = importlib.import_module(fname)
         except ModuleNotFoundError:
             loaded_mod = None
         if loaded_mod is None:
-            _logger.debug(f"Could not load name {fname}, looking into the globals")
+            _logger.debug(f"Could not load name %s, looking into the globals", fname)
             if fname in gctx.start_globals:
-                _logger.debug(f"Found {fname} in start_globals")
+                _logger.debug(f"Found %s in start_globals", fname)
                 return gctx.start_globals[fname]
             else:
-                _logger.debug(f"{fname} not found in start_globals")
+                _logger.debug(f"%s not found in start_globals", fname)
                 return None
         return _retrieve_object_rec(path[1:], loaded_mod, gctx, expected_type)
     else:
@@ -695,7 +730,7 @@ def _retrieve_object_rec(
 ) -> Optional[Any]:
     assert path
     fname = path[0]
-    _logger.debug(f"_retrieve_object_rec: {path} {mod}")
+    _logger.debug(f"_retrieve_object_rec: %s %s", path, mod)
     if fname not in mod.__dict__:
         # If the name is not in scope, it is assumed to be defined in the function body -> skipped
         # (it is included with the code lines)
@@ -711,7 +746,10 @@ def _retrieve_object_rec(
                 f"Object {fname} of type {type(obj)} is authorized"
             )
         _logger.debug(
-            f"Object {fname} of type {type(obj)} is authorized, skipping path {path}"
+            f"Object %s of type %s is authorized, skipping path %s",
+            fname,
+            type(obj),
+            path,
         )
         return None
     # Check the real module of the object, if available (such as for functions)
@@ -720,13 +758,15 @@ def _retrieve_object_rec(
         obj_mod_path = _mod_path(obj_mod)
         if not gctx.is_authorized_path(obj_mod_path):
             _logger.debug(
-                f"Actual module {obj_mod_path} for obj {obj} is not authorized"
+                f"Actual module %s for obj %s is not authorized", obj_mod_path, obj
             )
             return None
         else:
-            _logger.debug(f"Actual module {obj_mod_path} for obj {obj}: authorized")
+            _logger.debug(f"Actual module %s for obj %s: authorized", obj_mod_path, obj)
     if expected_type and not isinstance(obj, expected_type):
-        _logger.debug(f"Object {fname} of type {type(obj)}, expected {expected_type}")
+        _logger.debug(
+            f"Object %s of type %s, expected %s", fname, type(obj), expected_type
+        )
         # TODO: raise exception
         return None
     # Drop if this object is not to be considered:
@@ -736,13 +776,18 @@ def _retrieve_object_rec(
         _logger.debug(f"{path} -> {obj}: {p}")
         if not gctx.is_authorized_path(p):
             _logger.debug(
-                f"dropping unauthorized function {path} -> {obj}: {fun_mod.__name__}"
+                f"dropping unauthorized function %s -> %s: %s",
+                path,
+                obj,
+                fun_mod.__name__,
             )
             return None
         else:
-            _logger.debug(f"authorized function {path} -> {obj}: {fun_mod.__name__}")
+            _logger.debug(
+                f"authorized function %s -> %s: %s", path, obj, fun_mod.__name__
+            )
     else:
-        _logger.debug(f"not checking: {obj} {type(obj)}")
+        _logger.debug(f"not checking: %s %s", obj, type(obj))
     return obj
 
 
@@ -755,19 +800,19 @@ def _canonical_path(
     assert path
     fname = path[0]
     if fname not in mod.__dict__:
-        _logger.debug(f"Path {path} not found in {mod} -> attempting direct load")
+        # _logger.debug(f"Path {path} not found in {mod} -> attempting direct load")
         try:
             loaded_mod = importlib.import_module(fname)
         except ModuleNotFoundError:
             loaded_mod = None
         if loaded_mod is None:
-            _logger.debug(f"Could not load name {fname} from modules")
+            # _logger.debug(f"Could not load name {fname} from modules")
             if fname not in gctx.start_globals:
                 raise KSException(
                     f"Object {fname} not found in module {mod}. Choices are {mod.__dict__.keys()}"
                 )
             else:
-                _logger.debug(f"Found {fname} in start_globals")
+                # _logger.debug(f"Found {fname} in start_globals")
                 loaded_mod = gctx.start_globals[fname]
                 if not isinstance(loaded_mod, ModuleType) and len(path) >= 2:
                     # This is a sub variable, not accepted for now.
@@ -803,7 +848,7 @@ def _canonical_path_rec(
     if ref_module == mod or ref_module is None:
         return _canonical_path([], mod, gctx).append(fname)
     else:
-        _logger.debug(f"Redirection: {path} {mod} {ref_module}")
+        # _logger.debug(f"Redirection: {path} {mod} {ref_module}")
         return _canonical_path(path, ref_module, gctx)
 
 
