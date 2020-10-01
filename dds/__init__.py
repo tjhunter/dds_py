@@ -169,6 +169,7 @@ def set_store(
     internal_dir: Optional[str] = None,
     data_dir: Optional[str] = None,
     dbutils: Optional[Any] = None,
+    commit_type: Optional[str] = None,
 ) -> None:
     """
     Sets a new store.
@@ -188,7 +189,7 @@ def set_store(
     :param dbutils: (required only for the 'dbfs' store) the dbutils object that is in a notebook
     :return: nothing
     """
-    _set_store(store, internal_dir, data_dir, dbutils)
+    _set_store(store, internal_dir, data_dir, dbutils, commit_type)
 
 
 def whitelist_module(module: Union[str, ModuleType]) -> None:
