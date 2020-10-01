@@ -48,6 +48,7 @@ def set_store(
     internal_dir: Optional[str] = None,
     data_dir: Optional[str] = None,
     dbutils: Optional[Any] = None,
+    commit_type: Optional[str] = None,
 ):
     """
     Sets the store for the execution of the program.
@@ -73,9 +74,12 @@ def set_store(
             raise KSException("Missing internal_dir argument")
         if dbutils is None:
             raise KSException("Missing dbutils argument")
-        from .codecs.databricks import DBFSStore
+        from .codecs.databricks import DBFSStore, CommitType
 
-        _store = DBFSStore(internal_dir, data_dir, dbutils)
+        commit_type = str(commit_type).lower() or CommitType.FULL
+        commit_type_ = CommitType[commit_type]
+
+        _store = DBFSStore(internal_dir, data_dir, dbutils, commit_type_)
     else:
         raise KSException(f"Unknown store {store}")
     _logger.debug(f"Setting the store to {_store}")
