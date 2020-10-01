@@ -29,7 +29,7 @@ class CommitType(str, Enum):
     """
 
     NO_COMMIT = "no_commit"
-    LINKS_ONLY = "links_only"
+    LINKS_ONLY = "link_only"
     FULL = "full"
 
 

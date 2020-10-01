@@ -76,7 +76,7 @@ def set_store(
             raise KSException("Missing dbutils argument")
         from .codecs.databricks import DBFSStore, CommitType
 
-        commit_type = str(commit_type).lower() or CommitType.FULL
+        commit_type = str(commit_type).upper() or CommitType.FULL
         commit_type_ = CommitType[commit_type]
 
         _store = DBFSStore(internal_dir, data_dir, dbutils, commit_type_)
