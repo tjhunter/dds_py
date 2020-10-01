@@ -65,8 +65,12 @@ class GlobalContext(object):
         self.start_globals = start_globals
         # Hashes of all the static objects
         self._hashes: Dict[CanonicalPath, PyHash] = {}
-        self.cached_fun_interactions: Dict[Tuple[CanonicalPath, FunctionArgContext], FunctionInteractions] = dict()
-        self.cached_objects: Dict[Tuple[LocalDepPath, CanonicalPath], Optional[Tuple[Any, CanonicalPath]]] = dict()
+        self.cached_fun_interactions: Dict[
+            Tuple[CanonicalPath, FunctionArgContext], FunctionInteractions
+        ] = dict()
+        self.cached_objects: Dict[
+            Tuple[LocalDepPath, CanonicalPath], Optional[Tuple[Any, CanonicalPath]]
+        ] = dict()
 
     def get_hash(self, path: CanonicalPath, obj: Any) -> PyHash:
         if path not in self._hashes:
@@ -101,7 +105,6 @@ def _introspect(
     ast_f = ast_src.body[0]
     # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     fun_module = inspect.getmodule(f)
-
 
     fis = InspectFunction.inspect_fun(
         ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
@@ -166,11 +169,15 @@ class ExternalVarsVisitor(ast.NodeVisitor):
     def visit_Name(self, node: ast.Name) -> Any:
         local_dep_path = LocalDepPath(PurePosixPath(node.id))
         _logger.debug(
-            "ExternalVarsVisitor:visit_Name: id: %s local_dep_path:%s", node.id,local_dep_path 
+            "ExternalVarsVisitor:visit_Name: id: %s local_dep_path:%s",
+            node.id,
+            local_dep_path,
         )
         if not isinstance(node.ctx, ast.Load):
             _logger.debug(
-                "ExternalVarsVisitor:visit_Name: id: %s skipping ctx: %s", node.id, node.ctx
+                "ExternalVarsVisitor:visit_Name: id: %s skipping ctx: %s",
+                node.id,
+                node.ctx,
             )
             return
         # If it is a var that is already part of the function, do not introspect
@@ -480,7 +487,9 @@ class InspectFunction(object):
                 f"{type(local_path_node)} {pformat(local_path_node)}"
             )
         _logger.debug(
-            f"Keep: store_path_symbol: %s %s", store_path_symbol, type(store_path_symbol)
+            f"Keep: store_path_symbol: %s %s",
+            store_path_symbol,
+            type(store_path_symbol),
         )
         store_path_local_path = LocalDepPath(PurePosixPath(store_path_symbol))
         # Retrieve the store path value and the called function
@@ -562,7 +571,7 @@ class ObjectRetrieval(object):
                         _logger.debug(
                             f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
                         )
-                        res =  obj, obj_path
+                        res = obj, obj_path
                         gctx.cached_objects[obj_key] = res
                         return res
                     else:
@@ -737,7 +746,10 @@ def _retrieve_object_rec(
                 f"Object {fname} of type {type(obj)} is authorized"
             )
         _logger.debug(
-            f"Object %s of type %s is authorized, skipping path %s", fname, type(obj), path
+            f"Object %s of type %s is authorized, skipping path %s",
+            fname,
+            type(obj),
+            path,
         )
         return None
     # Check the real module of the object, if available (such as for functions)
@@ -752,7 +764,9 @@ def _retrieve_object_rec(
         else:
             _logger.debug(f"Actual module %s for obj %s: authorized", obj_mod_path, obj)
     if expected_type and not isinstance(obj, expected_type):
-        _logger.debug(f"Object %s of type %s, expected %s", fname, type(obj), expected_type)
+        _logger.debug(
+            f"Object %s of type %s, expected %s", fname, type(obj), expected_type
+        )
         # TODO: raise exception
         return None
     # Drop if this object is not to be considered:
@@ -762,11 +776,16 @@ def _retrieve_object_rec(
         _logger.debug(f"{path} -> {obj}: {p}")
         if not gctx.is_authorized_path(p):
             _logger.debug(
-                f"dropping unauthorized function %s -> %s: %s", path, obj, fun_mod.__name__  
+                f"dropping unauthorized function %s -> %s: %s",
+                path,
+                obj,
+                fun_mod.__name__,
             )
             return None
         else:
-            _logger.debug(f"authorized function %s -> %s: %s", path, obj, fun_mod.__name__)
+            _logger.debug(
+                f"authorized function %s -> %s: %s", path, obj, fun_mod.__name__
+            )
     else:
         _logger.debug(f"not checking: %s %s", obj, type(obj))
     return obj

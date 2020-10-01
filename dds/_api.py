@@ -147,7 +147,9 @@ def _eval_new_ctx(
         if path is not None:
             inters = inters._replace(store_path=path)
         store_paths = FunctionInteractionsUtils.all_store_paths(inters)
-        _logger.debug(f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context")
+        _logger.debug(
+            f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context"
+        )
         _eval_ctx = EvalContext(requested_paths=store_paths)
         if extra_debug:
             present_blobs = set(
