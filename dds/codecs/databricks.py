@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Optional, List, Type
 from collections import OrderedDict
+from enum import Enum
 
 import pyspark.sql  # type:ignore
 from pyspark.sql import DataFrame
@@ -20,6 +21,16 @@ from ..structures import CodecProtocol, ProtocolRef
 from ..structures import PyHash, DDSPath, GenericLocation
 
 _logger = logging.getLogger(__name__)
+
+
+class CommitType(str, Enum):
+    """
+    The types of commits that can be done with DBFS
+    """
+
+    NO_COMMIT = "no_commit"
+    LINK_ONLY = "link_only"
+    FULL = "full"
 
 
 def _pprint_exception(e: Exception) -> str:
@@ -126,13 +137,16 @@ class PickleDBFSCodec(CodecProtocol):
 
 
 class DBFSStore(Store):
-    def __init__(self, internal_dir: str, data_dir: str, dbutils: Any):
+    def __init__(
+        self, internal_dir: str, data_dir: str, dbutils: Any, commit_type: CommitType
+    ):
         self._internal_dir: Path = Path(internal_dir)
         self._data_dir: Path = Path(data_dir)
         _logger.debug(
             f"Created DBFSStore: internal_dir: {self._internal_dir} data_dir: {self._data_dir}"
         )
         self._dbutils = dbutils
+        self._commit_type = commit_type
         self._registry = CodecRegistry(
             [
                 PySparkDatabricksCodec(),
@@ -172,6 +186,8 @@ class DBFSStore(Store):
         return self._fetch_meta(key) is not None
 
     def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
+        if self._commit_type == CommitType.NO_COMMIT:
+            return
         # This is a brute force approach that copies all the data and writes extra meta data.
         for (dds_p, key) in paths.items():
             # Look for the redirection file associated to this file
@@ -200,8 +216,11 @@ class DBFSStore(Store):
                 )
                 blob_path = self._blob_path(key)
                 obj_path = self._physical_path(Path("./" + dds_p))
-                _logger.debug(f"Copying {blob_path} -> {obj_path}")
-                self._dbutils.fs.cp(str(blob_path), str(obj_path), recurse=True)
+                if self._commit_type == CommitType.FULL:
+                    _logger.debug(f"Copying {blob_path} -> {obj_path}")
+                    self._dbutils.fs.cp(str(blob_path), str(obj_path), recurse=True)
+                else:
+                    _logger.debug(f"Skip copy for {obj_path} (links-only commit)")
                 _logger.debug(f"Linking new file {obj_path}")
                 try:
                     meta = json.dumps({"redirection_key": key})
@@ -212,7 +231,7 @@ class DBFSStore(Store):
                     )
                     raise e
             else:
-                _logger.debug(f"Path {dds_p} is up to ddate (key {key})")
+                _logger.debug(f"Path {dds_p} is up to date (key {key})")
 
     def _blob_path(self, key: PyHash) -> Path:
         return self._internal_dir.joinpath("blobs", key)
