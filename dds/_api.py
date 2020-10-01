@@ -40,17 +40,6 @@ def eval(
     dds_export_graph: Union[str, pathlib.Path, None],
     dds_extra_debug: Optional[bool],
 ) -> _Out:
-    """
-    Evaluates a function that may cache data, without caching the result
-    of the function itself.
-    :param fun: the function
-    :param args: arguments
-    :param kwargs: argument
-    :param dds_export_graph: if specified, a file with the dependency graph of the function will be exported.
-     NOTE: this requires the pydot or pydotplus package to be installed, as well as the graphviz program.
-     These packages must be installed separately. If they are not present, a runtime error will be triggered.
-    :return: the return value of the function
-    """
     return _eval(fun, None, args, kwargs, dds_export_graph, dds_extra_debug)
 
 
@@ -149,19 +138,22 @@ def _eval_new_ctx(
         # Fetch the local vars from the call. This is required if running from an old IPython context
         # (like databricks for instance)
         local_vars = _fetch_ipython_vars()
-        _logger.debug(f"locals: {sorted(local_vars.keys())}")
+        _logger.debug(f"_eval_new_ctx: local_vars: {sorted(local_vars.keys())}")
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
         inters = introspect(fun, local_vars, arg_ctx)
+        _logger.debug(f"_eval_new_ctx: introspect completed")
         # Also add the current path, if requested:
         if path is not None:
             inters = inters._replace(store_path=path)
         store_paths = FunctionInteractionsUtils.all_store_paths(inters)
+        _logger.debug(f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context")
         _eval_ctx = EvalContext(requested_paths=store_paths)
         if extra_debug:
             present_blobs = set(
                 [key for key in set(store_paths.values()) if _store.has_blob(key)]
             )
+            _logger.debug(f"_eval_new_ctx: {len(present_blobs)} present blobs")
         else:
             present_blobs = None
 
@@ -174,6 +166,7 @@ def _eval_new_ctx(
             from ._plotting import draw_graph
 
             draw_graph(inters, export_graph, present_blobs)
+            _logger.debug(f"_eval_new_ctx: draw_graph_completed")
 
         for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
