@@ -395,15 +395,15 @@ class InspectFunction(object):
         # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
-        _logger.debug(f"inspect_call: local_path: %s", local_path)
+        # _logger.debug(f"inspect_call: local_path: %s", local_path)
         if str(local_path) in var_names:
-            _logger.debug(
-                f"inspect_call: local_path: %s is rejected (in vars)", local_path
-            )
+            # _logger.debug(
+            #     f"inspect_call: local_path: %s is rejected (in vars)", local_path
+            # )
             return
         z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
         if z is None:
-            _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
+            # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return
         caller_fun, caller_fun_path = z
         if not isinstance(caller_fun, FunctionType):
