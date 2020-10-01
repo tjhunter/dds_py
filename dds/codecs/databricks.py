@@ -23,7 +23,7 @@ from ..structures import PyHash, DDSPath, GenericLocation
 _logger = logging.getLogger(__name__)
 
 
-class CommitType(Enum, str):
+class CommitType(str, Enum):
     """
     The types of commits that can be done with DBFS
     """
