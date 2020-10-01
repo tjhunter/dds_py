@@ -93,8 +93,6 @@ def _introspect(
     if fis_ is not None:
         return fis_
 
-    # TODO: remove args for now?
-    arg_sig = inspect.signature(f)
     src = inspect.getsource(f)
     # _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig} src={src}")
     ast_src = ast.parse(src)
