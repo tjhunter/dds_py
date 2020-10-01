@@ -65,6 +65,7 @@ class GlobalContext(object):
         self.start_globals = start_globals
         # Hashes of all the static objects
         self._hashes: Dict[CanonicalPath, PyHash] = {}
+        self.cached_fun_interactions: Dict[Tuple[CanonicalPath, FunctionArgContext], FunctionInteractions] = dict()
 
     def get_hash(self, path: CanonicalPath, obj: Any) -> PyHash:
         if path not in self._hashes:
@@ -85,6 +86,13 @@ class GlobalContext(object):
 def _introspect(
     f: Callable[[Any], Any], arg_ctx: FunctionArgContext, gctx: GlobalContext,
 ) -> FunctionInteractions:
+    # Check if the function has already been evaluated.
+    fun_path = _fun_path(f)
+    fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
+    fis_ = gctx.cached_fun_interactions.get(fis_key)
+    if fis_ is not None:
+        return fis_
+
     # TODO: remove args for now?
     arg_sig = inspect.signature(f)
     src = inspect.getsource(f)
@@ -95,11 +103,12 @@ def _introspect(
     # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     fun_module = inspect.getmodule(f)
 
-    fun_path = _fun_path(f)
 
     fis = InspectFunction.inspect_fun(
         ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
     )
+    # Cache the function interactions
+    gctx.cached_fun_interactions[fis_key] = fis
     return fis
 
 
