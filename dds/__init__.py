@@ -187,6 +187,14 @@ def set_store(
         - for local: a path in the local filesystem. It contains symbolic links to the internal storage
         - for dbfs: a path in DBFS. Objects are copied from the internal storage to the data storage
     :param dbutils: (required only for the 'dbfs' store) the dbutils object that is in a notebook
+    :param commit_type: (DBFS only, 'none', 'links_only', 'full', default 'full'). The type of commit that will be
+        executed to update the paths. Committing a path in DBFS involves a full copy, which may be expensive,
+        especially if the underlying table uses Databricks Delta. This is why the following options can be used:
+        - none: no file will be committed
+        - links_only: a metadata link reference to the blob will be updated. This is much faster because it involves
+            a 1kb file transfer as opposed to a full copy. This means though that the result will not be readable
+            outside of a DDS store, because the file is not fully materialized.
+
     :return: nothing
     """
     _set_store(store, internal_dir, data_dir, dbutils, commit_type)
