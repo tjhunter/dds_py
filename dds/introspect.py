@@ -88,11 +88,11 @@ def _introspect(
     # TODO: remove args for now?
     arg_sig = inspect.signature(f)
     src = inspect.getsource(f)
-    _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig} src={src}")
+    # _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig} src={src}")
     ast_src = ast.parse(src)
     body_lines = src.split("\n")
     ast_f = ast_src.body[0]
-    _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
+    # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     fun_module = inspect.getmodule(f)
 
     fun_path = _fun_path(f)
@@ -384,7 +384,7 @@ class InspectFunction(object):
         function_inter_hash: PyHash,
         var_names: Set[str],
     ) -> Optional[FunctionInteractions]:
-        _logger.debug(f"Inspect call:\n %s", pformat(node))
+        # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
         _logger.debug(f"inspect_call: local_path: %s", local_path)
