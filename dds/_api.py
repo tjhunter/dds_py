@@ -19,7 +19,7 @@ _logger = logging.getLogger(__name__)
 
 
 # TODO: set up in the use temporary space
-_store: Store = LocalFileStore("/tmp", "/tmp/data/")
+_store: Store = LocalFileStore("/tmp/dds/internal/", "/tmp/dds/data/")
 _eval_ctx: Optional[EvalContext] = None
 
 
