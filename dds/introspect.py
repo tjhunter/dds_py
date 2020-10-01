@@ -66,6 +66,7 @@ class GlobalContext(object):
         # Hashes of all the static objects
         self._hashes: Dict[CanonicalPath, PyHash] = {}
         self.cached_fun_interactions: Dict[Tuple[CanonicalPath, FunctionArgContext], FunctionInteractions] = dict()
+        self.cached_objects: Dict[Tuple[LocalDepPath, CanonicalPath], Optional[Tuple[Any, CanonicalPath]]] = dict()
 
     def get_hash(self, path: CanonicalPath, obj: Any) -> PyHash:
         if path not in self._hashes:
@@ -498,6 +499,11 @@ class ObjectRetrieval(object):
     ) -> Optional[Tuple[Any, CanonicalPath]]:
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
+        mod_path = _mod_path(context_mod)
+        obj_key = (local_path, mod_path)
+        if obj_key in gctx.cached_objects:
+            return gctx.cached_objects[obj_key]
+
         fname = local_path.parts[0]
         sub_path = LocalDepPathUtils.tail(local_path)
         if fname not in context_mod.__dict__:
@@ -523,7 +529,9 @@ class ObjectRetrieval(object):
                         _logger.debug(
                             f"{fname} is module {obj}, checking for {sub_path}"
                         )
-                        return cls.retrieve_object(sub_path, obj, gctx)
+                        res = cls.retrieve_object(sub_path, obj, gctx)
+                        gctx.cached_objects[obj_key] = res
+                        return res
                     if isinstance(obj, ModuleType):
                         # Fully resolve the name of the module:
                         obj_path = _mod_path(obj)
@@ -538,6 +546,7 @@ class ObjectRetrieval(object):
                             f"Object[start_globals] {fname} of type {type(obj)} is not authorized (path),"
                             f" dropping path {obj_path}"
                         )
+                        gctx.cached_objects[obj_key] = None
                         return None
 
                     if _is_authorized_type(type(obj), gctx) or isinstance(
@@ -553,18 +562,26 @@ class ObjectRetrieval(object):
                         _logger.debug(
                             f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
                         )
-                        return obj, obj_path
+                        res =  obj, obj_path
+                        gctx.cached_objects[obj_key] = res
+                        return res
                     else:
                         _logger.debug(
                             f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (type), dropping path {obj_path}"
                         )
+                        gctx.cached_objects[obj_key] = None
                         return None
                 else:
                     _logger.debug(f"{fname} not found in start_globals")
+                    gctx.cached_objects[obj_key] = None
                     return None
-            return cls._retrieve_object_rec(sub_path, loaded_mod, gctx)
+            res = cls._retrieve_object_rec(sub_path, loaded_mod, gctx)
+            gctx.cached_objects[obj_key] = res
+            return res
         else:
-            return cls._retrieve_object_rec(local_path, context_mod, gctx)
+            res = cls._retrieve_object_rec(local_path, context_mod, gctx)
+            gctx.cached_objects[obj_key] = res
+            return res
 
     @classmethod
     def _retrieve_object_rec(
