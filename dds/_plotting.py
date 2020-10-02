@@ -66,20 +66,20 @@ def _structure(fis: FunctionInteractions) -> Graph:
     deps: OrderedDict[Tuple[PyHash, PyHash], Edge] = OrderedDict()
 
     # Returns the last node evaluated
-    def traverse(fis_: FunctionInteractions) -> Optional[Node]:
+    def traverse(fis_: FunctionInteractions) -> List[Node]:
         sig = fis_.fun_return_sig
         if sig in nodes:
-            return nodes[sig]
+            return [nodes[sig]]
         # Recurse
         sub_calls = [traverse(sub_fis) for sub_fis in fis_.parsed_body]
-        sub_nodes: List[Node] = [n for n in sub_calls if n is not None]
+        sub_nodes: List[Node] = [n for l_nodes in sub_calls for n in l_nodes]
         # Implicit dependencies
         for (n1, n2) in zip(sub_nodes[:-1], sub_nodes[1:]):
             k = (n1.node_hash, n2.node_hash)
             if k not in deps:
                 deps[k] = Edge(n1.path, n2.path, True)
         if fis_.store_path is None:
-            return sub_nodes[-1] if sub_nodes else None
+            return sub_nodes
         else:
             # We are returning a path -> create a node
             res_node = Node(fis_.store_path, sig)
@@ -88,7 +88,7 @@ def _structure(fis: FunctionInteractions) -> Graph:
                 k = (sub_n.node_hash, res_node.node_hash)
                 if k not in deps or deps[k].is_implicit:
                     deps[k] = Edge(sub_n.path, res_node.path, False)
-            return res_node
+            return [res_node]
 
     traverse(fis)
     return Graph(list(nodes.values()), list(deps.values()))
