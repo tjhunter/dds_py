@@ -328,7 +328,7 @@ class InspectFunction(object):
         fun_path: CanonicalPath,
     ) -> FunctionInteractions:
         local_vars = set(cls.get_local_vars(node, arg_ctx))
-        _logger.debug(f"inspect_fun: local_vars: %s", local_vars)
+        _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
         for n in node.body:
             vdeps.visit(n)
