@@ -57,6 +57,7 @@ class FunctionInteractionsUtils(object):
         fi: FunctionInteractions,
         present_blobs: Optional[Set[PyHash]],
         printer: Callable[[str], None],
+        only_new_nodes: bool = True,
     ) -> None:
         def pprint_tree_(
             node: _PrintNode, _prefix: str = "", _last: bool = True
@@ -68,6 +69,8 @@ class FunctionInteractionsUtils(object):
             for i, child in enumerate(node.children):
                 _last = i == (child_count - 1)
                 pprint_tree_(child, _prefix, _last)
+
+        printed_nodes: Set[PyHash] = set()
 
         def to_nodes(fi_: FunctionInteractions) -> _PrintNode:
             status = (
@@ -84,6 +87,9 @@ class FunctionInteractionsUtils(object):
             # TODO: add full path
             name = f"Fun {fi_.fun_path} {path}"
             call_ctx = str(fi_.arg_input.inner_call_key)[:10]
+            # Already printed -> just put the first line
+            if only_new_nodes and fi_.fun_return_sig in printed_nodes:
+                return _PrintNode(value="~~" + name, children=[])
             nodes = (
                 ([_PrintNode(value=f"Ctx {call_ctx}")] if call_ctx is not None else [])
                 + [
@@ -102,6 +108,7 @@ class FunctionInteractionsUtils(object):
                     if isinstance(fi0, FunctionInteractions)
                 ]
             )
+            printed_nodes.add(fi_.fun_return_sig)
 
             return _PrintNode(value=name, children=nodes)
 
