@@ -188,6 +188,8 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         self._local_vars = local_vars
         # TODO: rename to deps
         self.vars: Dict[LocalDepPath, ExternalDep] = {}
+        # All the dependencies that are encountered but do not lead to an external dep.
+        self._rejected_paths: Set[LocalDepPath] = set()
 
     def visit_Name(self, node: ast.Name) -> Any:
         local_dep_path = LocalDepPath(PurePosixPath(node.id))
@@ -211,7 +213,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
                     "ExternalVarsVisitor:visit_Name: id: %s skipping, in vars", node.id
                 )
                 return
-        if local_dep_path in self.vars:
+        if local_dep_path in self.vars or local_dep_path in self._rejected_paths:
             return
         # TODO: this will fail in submodule
         # if str(local_dep_path) not in self._start_mod.__dict__ or str(local_dep_path) not in self._gctx.start_globals:
@@ -226,16 +228,19 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         if res is None:
             # Nothing to do, it is not interesting.
             _logger.debug("visit_Name: %s: skipping (unauthorized)", local_dep_path)
+            self._rejected_paths.add(local_dep_path)
             return
         (obj, path) = res
         if isinstance(obj, FunctionType):
             # Modules and callables are tracked separately
             _logger.debug(f"visit name %s: skipping (fun)", local_dep_path)
+            self._rejected_paths.add(local_dep_path)
             return
         if isinstance(obj, ModuleType):
             # Modules and callables are tracked separately
             # TODO: this is not accurate, as a variable could be called in a submodule
             _logger.debug(f"visit name %s: skipping (module)", local_dep_path)
+            self._rejected_paths.add(local_dep_path)
             return
         sig = self._gctx.get_hash(path, obj)
         self.vars[local_dep_path] = ExternalDep(
