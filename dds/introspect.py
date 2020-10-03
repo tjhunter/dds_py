@@ -581,6 +581,14 @@ class ObjectRetrieval(object):
             except ModuleNotFoundError:
                 loaded_mod = None
             if loaded_mod is None:
+                # Looking into the globals (only if the scope is currently __main__ or __global__)
+                mod_path = _mod_path(context_mod)
+                if mod_path.get(0) not in ("__main__", "__global__"):
+                    _logger.debug(f"Could not load name %s and not in global context (%s), skipping ", fname, mod_path)
+                    return None
+                else:
+                    _logger.debug(f"Could not load name %s, looking into the globals (mod_path: %s, %s)", fname,
+                                  mod_path, mod_path.get(0))
                 _logger.debug(f"Could not load name {fname}, looking into the globals")
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
