@@ -22,14 +22,17 @@ def test_rec():
     with pytest.raises(dds.structures.KSException):
         fun1()
 
+
 _c = Counter()
 
 xx = 5
+
 
 def fun2():
     _c.increment()
     xx = 2
     return xx
+
 
 @pytest.mark.usefixtures("cleandir")
 def test_shadow():
@@ -39,5 +42,3 @@ def test_shadow():
     xx = 1
     assert dds.keep("/p", fun2) == 2
     assert _c.value == 1
-
-

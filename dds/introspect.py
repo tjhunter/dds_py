@@ -1,4 +1,3 @@
-import abc
 import ast
 import importlib
 import pathlib
@@ -90,8 +89,10 @@ class GlobalContext(object):
 
 
 def _introspect(
-    f: Callable[[Any], Any], arg_ctx: FunctionArgContext, gctx: GlobalContext,
-        call_stack: List[CanonicalPath]
+    f: Callable[[Any], Any],
+    arg_ctx: FunctionArgContext,
+    gctx: GlobalContext,
+    call_stack: List[CanonicalPath],
 ) -> FunctionInteractions:
     # Check if the function has already been evaluated.
     fun_path = _fun_path(f)
@@ -141,7 +142,7 @@ class IntroVisitor(ast.NodeVisitor):
         function_body_lines: List[str],
         function_args_hash: PyHash,
         function_var_names: Set[str],
-            call_stack: List[CanonicalPath]
+        call_stack: List[CanonicalPath],
     ):
         # TODO: start_mod is in the global context
         self._start_mod = start_mod
@@ -166,7 +167,7 @@ class IntroVisitor(ast.NodeVisitor):
             self._args_hash,
             function_inters_sig,
             self._function_var_names,
-            self._call_stack
+            self._call_stack,
         )
         if fi is not None:
             self.inters.append(fi)
@@ -349,7 +350,7 @@ class InspectFunction(object):
         function_body_lines: List[str],
         arg_ctx: FunctionArgContext,
         fun_path: CanonicalPath,
-            call_stack: List[CanonicalPath]
+        call_stack: List[CanonicalPath],
     ) -> FunctionInteractions:
         if isinstance(node, ast.FunctionDef):
             body = node.body
@@ -367,7 +368,9 @@ class InspectFunction(object):
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
         sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)
         input_sig = _hash(sig_list)
-        calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars, call_stack)
+        calls_v = IntroVisitor(
+            mod, gctx, function_body_lines, input_sig, local_vars, call_stack
+        )
         for n in body:
             calls_v.visit(n)
         body_sig = _hash(function_body_lines)
@@ -431,7 +434,7 @@ class InspectFunction(object):
         function_args_hash: PyHash,
         function_inter_hash: PyHash,
         var_names: Set[str],
-            call_stack: List[CanonicalPath],
+        call_stack: List[CanonicalPath],
     ) -> Optional[FunctionInteractions]:
         # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
@@ -478,11 +481,13 @@ class InspectFunction(object):
                 )
             called_fun, call_fun_path = called_z
             if call_fun_path in call_stack:
-                raise KSException(f"Detected circular function calls or (co-)recursive calls."
-                                  f"This is currently not supported. Change your code to split the "
-                                  f"recursive section into a separate function. "
-                                  f"Function: {call_fun_path}"
-                                  f"Call stack: {' '.join([str(p) for p in call_stack])}")
+                raise KSException(
+                    f"Detected circular function calls or (co-)recursive calls."
+                    f"This is currently not supported. Change your code to split the "
+                    f"recursive section into a separate function. "
+                    f"Function: {call_fun_path}"
+                    f"Call stack: {' '.join([str(p) for p in call_stack])}"
+                )
             context_sig = _hash(
                 [function_body_hash, function_args_hash, function_inter_hash]
             )
@@ -506,11 +511,13 @@ class InspectFunction(object):
             raise NotImplementedError("load")
 
         if caller_fun_path in call_stack:
-            raise KSException(f"Detected circular function calls or (co-)recursive calls."
-                              f"This is currently not supported. Change your code to split the "
-                              f"recursive section into a separate function. "
-                              f"Function: {caller_fun_path}"
-                              f"Call stack: {' '.join([str(p) for p in call_stack])}")
+            raise KSException(
+                f"Detected circular function calls or (co-)recursive calls."
+                f"This is currently not supported. Change your code to split the "
+                f"recursive section into a separate function. "
+                f"Function: {caller_fun_path}"
+                f"Call stack: {' '.join([str(p) for p in call_stack])}"
+            )
 
         # Normal function call.
         # Just introspect the function call.
@@ -584,11 +591,19 @@ class ObjectRetrieval(object):
                 # Looking into the globals (only if the scope is currently __main__ or __global__)
                 mod_path = _mod_path(context_mod)
                 if mod_path.get(0) not in ("__main__", "__global__"):
-                    _logger.debug(f"Could not load name %s and not in global context (%s), skipping ", fname, mod_path)
+                    _logger.debug(
+                        f"Could not load name %s and not in global context (%s), skipping ",
+                        fname,
+                        mod_path,
+                    )
                     return None
                 else:
-                    _logger.debug(f"Could not load name %s, looking into the globals (mod_path: %s, %s)", fname,
-                                  mod_path, mod_path.get(0))
+                    _logger.debug(
+                        f"Could not load name %s, looking into the globals (mod_path: %s, %s)",
+                        fname,
+                        mod_path,
+                        mod_path.get(0),
+                    )
                 _logger.debug(f"Could not load name {fname}, looking into the globals")
                 if fname in gctx.start_globals:
                     _logger.debug(f"Found {fname} in start_globals")
@@ -754,196 +769,6 @@ class ObjectRetrieval(object):
         # msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
         # _logger.debug(msg)
         return None
-
-
-def _retrieve_object(
-    path: List[str], mod: ModuleType, gctx: GlobalContext, expected_type: Optional[Type]
-) -> Optional[Any]:
-    """
-    Returns an object, recursively traversing the hierarchy.
-
-    Only returns objects that are authorized, None otherwise.
-    Throws error if the object does not exist
-    """
-    assert path
-    fname = path[0]
-    if fname not in mod.__dict__:
-        # In some cases (old versions of jupyter) the module is not listed
-        # -> try to load it from the root
-        # _logger.debug(f"Could not find {fname} in {mod}, attempting a direct load")
-        try:
-            loaded_mod = importlib.import_module(fname)
-        except ModuleNotFoundError:
-            loaded_mod = None
-        if loaded_mod is None:
-            # Looking into the globals (only if the scope is currently __main__ or __global__)
-            mod_path = _mod_path(mod)
-            if mod_path.get(0) not in ("__main__", "__global__"):
-                _logger.debug(f"Could not load name %s and not in global context (%s), skipping ", fname, mod_path)
-                return None
-            else:
-                _logger.debug(f"Could not load name %s, looking into the globals (mod_path: %s, %s)", fname, mod_path, mod_path.get(0))
-            if fname in gctx.start_globals:
-                _logger.debug(f"Found %s in start_globals", fname)
-                return gctx.start_globals[fname]
-            else:
-                _logger.debug(f"%s not found in start_globals", fname)
-                return None
-        return _retrieve_object_rec(path[1:], loaded_mod, gctx, expected_type)
-    else:
-        return _retrieve_object_rec(path, mod, gctx, expected_type)
-
-
-def _retrieve_object_rec(
-    path: List[str], mod: ModuleType, gctx: GlobalContext, expected_type: Optional[Type]
-) -> Optional[Any]:
-    assert path
-    fname = path[0]
-    _logger.debug(f"_retrieve_object_rec: %s %s", path, mod)
-    if fname not in mod.__dict__:
-        # If the name is not in scope, it is assumed to be defined in the function body -> skipped
-        # (it is included with the code lines)
-        # TODO: confirm this choice and use locals() against that case
-        return None
-        # raise KSException(f"Object {fname} not found in module {mod}. Choices are {mod.__dict__}")
-    obj = mod.__dict__[fname]
-    if len(path) >= 2:
-        if isinstance(obj, ModuleType):
-            return _retrieve_object(path[1:], obj, gctx, expected_type)
-        if _is_authorized_type(type(obj), gctx):
-            raise NotImplementedError(
-                f"Object {fname} of type {type(obj)} is authorized"
-            )
-        _logger.debug(
-            f"Object %s of type %s is authorized, skipping path %s",
-            fname,
-            type(obj),
-            path,
-        )
-        return None
-    # Check the real module of the object, if available (such as for functions)
-    obj_mod = inspect.getmodule(obj)
-    if obj_mod is not None:
-        obj_mod_path = _mod_path(obj_mod)
-        if not gctx.is_authorized_path(obj_mod_path):
-            _logger.debug(
-                f"Actual module %s for obj %s is not authorized", obj_mod_path, obj
-            )
-            return None
-        else:
-            _logger.debug(f"Actual module %s for obj %s: authorized", obj_mod_path, obj)
-    if expected_type and not isinstance(obj, expected_type):
-        _logger.debug(
-            f"Object %s of type %s, expected %s", fname, type(obj), expected_type
-        )
-        # TODO: raise exception
-        return None
-    # Drop if this object is not to be considered:
-    if isinstance(obj, (FunctionType, abc.ABCMeta)):
-        fun_mod = inspect.getmodule(obj)
-        p = _mod_path(fun_mod)
-        _logger.debug(f"{path} -> {obj}: {p}")
-        if not gctx.is_authorized_path(p):
-            _logger.debug(
-                f"dropping unauthorized function %s -> %s: %s",
-                path,
-                obj,
-                fun_mod.__name__,
-            )
-            return None
-        else:
-            _logger.debug(
-                f"authorized function %s -> %s: %s", path, obj, fun_mod.__name__
-            )
-    else:
-        _logger.debug(f"not checking: %s %s", obj, type(obj))
-    return obj
-
-
-def _canonical_path(
-    path: List[str], mod: ModuleType, gctx: GlobalContext
-) -> CanonicalPath:
-    if not path:
-        # Return the path of the module
-        return _mod_path(mod)
-    assert path
-    fname = path[0]
-    if fname not in mod.__dict__:
-        # _logger.debug(f"Path {path} not found in {mod} -> attempting direct load")
-        try:
-            loaded_mod = importlib.import_module(fname)
-        except ModuleNotFoundError:
-            loaded_mod = None
-        if loaded_mod is None:
-            # _logger.debug(f"Could not load name {fname} from modules")
-            if fname not in gctx.start_globals:
-                raise KSException(
-                    f"Object {fname} not found in module {mod}. Choices are {mod.__dict__.keys()}"
-                )
-            else:
-                # _logger.debug(f"Found {fname} in start_globals")
-                loaded_mod = gctx.start_globals[fname]
-                if not isinstance(loaded_mod, ModuleType) and len(path) >= 2:
-                    # This is a sub variable, not accepted for now.
-                    raise KSException(
-                        f"Object {fname} of type {type(loaded_mod)} not accepted for path {path}"
-                    )
-        return _canonical_path_rec(path[1:], loaded_mod, gctx)
-    else:
-        return _canonical_path_rec(path, mod, gctx)
-
-
-def _canonical_path_rec(
-    path: List[str], mod: ModuleType, gctx: GlobalContext
-) -> CanonicalPath:
-    """
-    The canonical path of an entity in the python module hierarchy.
-    """
-    if not path:
-        # Return the path of the module
-        return _mod_path(mod)
-    assert path
-    fname = path[0]
-    if fname not in mod.__dict__:
-        raise KSException(
-            f"Object {fname} not found in module {mod}. Choices are {mod.__dict__}"
-        )
-    obj = mod.__dict__[fname]
-    if isinstance(obj, ModuleType):
-        # Look into this module to find the object:
-        return _canonical_path(path[1:], obj, gctx)
-    assert len(path) == 1, path
-    ref_module = inspect.getmodule(obj)
-    if ref_module == mod or ref_module is None:
-        return _canonical_path([], mod, gctx).append(fname)
-    else:
-        # _logger.debug(f"Redirection: {path} {mod} {ref_module}")
-        return _canonical_path(path, ref_module, gctx)
-
-
-def _retrieve_path(fname: str, mod: ModuleType, gctx: GlobalContext) -> DDSPath:
-    if fname not in mod.__dict__:
-        # Look in the global context to see it is defined there (happens with some REPLs like Databricks)
-        if fname not in gctx.start_globals:
-            raise KSException(
-                f"Expected path {fname} not found in module {mod} or globals. Choices are {mod.__dict__.keys()} or globals {gctx.start_globals.keys()}"
-            )
-        else:
-            obj = gctx.start_globals[fname]
-    else:
-        obj = mod.__dict__[fname]
-    if not isinstance(obj, str):
-        raise KSException(f"Object {fname} is not a function but of type {type(obj)}")
-    return DDSPath(obj)
-
-
-def _is_primary_function(path: CanonicalPath) -> bool:
-    # TODO use the proper definition of the module
-    if len(path) == 2 and path.head() == "dds":
-        if path.get(1) == Functions.Eval:
-            raise KSException("invalid call to eval")
-        return path.get(1) in (Functions.Keep, Functions.Load, Functions.Cache)
-    return False
 
 
 _whitelisted_packages: Set[Package] = {
