@@ -95,9 +95,9 @@ def _introspect(
     # Check if the function has already been evaluated.
     fun_path = _fun_path(f)
     fun_module = inspect.getmodule(f)
-    _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
+    # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     if is_lambda(f):
-        _logger.debug(f"_introspect: is_lambda: {f}")
+        # _logger.debug(f"_introspect: is_lambda: {f}")
         src = inspect.getsource(f)
         h = _hash(src)
         # Have a stable name for the lambda function
@@ -110,18 +110,18 @@ def _introspect(
         _logger.debug(f"_introspect: is_lambda: fun_path={fun_path} src={src}")
         ast_f = inspect_lambda_condition(f)
         assert isinstance(ast_f, ast.Lambda), type(ast_f)
-        _logger.debug(f"_introspect: is_lambda: {ast_f}")
+        # _logger.debug(f"_introspect: is_lambda: {ast_f}")
     else:
         fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
         fis_ = gctx.cached_fun_interactions.get(fis_key)
         if fis_ is not None:
             return fis_
         src = inspect.getsource(f)
-        _logger.debug(f"Starting _introspect: {f}: src={src}")
+        # _logger.debug(f"Starting _introspect: {f}: src={src}")
         ast_src = ast.parse(src)
         ast_f = ast_src.body[0]
         assert isinstance(ast_f, ast.FunctionDef), type(ast_f)
-        _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
+        # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     body_lines = src.split("\n")
 
     fis = InspectFunction.inspect_fun(
