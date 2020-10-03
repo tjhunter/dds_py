@@ -1,3 +1,6 @@
+# Minimal set of libraries
+asttokens
+
 # plotting support
 pydotplus
 

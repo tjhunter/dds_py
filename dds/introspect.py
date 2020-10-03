@@ -22,6 +22,7 @@ from .structures import (
 )
 from ._print_ast import pformat
 from .structures_utils import DDSPathUtils, LocalDepPathUtils
+from ._lambda_funs import is_lambda, inspect_lambda_condition
 
 _logger = logging.getLogger(__name__)
 
@@ -93,18 +94,35 @@ def _introspect(
 ) -> FunctionInteractions:
     # Check if the function has already been evaluated.
     fun_path = _fun_path(f)
-    fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
-    fis_ = gctx.cached_fun_interactions.get(fis_key)
-    if fis_ is not None:
-        return fis_
-
-    src = inspect.getsource(f)
-    # _logger.debug(f"Starting _introspect: {f}: arg_sig={arg_sig} src={src}")
-    ast_src = ast.parse(src)
-    body_lines = src.split("\n")
-    ast_f = ast_src.body[0]
-    # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     fun_module = inspect.getmodule(f)
+    # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
+    if is_lambda(f):
+        # _logger.debug(f"_introspect: is_lambda: {f}")
+        src = inspect.getsource(f)
+        h = _hash(src)
+        # Have a stable name for the lambda function
+        fun_path = CanonicalPath(fun_path._path[:-1] + [fun_path._path[-1] + h])
+        fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
+        fis_ = gctx.cached_fun_interactions.get(fis_key)
+        if fis_ is not None:
+            return fis_
+        # Not seen before, continue.
+        _logger.debug(f"_introspect: is_lambda: fun_path={fun_path} src={src}")
+        ast_f = inspect_lambda_condition(f)
+        assert isinstance(ast_f, ast.Lambda), type(ast_f)
+        # _logger.debug(f"_introspect: is_lambda: {ast_f}")
+    else:
+        fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
+        fis_ = gctx.cached_fun_interactions.get(fis_key)
+        if fis_ is not None:
+            return fis_
+        src = inspect.getsource(f)
+        # _logger.debug(f"Starting _introspect: {f}: src={src}")
+        ast_src = ast.parse(src)
+        ast_f = ast_src.body[0]
+        assert isinstance(ast_f, ast.FunctionDef), type(ast_f)
+        # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
+    body_lines = src.split("\n")
 
     fis = InspectFunction.inspect_fun(
         ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
@@ -297,10 +315,11 @@ def _is_authorized_type(tpe: Type, gctx: GlobalContext) -> bool:
 class InspectFunction(object):
     @classmethod
     def get_local_vars(
-        cls, node: ast.FunctionDef, arg_ctx: FunctionArgContext
+        cls, body: List[ast.AST], arg_ctx: FunctionArgContext
     ) -> List[LocalVar]:
         lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()))
-        lvars_v.visit(node)
+        for node in body:
+            lvars_v.visit(node)
         lvars = sorted(list(lvars_v.vars))
         _logger.debug(f"local vars: %s", lvars)
         return [LocalVar(s) for s in lvars]
@@ -327,10 +346,16 @@ class InspectFunction(object):
         arg_ctx: FunctionArgContext,
         fun_path: CanonicalPath,
     ) -> FunctionInteractions:
-        local_vars = set(cls.get_local_vars(node, arg_ctx))
+        if isinstance(node, ast.FunctionDef):
+            body = node.body
+        elif isinstance(node, ast.Lambda):
+            body = [node.body]
+        else:
+            raise KSException(f"unkown ast node {type(node)}")
+        local_vars = set(cls.get_local_vars(body, arg_ctx))
         _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
-        for n in node.body:
+        for n in body:
             vdeps.visit(n)
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
@@ -338,7 +363,7 @@ class InspectFunction(object):
         sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)
         input_sig = _hash(sig_list)
         calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars)
-        for n in node.body:
+        for n in body:
             calls_v.visit(n)
         body_sig = _hash(function_body_lines)
         return_sig = _hash(
@@ -346,7 +371,10 @@ class InspectFunction(object):
         )
 
         # Look at the annotations to see if there is a reference to a dds_function
-        store_path = cls._path_annotation(node, mod, gctx)
+        if isinstance(node, ast.FunctionDef):
+            store_path = cls._path_annotation(node, mod, gctx)
+        else:
+            store_path = None
         _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
 
         return FunctionInteractions(
@@ -428,7 +456,13 @@ class InspectFunction(object):
             if len(node.args) < 2:
                 raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
             store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
-            called_path_symbol = node.args[1].id
+            called_path_ast = node.args[1]
+            if isinstance(called_path_ast, ast.Name):
+                called_path_symbol = node.args[1].id
+            else:
+                raise NotImplementedError(
+                    f"Cannot use nested callables of type {called_path_ast}"
+                )
             called_local_path = LocalDepPath(PurePosixPath(called_path_symbol))
             called_z = ObjectRetrieval.retrieve_object(called_local_path, mod, gctx)
             if not called_z:
