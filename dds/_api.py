@@ -5,12 +5,12 @@ The main API functions
 import logging
 import pathlib
 from collections import OrderedDict
-from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union
+from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union, Set
 
 from .fun_args import get_arg_ctx
 from .introspect import introspect
 from .store import LocalFileStore, Store
-from .structures import DDSPath, KSException, EvalContext
+from .structures import DDSPath, KSException, EvalContext, PyHash
 from .structures_utils import DDSPathUtils, FunctionInteractionsUtils
 
 _Out = TypeVar("_Out")
@@ -26,8 +26,8 @@ _eval_ctx: Optional[EvalContext] = None
 def keep(
     path: Union[str, DDSPath, pathlib.Path],
     fun: Union[Callable[..., _Out]],
-    *args,
-    **kwargs,
+    *args: Tuple[Any, ...],
+    **kwargs: Dict[str, Any],
 ) -> _Out:
     path = DDSPathUtils.create(path)
     return _eval(fun, path, args, kwargs, None, None)
@@ -49,7 +49,7 @@ def set_store(
     data_dir: Optional[str] = None,
     dbutils: Optional[Any] = None,
     commit_type: Optional[str] = None,
-):
+) -> None:
     """
     Sets the store for the execution of the program.
 
@@ -88,11 +88,12 @@ def set_store(
 def _eval(
     fun: Callable[[_In], _Out],
     path: Optional[DDSPath],
-    args: Tuple[Any],
+    args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
-    dds_export_graph: Union[str, pathlib.Path, type(None)],
+    dds_export_graph: Union[str, pathlib.Path, None],
     dds_extra_debug: Optional[bool],
 ) -> _Out:
+    export_graph: Optional[pathlib.Path]
     if dds_export_graph is not None:
         export_graph = pathlib.Path(dds_export_graph).absolute()
     else:
@@ -111,7 +112,7 @@ def _eval(
         key = None if path is None else _eval_ctx.requested_paths[path]
         if key is not None and _store.has_blob(key):
             _logger.debug(f"_eval:Return cached {path} from {key}")
-            return _store.fetch_blob(key)
+            return _store.fetch_blob(key)  # type: ignore
         arg_repr = [str(type(arg)) for arg in args]
         kwargs_repr = OrderedDict(
             [(key, str(type(arg))) for (key, arg) in kwargs.items()]
@@ -119,7 +120,7 @@ def _eval(
         _logger.info(
             f"_eval:Evaluating (keep:{path}) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
         )
-        res = fun(*args, **kwargs)
+        res = fun(*args, **kwargs)  # type: ignore
         _logger.info(f"_eval:Evaluating (keep:{path}) fun {fun}: completed")
         if key is not None:
             _logger.info(f"_eval:Storing blob into key {key}")
@@ -155,6 +156,7 @@ def _eval_new_ctx(
             f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context"
         )
         _eval_ctx = EvalContext(requested_paths=store_paths)
+        present_blobs: Optional[Set[PyHash]]
         if extra_debug:
             present_blobs = set(
                 [key for key in set(store_paths.values()) if _store.has_blob(key)]
@@ -192,14 +194,16 @@ def _eval_new_ctx(
             _logger.info(
                 f"_eval_new_ctx:Evaluating (eval) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
             )
-            res = fun(*args, **kwargs)
+            res = fun(*args, **kwargs)  # type: ignore
             _logger.info(f"_eval_new_ctx:Evaluating (eval) fun {fun}: completed")
-            key = None if path is None else _eval_ctx.requested_paths[path]
-            if key is not None:
-                _logger.info(f"_eval:Storing blob into key {key}")
-                _store.store_blob(key, res)
+            obj_key: Optional[
+                PyHash
+            ] = None if path is None else _eval_ctx.requested_paths[path]
+            if obj_key is not None:
+                _logger.info(f"_eval:Storing blob into key {obj_key}")
+                _store.store_blob(obj_key, res)
         _store.sync_paths(store_paths)
-        return res
+        return res  # type: ignore
     finally:
         # Cleaning up the context
         _eval_ctx = None
@@ -210,7 +214,7 @@ def _fetch_ipython_vars() -> Dict[str, Any]:
     Fetches variables from the ipython / jupyter environment. This is a best effort method.
     """
     try:
-        from IPython import get_ipython
+        from IPython import get_ipython  # type: ignore
 
         ipython = get_ipython()
         if ipython is None:

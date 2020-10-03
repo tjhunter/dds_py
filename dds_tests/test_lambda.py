@@ -27,6 +27,7 @@ def fun2():
 
 @pytest.mark.usefixtures("cleandir")
 def test():
+    # Top-level calls work.
     assert fun1() == 1
     assert fun2() == 2
     # Not implemented yet
