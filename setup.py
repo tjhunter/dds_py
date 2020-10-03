@@ -48,7 +48,7 @@ setup(
         "spark": ["pyspark>=2.4.0"],
     },
     python_requires=">=3.6,<3.9",
-    install_requires=[],
+    install_requires=["asttokens"],
     author="Tim Hunter",
     author_email="tjhunter+dds@cs.stanford.edu",
     license="http://www.apache.org/licenses/LICENSE-2.0",

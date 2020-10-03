@@ -1,5 +1,7 @@
 """
 Parsing of the lambda functions
+code inspired by:
+http://xion.io/post/code/python-get-lambda-code.html
 """
 
 from typing import Iterable, Tuple, Optional, Callable, List, Dict, Any
@@ -79,17 +81,3 @@ def inspect_lambda_condition(fun: Callable[..., Any]) -> ast.Lambda:
         if isinstance(node, ast.Lambda):
             return node
     raise KSException(f"Could not parse lambda {pformat(call_node)}")
-    #
-    # lambda_node = None  # type: Optional[ast.Lambda]
-    # if len(call_node.args) > 0:
-    #     lambda_node = call_node.args[0]
-    #
-    # elif len(call_node.keywords) > 0:
-    #     for keyword in call_node.keywords:
-    #         if keyword.arg == "condition":
-    #             lambda_node = keyword.value
-    #             break
-    # else:
-    #     raise AssertionError()
-    #
-    # return lambda_node
