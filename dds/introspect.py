@@ -42,7 +42,7 @@ def introspect(
         whitelisted_packages=_whitelisted_packages,
         start_globals=start_globals,
     )
-    return _introspect(f, arg_ctx, gctx)
+    return _introspect(f, arg_ctx, gctx, call_stack=[])
 
 
 class Functions(str, Enum):
@@ -91,6 +91,7 @@ class GlobalContext(object):
 
 def _introspect(
     f: Callable[[Any], Any], arg_ctx: FunctionArgContext, gctx: GlobalContext,
+        call_stack: List[CanonicalPath]
 ) -> FunctionInteractions:
     # Check if the function has already been evaluated.
     fun_path = _fun_path(f)
@@ -125,7 +126,7 @@ def _introspect(
     body_lines = src.split("\n")
 
     fis = InspectFunction.inspect_fun(
-        ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path
+        ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path, call_stack
     )
     # Cache the function interactions
     gctx.cached_fun_interactions[fis_key] = fis
@@ -140,6 +141,7 @@ class IntroVisitor(ast.NodeVisitor):
         function_body_lines: List[str],
         function_args_hash: PyHash,
         function_var_names: Set[str],
+            call_stack: List[CanonicalPath]
     ):
         # TODO: start_mod is in the global context
         self._start_mod = start_mod
@@ -147,6 +149,7 @@ class IntroVisitor(ast.NodeVisitor):
         self._function_var_names = set(function_var_names)
         self._body_lines = function_body_lines
         self._args_hash = function_args_hash
+        self._call_stack = call_stack
         self.inters: List[FunctionInteractions] = []
 
     def visit_Call(self, node: ast.Call) -> Any:
@@ -163,6 +166,7 @@ class IntroVisitor(ast.NodeVisitor):
             self._args_hash,
             function_inters_sig,
             self._function_var_names,
+            self._call_stack
         )
         if fi is not None:
             self.inters.append(fi)
@@ -345,13 +349,14 @@ class InspectFunction(object):
         function_body_lines: List[str],
         arg_ctx: FunctionArgContext,
         fun_path: CanonicalPath,
+            call_stack: List[CanonicalPath]
     ) -> FunctionInteractions:
         if isinstance(node, ast.FunctionDef):
             body = node.body
         elif isinstance(node, ast.Lambda):
             body = [node.body]
         else:
-            raise KSException(f"unkown ast node {type(node)}")
+            raise KSException(f"unknown ast node {type(node)}")
         local_vars = set(cls.get_local_vars(body, arg_ctx))
         _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
@@ -362,7 +367,7 @@ class InspectFunction(object):
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
         sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)
         input_sig = _hash(sig_list)
-        calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars)
+        calls_v = IntroVisitor(mod, gctx, function_body_lines, input_sig, local_vars, call_stack)
         for n in body:
             calls_v.visit(n)
         body_sig = _hash(function_body_lines)
@@ -426,6 +431,7 @@ class InspectFunction(object):
         function_args_hash: PyHash,
         function_inter_hash: PyHash,
         var_names: Set[str],
+            call_stack: List[CanonicalPath],
     ) -> Optional[FunctionInteractions]:
         # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
@@ -471,9 +477,16 @@ class InspectFunction(object):
                     f"Invalid called_z: {called_local_path} {mod}"
                 )
             called_fun, call_fun_path = called_z
+            if call_fun_path in call_stack:
+                raise KSException(f"Detected circular function calls or (co-)recursive calls."
+                                  f"This is currently not supported. Change your code to split the "
+                                  f"recursive section into a separate function. "
+                                  f"Function: {call_fun_path}"
+                                  f"Call stack: {' '.join([str(p) for p in call_stack])}")
             context_sig = _hash(
                 [function_body_hash, function_args_hash, function_inter_hash]
             )
+            new_call_stack = call_stack + [call_fun_path]
             # TODO: deal with the arguments here
             if node.keywords:
                 raise NotImplementedError(
@@ -484,13 +497,20 @@ class InspectFunction(object):
                 named_args=get_arg_ctx_ast(called_fun, node.args[2:]),
                 inner_call_key=context_sig,
             )
-            inner_intro = _introspect(called_fun, arg_ctx, gctx=gctx)
+            inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
         if caller_fun_path == CanonicalPath(["dds", "eval"]):
             raise NotImplementedError("eval")
         if caller_fun_path == CanonicalPath(["dds", "load"]):
             raise NotImplementedError("load")
+
+        if caller_fun_path in call_stack:
+            raise KSException(f"Detected circular function calls or (co-)recursive calls."
+                              f"This is currently not supported. Change your code to split the "
+                              f"recursive section into a separate function. "
+                              f"Function: {caller_fun_path}"
+                              f"Call stack: {' '.join([str(p) for p in call_stack])}")
 
         # Normal function call.
         # Just introspect the function call.
@@ -501,7 +521,8 @@ class InspectFunction(object):
         arg_ctx = FunctionArgContext(
             named_args=OrderedDict([]), inner_call_key=context_sig
         )
-        return _introspect(caller_fun, arg_ctx, gctx=gctx)
+        new_call_stack = call_stack + [caller_fun_path]
+        return _introspect(caller_fun, arg_ctx, gctx, new_call_stack)
 
     @classmethod
     def _retrieve_store_path(
@@ -747,6 +768,11 @@ def _retrieve_object(
         except ModuleNotFoundError:
             loaded_mod = None
         if loaded_mod is None:
+            # Looking into the globals (only if the scope is currently __main__ or __global__)
+            mod_path = _mod_path(mod)
+            if mod_path.get(0) not in ("__main__", "__global__"):
+                _logger.debug(f"Could not load name %s and not in global context (%s), skipping ", fname, mod_path)
+                return None
             _logger.debug(f"Could not load name %s, looking into the globals", fname)
             if fname in gctx.start_globals:
                 _logger.debug(f"Found %s in start_globals", fname)
