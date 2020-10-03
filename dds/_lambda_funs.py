@@ -7,7 +7,7 @@ http://xion.io/post/code/python-get-lambda-code.html
 from typing import Iterable, Tuple, Optional, Callable, List, Dict, Any
 
 import ast
-import asttokens
+import asttokens  # type: ignore
 import inspect
 import logging
 from ._print_ast import pformat
@@ -58,12 +58,12 @@ def inspect_lambda_condition(fun: Callable[..., Any]) -> ast.Lambda:
 
     atok = asttokens.ASTTokens("".join(lines), parse=True)
 
-    parent_of = dict()  # type: Dict[ast.AST, Optional[ast.AST]]
+    parent_of: Dict[ast.AST, Optional[ast.AST]] = dict()
     for node, parent in _walk_with_parent(atok.tree):
         parent_of[node] = parent
 
     # node of the decorator
-    call_node = None  # type: Optional[ast.Call]
+    call_node: Optional[ast.Call] = None
 
     for node in ast.walk(atok.tree):
         if isinstance(node, ast.Lambda) and node.lineno - 1 == condition_lineno:
@@ -73,9 +73,13 @@ def inspect_lambda_condition(fun: Callable[..., Any]) -> ast.Lambda:
             while ancestor is not None and not isinstance(ancestor, ast.Call):
                 ancestor = parent_of[ancestor]
 
-            call_node = ancestor
-            break
+            if ancestor is not None and isinstance(ancestor, ast.Call):
+                call_node = ancestor
+                break
     _logger.debug(f"_parse_lambda: call_node: {pformat(call_node)}")
+
+    if call_node is None:
+        raise KSException(f"Could not find call node {pformat(call_node)}")
 
     for node in ast.walk(call_node):
         if isinstance(node, ast.Lambda):
