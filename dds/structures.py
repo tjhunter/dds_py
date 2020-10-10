@@ -1,15 +1,7 @@
 from collections import OrderedDict
 from functools import total_ordering
 from pathlib import PurePosixPath
-from typing import (
-    Any,
-    NewType,
-    NamedTuple,
-    Optional,
-    Dict,
-    List,
-    Type,
-)
+from typing import Any, NewType, NamedTuple, Optional, Dict, List, Type, Tuple
 from enum import Enum
 
 
@@ -150,6 +142,12 @@ class ExternalDep(NamedTuple):
     sig: PyHash
 
 
+FunctionArgContextHash = NewType(
+    "FunctionArgContextHash",
+    Tuple[Optional[PyHash], Tuple[Tuple[str, Optional[PyHash]], ...]],
+)
+
+
 class FunctionArgContext(NamedTuple):
     # The keys of the arguments that are known at call time
     named_args: "OrderedDict[str, Optional[PyHash]]"
@@ -168,8 +166,9 @@ class FunctionArgContext(NamedTuple):
             return keys  # type: ignore
 
     @classmethod
-    def as_hashable(cls, arg_ctx: "FunctionArgContext") -> Any:
-        return arg_ctx.inner_call_key, tuple(list(arg_ctx.named_args.items()))
+    def as_hashable(cls, arg_ctx: "FunctionArgContext") -> FunctionArgContextHash:
+        x: Tuple[Tuple[str, Optional[PyHash]], ...] = tuple(arg_ctx.named_args.items())
+        return FunctionArgContextHash((arg_ctx.inner_call_key, x))
 
 
 class FunctionInteractions(NamedTuple):

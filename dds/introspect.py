@@ -9,15 +9,17 @@ from pathlib import PurePosixPath
 from types import ModuleType, FunctionType
 from typing import Tuple, Callable, Any, Dict, Set, Union, Optional, List, Type, NewType
 
-from .fun_args import dds_hash as _hash, FunctionArgContext, get_arg_ctx_ast
+from .fun_args import dds_hash as _hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
+FunctionArgContext,
     DDSPath,
     FunctionInteractions,
     KSException,
     CanonicalPath,
     ExternalDep,
     LocalDepPath,
+    FunctionArgContextHash,
 )
 from ._print_ast import pformat
 from .structures_utils import DDSPathUtils, LocalDepPathUtils
@@ -36,12 +38,13 @@ def introspect(
 ) -> FunctionInteractions:
     # TODO: exposed the whitelist
     # TODO: add the arguments of the function
-    gctx = GlobalContext(
-        f.__module__,  # typing: ignore
+    gctx = EvalMainContext(
+        f.__module__,  # type: ignore
         whitelisted_packages=_whitelisted_packages,
         start_globals=start_globals,
     )
-    return _introspect(f, arg_ctx, gctx, call_stack=[])
+    fun: FunctionType = f  # type: ignore
+    return _introspect(fun, arg_ctx, gctx, call_stack=[])
 
 
 class Functions(str, Enum):
@@ -51,8 +54,38 @@ class Functions(str, Enum):
     Eval = "eval"
 
 
+PythonId = NewType("PythonId", int)
+
+
 class GlobalContext(object):
-    # The packages that are authorized for traversal
+    """
+    The global context holds caches about from past evaluations.
+    """
+
+    def __init__(self):
+        self.cached_fun_calls: Dict[
+            Tuple[CanonicalPath, FunctionArgContextHash], List[CanonicalPath]
+        ] = {}
+        # The cached interactions
+        self.cached_fun_interactions: Dict[
+            Tuple[
+                CanonicalPath,
+                FunctionArgContextHash,
+                Tuple[Tuple[CanonicalPath, PythonId], ...],
+            ],
+            FunctionInteractions,
+        ] = {}
+
+
+# Set this to None to disable the global context.
+# TODO: expose as an option
+_global_context: Optional[GlobalContext] = GlobalContext()  # type: ignore
+
+
+class EvalMainContext(object):
+    """
+    The shared information across a single run.
+    """
 
     def __init__(
         self,
@@ -66,7 +99,7 @@ class GlobalContext(object):
         # Hashes of all the static objects
         self._hashes: Dict[CanonicalPath, PyHash] = {}
         self.cached_fun_interactions: Dict[
-            Tuple[CanonicalPath, FunctionArgContext], FunctionInteractions
+            Tuple[CanonicalPath, FunctionArgContextHash], FunctionInteractions
         ] = dict()
         self.cached_objects: Dict[
             Tuple[LocalDepPath, CanonicalPath], Optional[Tuple[Any, CanonicalPath]]
@@ -81,30 +114,63 @@ class GlobalContext(object):
         return self._hashes[path]
 
     def is_authorized_path(self, cp: CanonicalPath) -> bool:
-        _logger.debug(f"is_authorized_path: %s %s", self.whitelisted_packages, cp)
         for idx in range(len(self.whitelisted_packages)):
             if ".".join(cp._path[:idx]) in self.whitelisted_packages:
                 return True
         return False
 
 
+def _all_paths(fis: FunctionInteractions) -> Set[CanonicalPath]:
+    res: Set[CanonicalPath] = {fis.fun_path}
+    for fis0 in fis.parsed_body:
+        res.update(_all_paths(fis0))
+    return res
+
+
 def _introspect(
-    f: Callable[[Any], Any],
+    f: FunctionType,
     arg_ctx: FunctionArgContext,
-    gctx: GlobalContext,
+    gctx: EvalMainContext,
     call_stack: List[CanonicalPath],
 ) -> FunctionInteractions:
     # Check if the function has already been evaluated.
     fun_path = _fun_path(f)
+    arg_ctx_hash = FunctionArgContext.as_hashable(arg_ctx)
+    # In most cases, lambda functions will change id's each time. Skipping for now.
+    if (
+        not is_lambda(f)
+        and _global_context is not None
+        and (fun_path, arg_ctx_hash) in _global_context.cached_fun_calls
+    ):
+        dep_paths = _global_context.cached_fun_calls[(fun_path, arg_ctx_hash)]
+        _logger.debug(
+            f"{fun_path} in cache, evaluating if {len(dep_paths)} python objects have changed"
+        )
+        ids: List[Tuple[CanonicalPath, PythonId]] = []
+        for dep_path in dep_paths:
+            obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
+            ids.append((dep_path, PythonId(id(obj))))
+        tup = tuple(ids)
+        if (fun_path, arg_ctx_hash, tup) in _global_context.cached_fun_interactions:
+            _logger.debug(f"{fun_path} in interaction cache, skipping analysis")
+            return _global_context.cached_fun_interactions[
+                (fun_path, arg_ctx_hash, tup)
+            ]
+        else:
+            _logger.debug(f"{fun_path} not in interaction cache, objects have changed")
+
     fun_module = inspect.getmodule(f)
+    if fun_module is None:
+        raise KSException(f"Could not find module: f; {f} module: {fun_module}")
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
+    ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
         # _logger.debug(f"_introspect: is_lambda: {f}")
         src = inspect.getsource(f)
         h = _hash(src)
         # Have a stable name for the lambda function
         fun_path = CanonicalPath(fun_path._path[:-1] + [fun_path._path[-1] + h])
-        fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
+        fis_key = (fun_path, arg_ctx_hash)
         fis_ = gctx.cached_fun_interactions.get(fis_key)
         if fis_ is not None:
             return fis_
@@ -114,14 +180,14 @@ def _introspect(
         assert isinstance(ast_f, ast.Lambda), type(ast_f)
         # _logger.debug(f"_introspect: is_lambda: {ast_f}")
     else:
-        fis_key = (fun_path, FunctionArgContext.as_hashable(arg_ctx))
+        fis_key = (fun_path, arg_ctx_hash)
         fis_ = gctx.cached_fun_interactions.get(fis_key)
         if fis_ is not None:
             return fis_
         src = inspect.getsource(f)
         # _logger.debug(f"Starting _introspect: {f}: src={src}")
         ast_src = ast.parse(src)
-        ast_f = ast_src.body[0]
+        ast_f = ast_src.body[0]  # type: ignore
         assert isinstance(ast_f, ast.FunctionDef), type(ast_f)
         # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     body_lines = src.split("\n")
@@ -131,6 +197,17 @@ def _introspect(
     )
     # Cache the function interactions
     gctx.cached_fun_interactions[fis_key] = fis
+    # cache the function interactions in the global context
+    if not is_lambda(f) and _global_context is not None:
+        dep_paths = sorted(_all_paths(fis))
+        _global_context.cached_fun_calls[(fun_path, arg_ctx_hash)] = dep_paths
+        # Find the id of each corresponding object
+        ids: List[Tuple[CanonicalPath, PythonId]] = []
+        for dep_path in dep_paths:
+            obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
+            ids.append((dep_path, PythonId(id(obj))))
+        tup = tuple(ids)
+        _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
 
 
@@ -138,7 +215,7 @@ class IntroVisitor(ast.NodeVisitor):
     def __init__(
         self,
         start_mod: ModuleType,
-        gctx: GlobalContext,
+        gctx: EvalMainContext,
         function_body_lines: List[str],
         function_args_hash: PyHash,
         function_var_names: Set[str],
@@ -181,7 +258,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
     """
 
     def __init__(
-        self, start_mod: ModuleType, gctx: GlobalContext, local_vars: Set[LocalVar]
+        self, start_mod: ModuleType, gctx: EvalMainContext, local_vars: Set[LocalVar]
     ):
         self._start_mod = start_mod
         self._gctx = gctx
@@ -297,7 +374,7 @@ def _fun_path(f: FunctionType) -> CanonicalPath:
     return CanonicalPath(_mod_path(mod)._path + [f.__name__])
 
 
-def _is_authorized_type(tpe: Type, gctx: GlobalContext) -> bool:
+def _is_authorized_type(tpe: Type, gctx: EvalMainContext) -> bool:
     """
     True if the type is defined within the whitelisted hierarchy
     """
@@ -339,7 +416,7 @@ class InspectFunction(object):
         cls,
         node: ast.FunctionDef,
         mod: ModuleType,
-        gctx: GlobalContext,
+        gctx: EvalMainContext,
         vars: Set[LocalVar],
     ) -> List[ExternalDep]:
         vdeps = ExternalVarsVisitor(mod, gctx, vars)
@@ -349,8 +426,8 @@ class InspectFunction(object):
     @classmethod
     def inspect_fun(
         cls,
-        node: ast.FunctionDef,
-        gctx: GlobalContext,
+        node: Union[ast.FunctionDef, ast.Lambda],
+        gctx: EvalMainContext,
         mod: ModuleType,
         function_body_lines: List[str],
         arg_ctx: FunctionArgContext,
@@ -402,7 +479,7 @@ class InspectFunction(object):
 
     @classmethod
     def _path_annotation(
-        cls, node: ast.FunctionDef, mod: ModuleType, gctx: GlobalContext
+        cls, node: ast.FunctionDef, mod: ModuleType, gctx: EvalMainContext
     ) -> Optional[DDSPath]:
         for dec in node.decorator_list:
             if isinstance(dec, ast.Call):
@@ -433,7 +510,7 @@ class InspectFunction(object):
     def inspect_call(
         cls,
         node: ast.Call,
-        gctx: GlobalContext,
+        gctx: EvalMainContext,
         mod: ModuleType,
         function_body_hash: PyHash,
         function_args_hash: PyHash,
@@ -538,7 +615,7 @@ class InspectFunction(object):
 
     @classmethod
     def _retrieve_store_path(
-        cls, local_path_node: ast.AST, mod: ModuleType, gctx: GlobalContext
+        cls, local_path_node: ast.AST, mod: ModuleType, gctx: EvalMainContext
     ) -> DDSPath:
         called_path_symbol: str
         if isinstance(local_path_node, ast.Constant):
@@ -571,7 +648,7 @@ class InspectFunction(object):
 class ObjectRetrieval(object):
     @classmethod
     def retrieve_object(
-        cls, local_path: LocalDepPath, context_mod: ModuleType, gctx: GlobalContext
+        cls, local_path: LocalDepPath, context_mod: ModuleType, gctx: EvalMainContext
     ) -> Optional[Tuple[Any, CanonicalPath]]:
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
@@ -676,8 +753,35 @@ class ObjectRetrieval(object):
             return res
 
     @classmethod
+    def retrieve_object_global(
+        cls, path: CanonicalPath, gctx: EvalMainContext
+    ) -> Optional[Any]:
+        # The head is always assumed to be a module for now
+        mod_name = path.head()
+        obj_key = (LocalDepPath(PurePosixPath("")), path)
+        if obj_key in gctx.cached_objects:
+            return gctx.cached_objects[obj_key]
+
+        mod = importlib.import_module(mod_name)
+        if mod is None:
+            raise KSException(
+                f"Cannot process path {path}: module {mod_name} cannot be loaded"
+            )
+        sub_path = path.tail()
+        dep_path = LocalDepPath(PurePosixPath("/".join(sub_path._path)))
+        _logger.debug(f"Calling retrieve_object on {dep_path}, {mod}")
+        z = cls.retrieve_object(dep_path, mod, gctx)
+        if z is None:
+            raise KSException(
+                f"Cannot process path {path}: object cannot be retrieved. dep_path: {dep_path} module: {mod}"
+            )
+        obj, _ = z
+        gctx.cached_objects[obj_key] = (obj, path)
+        return obj
+
+    @classmethod
     def _retrieve_object_rec(
-        cls, local_path: LocalDepPath, context_mod: ModuleType, gctx: GlobalContext
+        cls, local_path: LocalDepPath, context_mod: ModuleType, gctx: EvalMainContext
     ) -> Optional[Tuple[Any, CanonicalPath]]:
         # _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")
         if not local_path.parts:
