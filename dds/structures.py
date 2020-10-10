@@ -1,5 +1,3 @@
-# from __future__ import annotations
-
 from collections import OrderedDict
 from functools import total_ordering
 from pathlib import PurePosixPath
@@ -12,8 +10,34 @@ from typing import (
     List,
     Type,
 )
+from enum import Enum
 
-# from .fun_args import FunctionArgContext
+
+class ProcessingStage(str, Enum):
+    """
+    The processing stages by DDS:
+    - analysis: parses all the functions and finds the functions that need to be evaluated
+    - store_inspect: lists the new blobs that need to be added to the store (optional)
+    - eval: evaluates the new blobs and pushes them to the store
+    - path_commit: commit the paths to the store
+    """
+
+    ANALYSIS = "analysis"
+    STORE_INSPECT = "store_inspect"
+    EVAL = "eval"
+    STORE_COMMIT = "store_commit"
+    PATH_COMMIT = "path_commit"
+
+    @staticmethod
+    def all_phases() -> "List[ProcessingStage]":
+        return [
+            ProcessingStage.ANALYSIS,
+            ProcessingStage.STORE_INSPECT,
+            ProcessingStage.EVAL,
+            ProcessingStage.STORE_COMMIT,
+            ProcessingStage.PATH_COMMIT,
+        ]
+
 
 # A path to an object in the DDS store.
 DDSPath = NewType("DDSPath", str)
@@ -33,6 +57,8 @@ class EvalContext(NamedTuple):
     """
 
     requested_paths: Dict[DDSPath, PyHash]
+
+    stats_time: Dict[ProcessingStage, float]
 
 
 # The name of a codec protocol.
