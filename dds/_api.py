@@ -290,7 +290,7 @@ def _eval_new_ctx(
         )
         for stage in ProcessingStage.all_phases():
             x = _eval_ctx.stats_time[stage]
-            _logger.debug(f"Stage {stage}: {x:.3f} sec {100 * x / s:.2f}%")
+            _logger.info(f"Stage {stage}: {x:.3f} sec {100 * x / s:.2f}%")
         _eval_ctx = None
 
 
