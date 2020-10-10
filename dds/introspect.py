@@ -7,12 +7,24 @@ from collections import OrderedDict
 from enum import Enum
 from pathlib import PurePosixPath
 from types import ModuleType, FunctionType
-from typing import Tuple, Callable, Any, Dict, Set, Union, Optional, List, Type, NewType
+from typing import (
+    Tuple,
+    Callable,
+    Any,
+    Dict,
+    Set,
+    Union,
+    Optional,
+    List,
+    Type,
+    NewType,
+    Sequence,
+)
 
 from .fun_args import dds_hash as _hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
-FunctionArgContext,
+    FunctionArgContext,
     DDSPath,
     FunctionInteractions,
     KSException,
@@ -202,11 +214,11 @@ def _introspect(
         dep_paths = sorted(_all_paths(fis))
         _global_context.cached_fun_calls[(fun_path, arg_ctx_hash)] = dep_paths
         # Find the id of each corresponding object
-        ids: List[Tuple[CanonicalPath, PythonId]] = []
+        obj_ids: List[Tuple[CanonicalPath, PythonId]] = []
         for dep_path in dep_paths:
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
-            ids.append((dep_path, PythonId(id(obj))))
-        tup = tuple(ids)
+            obj_ids.append((dep_path, PythonId(id(obj))))
+        tup = tuple(obj_ids)
         _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
 
@@ -218,7 +230,7 @@ class IntroVisitor(ast.NodeVisitor):
         gctx: EvalMainContext,
         function_body_lines: List[str],
         function_args_hash: PyHash,
-        function_var_names: Set[str],
+        function_var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
     ):
         # TODO: start_mod is in the global context
@@ -345,7 +357,7 @@ class LocalVarsVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def _function_name(node) -> List[str]:
+def _function_name(node: ast.AST) -> List[str]:
     if isinstance(node, ast.Name):
         return [node.id]
     if isinstance(node, ast.BinOp):
@@ -371,10 +383,12 @@ def _mod_path(m: ModuleType) -> CanonicalPath:
 
 def _fun_path(f: FunctionType) -> CanonicalPath:
     mod = inspect.getmodule(f)
+    if mod is None:
+        raise KSException(f"Function {f} has no module")
     return CanonicalPath(_mod_path(mod)._path + [f.__name__])
 
 
-def _is_authorized_type(tpe: Type, gctx: EvalMainContext) -> bool:
+def _is_authorized_type(tpe: Type[Any], gctx: EvalMainContext) -> bool:
     """
     True if the type is defined within the whitelisted hierarchy
     """
@@ -402,7 +416,7 @@ def _is_authorized_type(tpe: Type, gctx: EvalMainContext) -> bool:
 class InspectFunction(object):
     @classmethod
     def get_local_vars(
-        cls, body: List[ast.AST], arg_ctx: FunctionArgContext
+        cls, body: Sequence[ast.AST], arg_ctx: FunctionArgContext
     ) -> List[LocalVar]:
         lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()))
         for node in body:
@@ -434,6 +448,7 @@ class InspectFunction(object):
         fun_path: CanonicalPath,
         call_stack: List[CanonicalPath],
     ) -> FunctionInteractions:
+        body: Sequence[ast.AST]
         if isinstance(node, ast.FunctionDef):
             body = node.body
         elif isinstance(node, ast.Lambda):
@@ -448,7 +463,7 @@ class InspectFunction(object):
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
-        sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)
+        sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)  # type: ignore
         input_sig = _hash(sig_list)
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
@@ -515,7 +530,7 @@ class InspectFunction(object):
         function_body_hash: PyHash,
         function_args_hash: PyHash,
         function_inter_hash: PyHash,
-        var_names: Set[str],
+        var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
     ) -> Optional[FunctionInteractions]:
         # _logger.debug(f"Inspect call:\n %s", pformat(node))
@@ -526,11 +541,11 @@ class InspectFunction(object):
             # _logger.debug(
             #     f"inspect_call: local_path: %s is rejected (in vars)", local_path
             # )
-            return
+            return None
         z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
         if z is None:
             # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
-            return
+            return None
         caller_fun, caller_fun_path = z
         if not isinstance(caller_fun, FunctionType):
             raise NotImplementedError(
@@ -549,7 +564,7 @@ class InspectFunction(object):
             store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
             called_path_ast = node.args[1]
             if isinstance(called_path_ast, ast.Name):
-                called_path_symbol = node.args[1].id
+                called_path_symbol = node.args[1].id  # type: ignore
             else:
                 raise NotImplementedError(
                     f"Cannot use nested callables of type {called_path_ast}"
@@ -581,7 +596,7 @@ class InspectFunction(object):
                 )
             # For now, accept the constant arguments. This is enough for some basic objects.
             arg_ctx = FunctionArgContext(
-                named_args=get_arg_ctx_ast(called_fun, node.args[2:]),
+                named_args=get_arg_ctx_ast(called_fun, node.args[2:]),  # type: ignore
                 inner_call_key=context_sig,
             )
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
@@ -665,6 +680,7 @@ class ObjectRetrieval(object):
             _logger.debug(
                 f"Could not find {fname} in {context_mod}, attempting a direct load"
             )
+            loaded_mod: Optional[ModuleType]
             try:
                 loaded_mod = importlib.import_module(fname)
             except ModuleNotFoundError:
