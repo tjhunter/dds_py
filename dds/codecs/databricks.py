@@ -36,10 +36,12 @@ def displayGraph(f: FunctionType) -> None:
         dds_extra_debug=True,
         dds_stages=["analysis"],
     )
-    _fetch_ipython_vars()["dbutils"].fs.cp(  # type:ignore
+    _fetch_ipython_vars()["dbutils"].fs.cp(
         f"file:///tmp/graph_{name}.svg", f"/FileStore/plots/graph_{name}.svg"
     )
-    _fetch_ipython_vars()["displayHTML"](f""" <img src="files/plots/graph_{name}.svg"> """)  # type: ignore
+    _fetch_ipython_vars()["displayHTML"](
+        f""" <img src="files/plots/graph_{name}.svg"> """
+    )
 
 
 class CommitType(str, Enum):
