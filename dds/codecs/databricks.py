@@ -9,6 +9,7 @@ import logging
 import tempfile
 from pathlib import Path
 from typing import Any, Optional, List, Type
+from types import FunctionType
 from collections import OrderedDict
 from enum import Enum
 
@@ -21,6 +22,22 @@ from ..structures import CodecProtocol, ProtocolRef
 from ..structures import PyHash, DDSPath, GenericLocation
 
 _logger = logging.getLogger(__name__)
+
+
+def displayGraph(f: FunctionType) -> None:
+    name = str(id(f))
+    import dds
+
+    dds.eval(
+        f,
+        dds_export_graph=f"/tmp/graph_{name}.svg",
+        dds_extra_debug=True,
+        dds_stages=["analysis"],
+    )
+    dbutils.fs.cp(  # type:ignore
+        f"file:///tmp/graph_{name}.svg", f"/FileStore/plots/graph_{name}.svg"
+    )
+    displayHTML(f""" <img src="files/plots/graph_{name}.svg"> """)  # type: ignore
 
 
 class CommitType(str, Enum):
