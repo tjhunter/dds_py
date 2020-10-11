@@ -26,18 +26,20 @@ _logger = logging.getLogger(__name__)
 
 def displayGraph(f: FunctionType) -> None:
     name = str(id(f))
-    import dds
+    from .._api import eval as dds_eval, _fetch_ipython_vars
 
-    dds.eval(
+    dds_eval(
         f,
+        args=(),
+        kwargs={},
         dds_export_graph=f"/tmp/graph_{name}.svg",
         dds_extra_debug=True,
         dds_stages=["analysis"],
     )
-    dbutils.fs.cp(  # type:ignore
+    _fetch_ipython_vars()["dbutils"].fs.cp(  # type:ignore
         f"file:///tmp/graph_{name}.svg", f"/FileStore/plots/graph_{name}.svg"
     )
-    displayHTML(f""" <img src="files/plots/graph_{name}.svg"> """)  # type: ignore
+    _fetch_ipython_vars()["displayHTML"](f""" <img src="files/plots/graph_{name}.svg"> """)  # type: ignore
 
 
 class CommitType(str, Enum):
