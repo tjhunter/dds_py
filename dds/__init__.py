@@ -1,7 +1,7 @@
 import pathlib
 from types import ModuleType
 from typing import Tuple, Dict
-from typing import TypeVar, Callable, Any, Optional, Union
+from typing import TypeVar, Callable, Any, Optional, Union, List
 
 from ._annotations import dds_function
 from ._api import (
@@ -12,7 +12,7 @@ from ._api import (
 from ._version import version
 from .introspect import whitelist_module as _whitelist_module
 from .store import Store
-from .structures import DDSPath
+from .structures import DDSPath, ProcessingStage
 
 __all__ = [
     "DDSPath",
@@ -122,8 +122,9 @@ def eval(
     *args: Tuple[Any, ...],
     dds_export_graph: Union[str, pathlib.Path, None] = None,
     dds_extra_debug: Optional[bool] = None,
+    dds_stages: Optional[List[Union[str, ProcessingStage]]] = None,
     **kwargs: Dict[str, Any]
-) -> _Out:
+) -> Optional[_Out]:
     """
     Evaluates a function. The result of the function is not stored in the data store, but the function itself may
     contain multiple calls to keep().
@@ -161,7 +162,7 @@ def eval(
     :param kwargs: (keyworded arguments are currently unsupported)
     :return: the return value of the function.
     """
-    return _eval(fun, args, kwargs, dds_export_graph, dds_extra_debug)
+    return _eval(fun, args, kwargs, dds_export_graph, dds_extra_debug, dds_stages)
 
 
 def set_store(

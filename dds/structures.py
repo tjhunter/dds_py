@@ -1,19 +1,35 @@
-# from __future__ import annotations
-
 from collections import OrderedDict
 from functools import total_ordering
 from pathlib import PurePosixPath
-from typing import (
-    Any,
-    NewType,
-    NamedTuple,
-    Optional,
-    Dict,
-    List,
-    Type,
-)
+from typing import Any, NewType, NamedTuple, Optional, Dict, List, Type, Tuple
+from enum import Enum
 
-# from .fun_args import FunctionArgContext
+
+class ProcessingStage(str, Enum):
+    """
+    The processing stages by DDS:
+    - analysis: parses all the functions and finds the functions that need to be evaluated
+    - store_inspect: lists the new blobs that need to be added to the store (optional)
+    - eval: evaluates the new blobs and pushes them to the store
+    - path_commit: commit the paths to the store
+    """
+
+    ANALYSIS = "analysis"
+    STORE_INSPECT = "store_inspect"
+    EVAL = "eval"
+    STORE_COMMIT = "store_commit"
+    PATH_COMMIT = "path_commit"
+
+    @staticmethod
+    def all_phases() -> "List[ProcessingStage]":
+        return [
+            ProcessingStage.ANALYSIS,
+            ProcessingStage.STORE_INSPECT,
+            ProcessingStage.EVAL,
+            ProcessingStage.STORE_COMMIT,
+            ProcessingStage.PATH_COMMIT,
+        ]
+
 
 # A path to an object in the DDS store.
 DDSPath = NewType("DDSPath", str)
@@ -33,6 +49,8 @@ class EvalContext(NamedTuple):
     """
 
     requested_paths: Dict[DDSPath, PyHash]
+
+    stats_time: Dict[ProcessingStage, float]
 
 
 # The name of a codec protocol.
@@ -124,6 +142,12 @@ class ExternalDep(NamedTuple):
     sig: PyHash
 
 
+FunctionArgContextHash = NewType(
+    "FunctionArgContextHash",
+    Tuple[Optional[PyHash], Tuple[Tuple[str, Optional[PyHash]], ...]],
+)
+
+
 class FunctionArgContext(NamedTuple):
     # The keys of the arguments that are known at call time
     named_args: "OrderedDict[str, Optional[PyHash]]"
@@ -142,8 +166,9 @@ class FunctionArgContext(NamedTuple):
             return keys  # type: ignore
 
     @classmethod
-    def as_hashable(cls, arg_ctx: "FunctionArgContext") -> Any:
-        return arg_ctx.inner_call_key, tuple(list(arg_ctx.named_args.items()))
+    def as_hashable(cls, arg_ctx: "FunctionArgContext") -> FunctionArgContextHash:
+        x: Tuple[Tuple[str, Optional[PyHash]], ...] = tuple(arg_ctx.named_args.items())
+        return FunctionArgContextHash((arg_ctx.inner_call_key, x))
 
 
 class FunctionInteractions(NamedTuple):
