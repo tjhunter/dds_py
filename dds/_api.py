@@ -77,8 +77,10 @@ def set_store(
             raise KSException("Missing internal_dir argument")
         dbutils = dbutils or _fetch_ipython_vars().get("dbutils")
         if dbutils is None:
-            raise KSException("Missing dbutils objects from input or from arguments."
-                              " You must be using a databricks notebook to use the DBFS store")
+            raise KSException(
+                "Missing dbutils objects from input or from arguments."
+                " You must be using a databricks notebook to use the DBFS store"
+            )
         from .codecs.databricks import DBFSStore, CommitType
 
         commit_type = str(commit_type or CommitType.FULL.name).upper()
