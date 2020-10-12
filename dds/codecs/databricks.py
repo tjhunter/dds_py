@@ -242,13 +242,15 @@ class DBFSStore(Store):
                     # Optimization for the files saved with Spark: use spark to read and write.
                     # This can be much faster than using DBFS, which does a temporary copy on a local drive
                     blob_meta = json.loads(self._head(self._blob_meta_path(key)))
+                    _logger.debug(f"sync_path: blob_meta: {blob_path}")
                     if blob_meta.get("protocol") == "dbfs.pyspark":
                         _logger.debug(f"Using pyspark to copy {blob_path}")
                         df = self.fetch_blob(key)
                         assert isinstance(df, DataFrame), (type(df), key, blob_path)
                         self._dbutils.fs.rm(str(obj_path), recurse=True)
                         df.write.parquet(str(obj_path))
-                    self._dbutils.fs.cp(str(blob_path), str(obj_path), recurse=True)
+                    else:
+                        self._dbutils.fs.cp(str(blob_path), str(obj_path), recurse=True)
                     _logger.debug(f"Done copying {blob_path} -> {obj_path}")
                 else:
                     _logger.debug(f"Skip copy for {obj_path} (links-only commit)")
