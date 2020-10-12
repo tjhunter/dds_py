@@ -192,7 +192,7 @@ class DBFSStore(Store):
         protocol = self._registry.get_codec(type(blob), codec)
         p = self._blob_path(key)
         protocol.serialize_into(blob, GenericLocation(str(p)))
-        meta_p = self._internal_dir.joinpath("blobs", key + ".meta")
+        meta_p = self._blob_meta_path(key)
         try:
             meta = json.dumps({"protocol": protocol.ref()})
             self._put(meta_p, meta)
@@ -239,7 +239,17 @@ class DBFSStore(Store):
                 obj_path = self._physical_path(Path("./" + dds_p))
                 if self._commit_type == CommitType.FULL:
                     _logger.debug(f"Copying {blob_path} -> {obj_path}")
+                    # Optimization for the files saved with Spark: use spark to read and write.
+                    # This can be much faster than using DBFS, which does a temporary copy on a local drive
+                    blob_meta = json.loads(self._head(self._blob_meta_path(key)))
+                    if blob_meta.get("protocol") == "dbfs.pyspark":
+                        _logger.debug(f"Using pyspark to copy {blob_path}")
+                        df = self.fetch_blob(key)
+                        assert isinstance(df, DataFrame), (type(df), key, blob_path)
+                        self._dbutils.fs.rm(str(obj_path), recurse=True)
+                        df.write.parquet(str(obj_path))
                     self._dbutils.fs.cp(str(blob_path), str(obj_path), recurse=True)
+                    _logger.debug(f"Done copying {blob_path} -> {obj_path}")
                 else:
                     _logger.debug(f"Skip copy for {obj_path} (links-only commit)")
                 _logger.debug(f"Linking new file {obj_path}")
@@ -257,11 +267,14 @@ class DBFSStore(Store):
     def _blob_path(self, key: PyHash) -> Path:
         return self._internal_dir.joinpath("blobs", key)
 
+    def _blob_meta_path(self, key: PyHash) -> Path:
+        return self._internal_dir.joinpath("blobs", key + ".meta")
+
     def _physical_path(self, dds_p: Path) -> Path:
         return self._data_dir.joinpath(dds_p)
 
     def _fetch_meta(self, key: PyHash) -> Optional[Any]:
-        meta_p = self._internal_dir.joinpath("blobs", key + ".meta")
+        meta_p = self._blob_meta_path(key)
         try:
             _logger.debug(f"Attempting to read metadata for key {key}: {meta_p}")
             meta: str = self._head(meta_p)
