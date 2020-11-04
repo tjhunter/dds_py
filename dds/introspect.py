@@ -374,6 +374,11 @@ def _function_name(node: ast.AST) -> List[str]:
         s = str(node.s)
         s = s[:4]
         return [f"Str({s}...)"]
+    if isinstance(node, ast.Subscript):
+        return ["Subscript"]
+    _logger.error(
+        f"Cannot understand nodes of type {type(node)}. Syntax tree: {pformat(node)}"
+    )
     assert False, (node, type(node))
 
 
