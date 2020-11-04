@@ -66,3 +66,13 @@ def test_5():
     assert dds.eval(f5_wrap) == "0"
     u.unreachable_var = 1
     assert dds.eval(f5_wrap) == "0"
+
+
+def f6():
+    s = [{}]
+    return s[0].keys()
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_arrays():
+    assert len(dds.eval(f6)) == 0
