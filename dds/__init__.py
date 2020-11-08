@@ -49,7 +49,7 @@ def keep(
     >>> data = dds.keep(path, my_function, arg1, arg2)
 
     Accepted functions.
-    -------------------
+    ===================
 
     In general, the functions that should be provided are total, non-recursive, deterministic and referentially
      transparent.

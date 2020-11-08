@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Reference - DDS documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Reference";
+    var mkdocs_page_input_path = "dds-reference.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> DDS documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Reference</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#dds.keep">dds.keep</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#accepted-functions">Accepted functions.</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#accepted-arguments">Accepted arguments.</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#using-complex-arguments">Using complex arguments</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../test_sklearn/">Tutorial</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">DDS documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Reference</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="dds-package">DDS package</h1>
+<div class="doc doc-object doc-function">
+<h2 class="hidden-toc" href="#dds.keep" id="dds.keep" style="visibility: hidden; position: absolute;">
+        </h2>
+<div class="doc doc-contents first">
+<p>Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,
+the function will be evaluated again (with the given arguments).</p>
+<p>For example, instead of writing:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>data = my_function(arg1, arg2)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>you should use:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>data = dds.keep(path, my_function, arg1, arg2)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h2 id="accepted-functions">Accepted functions.</h2>
+<p>In general, the functions that should be provided are total, non-recursive, deterministic and referentially
+ transparent.</p>
+<p>Functions have currently the following restrictions:
+- no static method, class method
+- not recursive
+- no generators
+- the functions must be in a whitelisted module to be considered, see the whitelist_module() function</p>
+<p>They must return storable objects. The exact list depends on the store that is currently deployed.</p>
+<h2 id="accepted-arguments">Accepted arguments.</h2>
+<p>Only the following classes of arguments are accepted:
+- the basic types of python (int, str, bool, float)
+- lists and tuples of accepted arguments
+- dictionaries. They are evaluated as sorted lists (by their keys)</p>
+<h2 id="using-complex-arguments">Using complex arguments</h2>
+<p>If more complex arguments should be accepted, two strategies are possible:
+- embed them inside the function call
+- wrap them inside a function which is then called through eval()</p>
+<p>Example: the following code will fail:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>df = pd.DataFrame({"x":[1]})</p>
+<p>def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</p>
+<p>stats = dds.keep("/stats", my_stats, data)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>The workaround is to use a wrapper function that create the dataframe:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>def my_pipeline():
+    df = pd.DataFrame({"x":[1]})
+    return dds.keep("/stats", my_stats, df) # This will work</p>
+<p>stats = dds.eval(my_pipeline)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>Another possibility is to move keep the result of the pipeline instead:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>def my_pipeline2():
+    df = pd.DataFrame({"x":[1]})
+    return my_stats(df)</p>
+<p>stats = dds.keep("/stats", my_pipeline2)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will
+only be evaluated once.</p>
+<p>:param path: a path in the storage system which will store the content of the function, evaluated to the given
+arguments. It is expected to be in absolute form (starting with "/" if a string
+or being an absolute path if a pathlib's Path object).
+If this path exists, it will be overwritten silently.</p>
+<p>:param fun: A function to evaluate. See text above on the limitations over this function
+:param args: the arguments of this function
+:param kwargs: (keyworded arguments are currently unsupported)
+:return: the value that the function would produce for these arguments</p>
+<details class="quote">
+          <summary>Source code in <code>dds/__init__.py</code></summary>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">keep</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
+    <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Out</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,</span>
+<span class="sd">    the function will be evaluated again (with the given arguments).</span>
+
+<span class="sd">    For example, instead of writing:</span>
+
+<span class="sd">    &gt;&gt;&gt; data = my_function(arg1, arg2)</span>
+
+<span class="sd">    you should use:</span>
+
+<span class="sd">    &gt;&gt;&gt; data = dds.keep(path, my_function, arg1, arg2)</span>
+
+<span class="sd">    Accepted functions.</span>
+<span class="sd">    -------------------</span>
+
+<span class="sd">    In general, the functions that should be provided are total, non-recursive, deterministic and referentially</span>
+<span class="sd">     transparent.</span>
+
+<span class="sd">    Functions have currently the following restrictions:</span>
+<span class="sd">    - no static method, class method</span>
+<span class="sd">    - not recursive</span>
+<span class="sd">    - no generators</span>
+<span class="sd">    - the functions must be in a whitelisted module to be considered, see the whitelist_module() function</span>
+
+<span class="sd">    They must return storable objects. The exact list depends on the store that is currently deployed.</span>
+
+<span class="sd">    Accepted arguments.</span>
+<span class="sd">    -------------------</span>
+
+<span class="sd">    Only the following classes of arguments are accepted:</span>
+<span class="sd">    - the basic types of python (int, str, bool, float)</span>
+<span class="sd">    - lists and tuples of accepted arguments</span>
+<span class="sd">    - dictionaries. They are evaluated as sorted lists (by their keys)</span>
+
+<span class="sd">    Using complex arguments</span>
+<span class="sd">    -----------------------</span>
+
+<span class="sd">    If more complex arguments should be accepted, two strategies are possible:</span>
+<span class="sd">    - embed them inside the function call</span>
+<span class="sd">    - wrap them inside a function which is then called through eval()</span>
+
+<span class="sd">    Example: the following code will fail:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({"x":[1]})</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; stats = dds.keep("/stats", my_stats, data)</span>
+
+<span class="sd">    The workaround is to use a wrapper function that create the dataframe:</span>
+
+<span class="sd">    &gt;&gt;&gt; def my_pipeline():</span>
+<span class="sd">    &gt;&gt;&gt;     df = pd.DataFrame({"x":[1]})</span>
+<span class="sd">    &gt;&gt;&gt;     return dds.keep("/stats", my_stats, df) # This will work</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; stats = dds.eval(my_pipeline)</span>
+
+<span class="sd">    Another possibility is to move keep the result of the pipeline instead:</span>
+
+<span class="sd">    &gt;&gt;&gt; def my_pipeline2():</span>
+<span class="sd">    &gt;&gt;&gt;     df = pd.DataFrame({"x":[1]})</span>
+<span class="sd">    &gt;&gt;&gt;     return my_stats(df)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; stats = dds.keep("/stats", my_pipeline2)</span>
+
+<span class="sd">    The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will</span>
+<span class="sd">    only be evaluated once.</span>
+
+<span class="sd">    :param path: a path in the storage system which will store the content of the function, evaluated to the given</span>
+<span class="sd">    arguments. It is expected to be in absolute form (starting with "/" if a string</span>
+<span class="sd">    or being an absolute path if a pathlib's Path object).</span>
+<span class="sd">    If this path exists, it will be overwritten silently.</span>
+
+<span class="sd">    :param fun: A function to evaluate. See text above on the limitations over this function</span>
+<span class="sd">    :param args: the arguments of this function</span>
+<span class="sd">    :param kwargs: (keyworded arguments are currently unsupported)</span>
+<span class="sd">    :return: the value that the function would produce for these arguments</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../test_sklearn/" class="btn btn-neutral float-right" title="Tutorial">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../test_sklearn/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
