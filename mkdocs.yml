@@ -1,0 +1,18 @@
+site_name: DDS documentation
+
+docs_dir: doc_source
+site_dir: docs
+
+plugins:
+  - search
+  - mkdocstrings
+  - mkdocs-jupyter:
+      include_source: True
+
+theme:
+  name: "readthedocs"
+
+nav:
+    - Home: index.md
+    - Reference: dds-reference.md
+    - Tutorial: test_sklearn.ipynb

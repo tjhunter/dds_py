@@ -21,3 +21,8 @@ release:
 	git checkout origin/master
 	git git tag -a v$(python -c "import dds._version; print(dds._version.version)") -m "tag"
 	git push --tags
+
+
+doc:
+	PYTHONPATH=$(PWD) jupyter nbconvert --ClearOutputPreprocessor.enabled=True --ClearMetadataPreprocessor.enabled=True  --execute --clear-output doc_source/test_sklearn.ipynb
+	mkdocs build
