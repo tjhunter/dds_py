@@ -1,0 +1,5 @@
+site_name: DDS documentation
+
+docs_dir: doc_source
+site_dir: docs
+
