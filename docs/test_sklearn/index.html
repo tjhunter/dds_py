@@ -14497,7 +14497,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We now add the import to the <code>dds</code> package. By default, the data will be stored in the temporary dictor</p>
+<p>We now add the import to the <code>dds</code> package. By default, the data will be stored in the temporary directory</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
@@ -14510,6 +14510,11 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>The two internal directories (data and internal) are now there</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14530,14 +14535,19 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>totaal 36
-drwxrwxr-x  4 tjhunter tjhunter  4096 Nov  8 16:06 .
-drwxrwxrwt 22 root     root     20480 Nov  8 16:06 ..
-drwxrwxr-x  2 tjhunter tjhunter  4096 Nov  8 16:06 data
-drwxrwxr-x  3 tjhunter tjhunter  4096 Nov  8 16:06 internal
+drwxrwxr-x  4 tjhunter tjhunter  4096 Nov  8 16:25 .
+drwxrwxrwt 22 root     root     20480 Nov  8 16:25 ..
+drwxrwxr-x  2 tjhunter tjhunter  4096 Nov  8 16:25 data
+drwxrwxr-x  3 tjhunter tjhunter  4096 Nov  8 16:25 internal
 </pre>
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Let's start with a familiar problem of accessing data from the internet. This piece of code will download a dataset, but with the additional twist that the dataset will be cached onto the local machine.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
