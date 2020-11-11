@@ -95,8 +95,8 @@ def _structure(fis: FunctionInteractions) -> Graph:
             [k for n in sub_nodes for k in node_deps[n.node_hash]]
         )
         for (l1, fi) in sub_calls[1:]:
-            l1: List[Node]
-            fi: FunctionInteractions
+            # l1: List[Node]
+            # fi: FunctionInteractions
             # If it is a context-independent function, add it to the list of potential implicit dependencies
             if len(fi.arg_input.named_args) == 0:
                 start_nodes += l1
