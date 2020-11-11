@@ -76,3 +76,13 @@ def f6():
 @pytest.mark.usefixtures("cleandir")
 def test_arrays():
     assert len(dds.eval(f6)) == 0
+
+
+def f_compare():
+    s = 1
+    return (s > 0).__repr__()
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_compare():
+    assert dds.eval(f_compare) == "True"

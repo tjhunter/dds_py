@@ -370,12 +370,26 @@ def _function_name(node: ast.AST) -> List[str]:
         s = str(node.value)
         s = s[:4]
         return [f"Str({s}...)"]
+    # TODO: these names are just here to make sure that a valid function name is returned
+    # They should not be returned: this name will never be found amongst the functions.
     if isinstance(node, ast.Str):
         s = str(node.s)
         s = s[:4]
         return [f"Str({s}...)"]
-    if isinstance(node, ast.Subscript):
-        return ["Subscript"]
+    types = [
+        ast.Subscript,
+        ast.Compare,
+        ast.UnaryOp,
+        ast.BoolOp,
+        ast.IfExp,
+        ast.Subscript,
+        ast.Index,
+        ast.Slice,
+        ast.ExtSlice,
+    ]
+    for t in types:
+        if isinstance(node, t):
+            return [t.__name__]
     _logger.error(
         f"Cannot understand nodes of type {type(node)}. Syntax tree: {pformat(node)}"
     )
