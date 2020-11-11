@@ -641,8 +641,12 @@ class InspectFunction(object):
         context_sig = _hash(
             [function_body_hash, function_args_hash, function_inter_hash]
         )
+        # For now, do not look carefully at the arguments, just parse the arguments of
+        # the functions.
+        # TODO: add more arguments if we can parse constant arguments
         arg_ctx = FunctionArgContext(
-            named_args=OrderedDict([]), inner_call_key=context_sig
+            named_args=get_arg_ctx_ast(caller_fun, []),  # type: ignore
+            inner_call_key=context_sig,
         )
         new_call_stack = call_stack + [caller_fun_path]
         return _introspect(caller_fun, arg_ctx, gctx, new_call_stack)

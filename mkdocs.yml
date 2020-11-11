@@ -15,4 +15,5 @@ theme:
 nav:
     - Home: index.md
     - Reference: dds-reference.md
-    - Tutorial: test_sklearn.ipynb
+    - Tutorial - scikit-learn: test_sklearn.ipynb
+    - Tutorial - plotting: plotting.ipynb
