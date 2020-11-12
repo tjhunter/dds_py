@@ -99,7 +99,9 @@ def get_arg_ctx_ast(
             h = dds_hash(p.default or "__none__")
             # raise NotImplementedError(f"{p} {p.default} {f} {arg_sig}")
         elif len(args) <= idx:
-            raise NotImplementedError(f"{f} {len(args)} {arg_sig}")
+            # TODO: it should be dealt with kwargs here
+            # raise NotImplementedError(f"{f} {len(args)} {arg_sig}")
+            h = None
         else:
             # Get the AST node:
             node = args[idx]

@@ -63,31 +63,80 @@ class Graph(NamedTuple):
 
 def _structure(fis: FunctionInteractions) -> Graph:
     nodes: OrderedDict[PyHash, Node] = OrderedDict()
+    # The head nodes for each function
+    head_nodes: OrderedDict[PyHash, List[Node]] = OrderedDict()
+    # The set of all known dependencies to a node
+    node_deps: OrderedDict[PyHash, Set[PyHash]] = OrderedDict()
     deps: OrderedDict[Tuple[PyHash, PyHash], Edge] = OrderedDict()
 
-    # Returns the last node evaluated
+    # Returns the list of head nodes:
+    # All the nodes that can be evaluated independently inside a function.
     def traverse(fis_: FunctionInteractions) -> List[Node]:
         sig = fis_.fun_return_sig
-        if sig in nodes:
-            return [nodes[sig]]
+        if sig in head_nodes:
+            return head_nodes[sig]
         # Recurse
-        sub_calls = [traverse(sub_fis) for sub_fis in fis_.parsed_body]
-        sub_nodes: List[Node] = [n for l_nodes in sub_calls for n in l_nodes]
-        # Implicit dependencies
-        for (n1, n2) in zip(sub_nodes[:-1], sub_nodes[1:]):
-            k = (n1.node_hash, n2.node_hash)
-            if k not in deps:
-                deps[k] = Edge(n1.path, n2.path, True)
+        sub_calls: List[Tuple[List[Node], FunctionInteractions]] = [
+            (traverse(sub_fis), sub_fis) for sub_fis in fis_.parsed_body
+        ]
+        sub_nodes: List[Node] = sorted(
+            list(
+                dict(
+                    [(n.node_hash, n) for (l_nodes, _) in sub_calls for n in l_nodes]
+                ).values()
+            ),
+            key=lambda n: n.node_hash,
+        )
+        # Add implicit dependencies between context-dependent nodes.
+        # Current algorithm is not very smart: anything that has parameters is assumed to be context-dependent
+        # (even if the parameters are known at introspection time)
+        start_nodes: List[Node] = sub_calls[0][0] if sub_calls else []
+        sub_set: Set[PyHash] = set(
+            [k for n in sub_nodes for k in node_deps[n.node_hash]]
+        )
+        for (l1, fi) in sub_calls[1:]:
+            # l1: List[Node]
+            # fi: FunctionInteractions
+            # If it is a context-independent function, add it to the list of potential implicit dependencies
+            if len(fi.arg_input.named_args) == 0:
+                start_nodes += l1
+            # Otherwise, there is an implicit dep: introduce a single dep here
+            else:
+                for n1 in start_nodes:
+                    for n2 in l1:
+                        k1 = n1.node_hash
+                        k2 = n2.node_hash
+                        if k1 not in node_deps:
+                            node_deps[k1] = set()
+                        if k2 not in node_deps:
+                            node_deps[k2] = set()
+                        k = (k1, k2)
+                        if (
+                            k not in deps
+                            and k2 not in node_deps[k1]
+                            and k1 not in node_deps[k2]
+                            and k1 not in sub_set
+                            and k2 not in sub_set
+                        ):
+                            deps[k] = Edge(n1.path, n2.path, True)
+                            node_deps[k2].add(k1)
+                            node_deps[k2].update(node_deps[k1])
+                # Restart the list of deps just based on the last implicit node
+                # It is an approximation of the actual computation flow, but enough for UI purposes
+                start_nodes = l1
         if fis_.store_path is None:
             return sub_nodes
         else:
             # We are returning a path -> create a node
             res_node = Node(fis_.store_path, sig)
             nodes[sig] = res_node
+            sub_set.update([n.node_hash for n in sub_nodes])
+            node_deps[res_node.node_hash] = sub_set
             for sub_n in sub_nodes:
                 k = (sub_n.node_hash, res_node.node_hash)
                 if k not in deps or deps[k].is_implicit:
                     deps[k] = Edge(sub_n.path, res_node.path, False)
+                node_deps[res_node.node_hash].update(node_deps[sub_n.node_hash])
             return [res_node]
 
     traverse(fis)
