@@ -6,11 +6,10 @@ pydotplus
 
 
 # Dependencies for pandas support
-# Python 3.9 support requires a recent version of pandas
-pandas>=1.1.0,<1.2.0
-#fastparquet
-# pyarrow currently does not support python 3.9
-#pyarrow>=0.10
+pandas>=0.23.2,<1.2.0
+# This is currently not importing as long as this issue is not solved:
+# https://github.com/apache/arrow/pull/8386
+pyarrow>=0.10
 
 # Linter
 mypy
