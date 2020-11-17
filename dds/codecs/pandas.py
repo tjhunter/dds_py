@@ -30,8 +30,8 @@ class PandasLocalCodec(CodecProtocol):
 
     def serialize_into(self, blob: pandas.DataFrame, loc: GenericLocation):
         assert isinstance(blob, pandas.DataFrame)
-        blob.to_parquet(loc)
-        _logger.debug(f"Committed dataframe to parquet: {loc}")
+        blob.to_feather(loc)
+        _logger.debug(f"Committed dataframe to feather: {loc}")
 
     def deserialize_from(self, loc: GenericLocation) -> pandas.DataFrame:
-        return pandas.read_parquet(loc)
+        return pandas.read_feather(loc)
