@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# This file is copied and modified from the Koalas project:
 #
 # Copyright (C) 2019 Databricks, Inc.
 #
@@ -51,17 +52,19 @@ setup(
     install_requires=["asttokens"],
     author="Tim Hunter",
     author_email="tjhunter+dds@cs.stanford.edu",
-    license="http://www.apache.org/licenses/LICENSE-2.0",
+    license="AGPL",
     url="https://github.com/tjhunter/dds_py",
     project_urls={
         "Bug Tracker": "https://github.com/tjhunter/dds_py/issues",
-        # 'Documentation': 'https://XXX.readthedocs.io/',
+        "Documentation": "https://tjhunter.github.io/dds_py/",
         "Source Code": "https://github.com/tjhunter/dds_py",
     },
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
