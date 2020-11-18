@@ -59,15 +59,3 @@ This example does the following:
 The DDS library guarantees the following after evaluation of the code:
 1. the path `/hello_data` contains a copy of the data returned by `data_creator`, as if the function `data_creator` had been called at this moment
 2. the function `data_creator` is only evaluated when its inputs, or its code, are modified (referential transparency)
-
-## Programming model
-
-This model has profound consequences for the programmers:
-- computationally expensive data functions (such as building models) can be composed and built upon _very cheaply_, as if they were
-variables. DDS alleviates the need to decompose data pipelines into multiple stages because of technological requirments. 
-
-At its core, the programming model of DDS is very simple:
-- functions are assumed to be idempotent, if not pure
-- functions are referentially transparent (they can be replaced with their output)
-- artifacts of any sort (models, data, statistics) are stored in a central repository
-- the programming model is assumed to be hermetic (only the I/O tracked within the framework is expected to happen)
