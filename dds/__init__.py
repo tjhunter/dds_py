@@ -42,7 +42,9 @@ def keep(
 
     For example, instead of writing:
 
-    >>> data = my_function(arg1, arg2)
+    ```py
+    data = my_function(arg1, arg2)
+    ```
 
     you should use:
 
