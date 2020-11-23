@@ -139,7 +139,70 @@ def _all_paths(fis: FunctionInteractions) -> Set[CanonicalPath]:
     return res
 
 
+def _introspect_class(
+    c: type,
+    arg_ctx: FunctionArgContext,
+    gctx: EvalMainContext,
+    call_stack: List[CanonicalPath],
+) -> FunctionInteractions:
+    # Check if the function has already been evaluated.
+    fun_path = _fun_path(c)
+    arg_ctx_hash = FunctionArgContext.as_hashable(arg_ctx)
+
+    # TODO: add to the global interactions cache
+
+    fun_module = inspect.getmodule(c)
+    if fun_module is None:
+        raise KSException(f"Could not find module: class:{c} module: {fun_module}")
+    # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
+    fis_key = (fun_path, arg_ctx_hash)
+    fis_ = gctx.cached_fun_interactions.get(fis_key)
+    if fis_ is not None:
+        return fis_
+    src = inspect.getsource(c)
+    _logger.debug(f"Starting _introspect_class: {c}: src={src}")
+    ast_src = ast.parse(src)
+    ast_f: ast.ClassDef = ast_src.body[0]  # type: ignore
+    assert isinstance(ast_f, ast.ClassDef), type(ast_f)
+    _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
+    body_lines = src.split("\n")
+
+    # For each of the functions in the body, look for interactions.
+    fis = InspectFunction.inspect_class(
+        ast_f, gctx, fun_module, body_lines, arg_ctx, fun_path, call_stack
+    )
+    # Cache the function interactions
+    gctx.cached_fun_interactions[fis_key] = fis
+    # cache the function interactions in the global context
+    if _global_context is not None:
+        dep_paths = sorted(_all_paths(fis))
+        _global_context.cached_fun_calls[(fun_path, arg_ctx_hash)] = dep_paths
+        # Find the id of each corresponding object
+        obj_ids: List[Tuple[CanonicalPath, PythonId]] = []
+        for dep_path in dep_paths:
+            obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
+            obj_ids.append((dep_path, PythonId(id(obj))))
+        tup = tuple(obj_ids)
+        _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
+    return fis
+
+
 def _introspect(
+    obj: Union[FunctionType, type],
+    arg_ctx: FunctionArgContext,
+    gctx: EvalMainContext,
+    call_stack: List[CanonicalPath],
+) -> FunctionInteractions:
+    if isinstance(obj, FunctionType):
+        return _introspect_fun(obj, arg_ctx, gctx, call_stack)
+    if isinstance(obj, type):
+        return _introspect_class(obj, arg_ctx, gctx, call_stack)
+    raise KSException(
+        f"Expected function or class, got object of type {type(obj)} instead: {obj}"
+    )
+
+
+def _introspect_fun(
     f: FunctionType,
     arg_ctx: FunctionArgContext,
     gctx: EvalMainContext,
@@ -331,6 +394,11 @@ class ExternalVarsVisitor(ast.NodeVisitor):
             _logger.debug(f"visit name %s: skipping (module)", local_dep_path)
             self._rejected_paths.add(local_dep_path)
             return
+        if inspect.isclass(obj):
+            # Classes are tracked separately
+            _logger.debug(f"visit name %s: skipping (class)", local_dep_path)
+            self._rejected_paths.add(local_dep_path)
+            return
         sig = self._gctx.get_hash(path, obj)
         self.vars[local_dep_path] = ExternalDep(
             local_path=local_dep_path, path=path, sig=sig
@@ -457,6 +525,49 @@ class InspectFunction(object):
         return sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
 
     @classmethod
+    def inspect_class(
+        cls,
+        node: ast.ClassDef,
+        gctx: EvalMainContext,
+        mod: ModuleType,
+        class_body_lines: List[str],
+        arg_ctx: FunctionArgContext,
+        fun_path: CanonicalPath,
+        call_stack: List[CanonicalPath],
+    ) -> FunctionInteractions:
+        # Look into the base classes first.
+        # TODO: take into account the base classes
+
+        # All the body is considered as a single big function for the purpose of
+        # code structure: the function interactions are built for each element,
+        # but the code lines are provided from the top of the function.
+
+        method_fis: List[FunctionInteractions] = []
+        for elem in node.body:
+            if isinstance(elem, ast.FunctionDef):
+                # Parsing the function call
+                fis_ = cls.inspect_fun(
+                    elem, gctx, mod, class_body_lines, arg_ctx, fun_path, call_stack
+                )
+                if fis_ is not None:
+                    method_fis.append(fis_)
+                    _logger.debug(f"inspect_class: {fis_}")
+
+        body_sig = _hash(class_body_lines)
+        # All the sub-dependencies are handled with method introspections
+        return_sig = _hash([body_sig] + [i.fun_return_sig for i in method_fis])
+
+        return FunctionInteractions(
+            arg_input=arg_ctx,
+            fun_body_sig=body_sig,
+            fun_return_sig=return_sig,
+            external_deps=[],
+            parsed_body=method_fis,
+            store_path=None,  # No store path can be associated by default to a class
+            fun_path=fun_path,
+        )
+
+    @classmethod
     def inspect_fun(
         cls,
         node: Union[ast.FunctionDef, ast.Lambda],
@@ -566,7 +677,7 @@ class InspectFunction(object):
             # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return None
         caller_fun, caller_fun_path = z
-        if not isinstance(caller_fun, FunctionType):
+        if not isinstance(caller_fun, FunctionType) and not inspect.isclass(caller_fun):
             raise NotImplementedError(
                 f"Expected FunctionType for {caller_fun_path}, got {type(caller_fun)}"
             )
@@ -691,6 +802,8 @@ class ObjectRetrieval(object):
         assert len(local_path.parts), local_path
         mod_path = _mod_path(context_mod)
         obj_key = (local_path, mod_path)
+        _logger.debug(f"retrieve_object: obj_key: {obj_key}")
+
         if obj_key in gctx.cached_objects:
             return gctx.cached_objects[obj_key]
 
@@ -787,6 +900,9 @@ class ObjectRetrieval(object):
             return res
         else:
             res = cls._retrieve_object_rec(local_path, context_mod, gctx)
+            _logger.debug(
+                f"retrieve_object: _retrieve_object_rec: local_path:{local_path} context_mod:{context_mod} res:{res}"
+            )
             gctx.cached_objects[obj_key] = res
             return res
 
@@ -852,7 +968,7 @@ class ObjectRetrieval(object):
             # If it is a module, continue recursion
             if isinstance(obj, ModuleType):
                 return cls._retrieve_object_rec(tail_path, obj, gctx)
-            # Special treatement for objects that may be defined in other modules but are redirected in this one.
+            # Special treatment for objects that may be defined in other modules but are redirected in this one.
             if isinstance(obj, FunctionType):
                 mod_obj = inspect.getmodule(obj)
                 if mod_obj is None:
@@ -869,14 +985,18 @@ class ObjectRetrieval(object):
             obj_path = obj_mod_path.append(fname)
             if gctx.is_authorized_path(obj_path):
                 # TODO: simplify the authorized types
-                if _is_authorized_type(type(obj), gctx) or isinstance(
-                    obj,
-                    (
-                        FunctionType,
-                        ModuleType,
-                        pathlib.PosixPath,
-                        pathlib.PurePosixPath,
-                    ),
+                if (
+                    _is_authorized_type(type(obj), gctx)
+                    or isinstance(
+                        obj,
+                        (
+                            FunctionType,
+                            ModuleType,
+                            pathlib.PosixPath,
+                            pathlib.PurePosixPath,
+                        ),
+                    )
+                    or inspect.isclass(obj)
                 ):
                     # _logger.debug(
                     #     f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
