@@ -6,12 +6,10 @@ _ = cleandir
 
 _c = Counter()
 
-class_obj = 1
-
 
 class Class1(object):
     def __init__(self):
-        self._var = class_obj
+        pass
 
     def method(self):
         _c.increment()
