@@ -3,7 +3,6 @@ import importlib
 import pathlib
 import inspect
 import logging
-from collections import OrderedDict
 from enum import Enum
 from pathlib import PurePosixPath
 from types import ModuleType, FunctionType
