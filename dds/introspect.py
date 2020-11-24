@@ -467,7 +467,7 @@ def _mod_path(m: ModuleType) -> CanonicalPath:
     return CanonicalPath(m.__name__.split("."))
 
 
-def _fun_path(f: FunctionType) -> CanonicalPath:
+def _fun_path(f: Union[type, FunctionType]) -> CanonicalPath:
     mod = inspect.getmodule(f)
     if mod is None:
         raise KSException(f"Function {f} has no module")
