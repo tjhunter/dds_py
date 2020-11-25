@@ -54,9 +54,11 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">Reference</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#main-functions">Main functions</a>
+    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__">dds.__init__</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.keep">dds.keep</a>
+    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.eval">eval()</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.keep">keep()</a>
     </li>
     </ul>
                     </li>
@@ -102,202 +104,21 @@
             <div class="section">
               
                 <h1 id="dds-package-documentation">DDS package documentation</h1>
-<h2 id="main-functions">Main functions</h2>
-<p><strong>dds.keep(
-    path: Union[str, DDSPath, pathlib.Path],
-    fun: Callable[..., _Out],
-    args: Tuple[Any, ...],
-    kwargs: Dict[str, Any]
-) -&gt; _Out:</strong> </p>
-<div class="doc doc-object doc-function">
-<h2 class="hidden-toc" href="#dds.keep" id="dds.keep" style="visibility: hidden; position: absolute;">
+<p>This is the reference documentation of all the public-facing functions.</p>
+<div class="doc doc-object doc-module">
+<h2 class="hidden-toc" href="#dds.__init__" id="dds.__init__" style="visibility: hidden; position: absolute;">
         </h2>
 <div class="doc doc-contents first">
-<p>Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,
-the function will be evaluated again (with the given arguments).</p>
-<p>For example, instead of writing:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>data = my_function(arg1, arg2)</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>you should use:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>data = dds.keep(path, my_function, arg1, arg2)</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<h1 id="accepted-functions">Accepted functions.</h1>
-<p>In general, the functions that should be provided are total, non-recursive, deterministic and referentially
- transparent.</p>
-<p>Functions have currently the following restrictions:
-- no static method, class method
-- not recursive
-- no generators
-- the functions must be in a whitelisted module to be considered, see the whitelist_module() function</p>
-<p>They must return storable objects. The exact list depends on the store that is currently deployed.</p>
-<h2 id="accepted-arguments">Accepted arguments.</h2>
-<p>Only the following classes of arguments are accepted:
-- the basic types of python (int, str, bool, float)
-- lists and tuples of accepted arguments
-- dictionaries. They are evaluated as sorted lists (by their keys)</p>
-<h2 id="using-complex-arguments">Using complex arguments</h2>
-<p>If more complex arguments should be accepted, two strategies are possible:
-- embed them inside the function call
-- wrap them inside a function which is then called through eval()</p>
-<p>Example: the following code will fail:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>df = pd.DataFrame({"x":[1]})</p>
-<p>def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</p>
-<p>stats = dds.keep("/stats", my_stats, data)</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>The workaround is to use a wrapper function that create the dataframe:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>def my_pipeline():
-    df = pd.DataFrame({"x":[1]})
-    return dds.keep("/stats", my_stats, df) # This will work</p>
-<p>stats = dds.eval(my_pipeline)</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>Another possibility is to move keep the result of the pipeline instead:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>def my_pipeline2():
-    df = pd.DataFrame({"x":[1]})
-    return my_stats(df)</p>
-<p>stats = dds.keep("/stats", my_pipeline2)</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will
-only be evaluated once.</p>
-<p>:param path: a path in the storage system which will store the content of the function, evaluated to the given
-arguments. It is expected to be in absolute form (starting with "/" if a string
-or being an absolute path if a pathlib's Path object).
-If this path exists, it will be overwritten silently.</p>
-<p>:param fun: A function to evaluate. See text above on the limitations over this function
-:param args: the arguments of this function
-:param kwargs: (keyworded arguments are currently unsupported)
-:return: the value that the function would produce for these arguments</p>
-<details class="quote">
-          <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">keep</span><span class="p">(</span>
-    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
-    <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Out</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,</span>
-<span class="sd">    the function will be evaluated again (with the given arguments).</span>
-
-<span class="sd">    For example, instead of writing:</span>
-
-<span class="sd">    &gt;&gt;&gt; data = my_function(arg1, arg2)</span>
-
-<span class="sd">    you should use:</span>
-
-<span class="sd">    &gt;&gt;&gt; data = dds.keep(path, my_function, arg1, arg2)</span>
-
-<span class="sd">    Accepted functions.</span>
-<span class="sd">    ===================</span>
-
-<span class="sd">    In general, the functions that should be provided are total, non-recursive, deterministic and referentially</span>
-<span class="sd">     transparent.</span>
-
-<span class="sd">    Functions have currently the following restrictions:</span>
-<span class="sd">    - no static method, class method</span>
-<span class="sd">    - not recursive</span>
-<span class="sd">    - no generators</span>
-<span class="sd">    - the functions must be in a whitelisted module to be considered, see the whitelist_module() function</span>
-
-<span class="sd">    They must return storable objects. The exact list depends on the store that is currently deployed.</span>
-
-<span class="sd">    Accepted arguments.</span>
-<span class="sd">    -------------------</span>
-
-<span class="sd">    Only the following classes of arguments are accepted:</span>
-<span class="sd">    - the basic types of python (int, str, bool, float)</span>
-<span class="sd">    - lists and tuples of accepted arguments</span>
-<span class="sd">    - dictionaries. They are evaluated as sorted lists (by their keys)</span>
-
-<span class="sd">    Using complex arguments</span>
-<span class="sd">    -----------------------</span>
-
-<span class="sd">    If more complex arguments should be accepted, two strategies are possible:</span>
-<span class="sd">    - embed them inside the function call</span>
-<span class="sd">    - wrap them inside a function which is then called through eval()</span>
-
-<span class="sd">    Example: the following code will fail:</span>
-
-<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({"x":[1]})</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; stats = dds.keep("/stats", my_stats, data)</span>
-
-<span class="sd">    The workaround is to use a wrapper function that create the dataframe:</span>
-
-<span class="sd">    &gt;&gt;&gt; def my_pipeline():</span>
-<span class="sd">    &gt;&gt;&gt;     df = pd.DataFrame({"x":[1]})</span>
-<span class="sd">    &gt;&gt;&gt;     return dds.keep("/stats", my_stats, df) # This will work</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; stats = dds.eval(my_pipeline)</span>
-
-<span class="sd">    Another possibility is to move keep the result of the pipeline instead:</span>
-
-<span class="sd">    &gt;&gt;&gt; def my_pipeline2():</span>
-<span class="sd">    &gt;&gt;&gt;     df = pd.DataFrame({"x":[1]})</span>
-<span class="sd">    &gt;&gt;&gt;     return my_stats(df)</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; stats = dds.keep("/stats", my_pipeline2)</span>
-
-<span class="sd">    The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will</span>
-<span class="sd">    only be evaluated once.</span>
-
-<span class="sd">    :param path: a path in the storage system which will store the content of the function, evaluated to the given</span>
-<span class="sd">    arguments. It is expected to be in absolute form (starting with "/" if a string</span>
-<span class="sd">    or being an absolute path if a pathlib's Path object).</span>
-<span class="sd">    If this path exists, it will be overwritten silently.</span>
-
-<span class="sd">    :param fun: A function to evaluate. See text above on the limitations over this function</span>
-<span class="sd">    :param args: the arguments of this function</span>
-<span class="sd">    :param kwargs: (keyworded arguments are currently unsupported)</span>
-<span class="sd">    :return: the value that the function would produce for these arguments</span>
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-<p><strong>dds.eval</strong></p>
-<pre><code class="language-python">def eval(
-    fun: Callable[..., _Out],
-    *args: Tuple[Any, ...],
-    dds_export_graph: Union[str, pathlib.Path, None] = None,
-    dds_extra_debug: Optional[bool] = None,
-    dds_stages: Optional[List[Union[str, ProcessingStage]]] = None,
-    **kwargs: Dict[str, Any]
-) -&gt; Optional[_Out]
-</code></pre>
+<div class="doc doc-children">
 <div class="doc doc-object doc-function">
-<h2 class="hidden-toc" href="#dds.eval" id="dds.eval" style="visibility: hidden; position: absolute;">
-        </h2>
-<div class="doc doc-contents first">
+<h2 class="doc doc-heading" id="dds.__init__.eval">
+
+        <code class="highlight language-python">
+eval<span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+
+
+      </h2>
+<div class="doc doc-contents ">
 <p>Evaluates a function. The result of the function is not stored in the data store, but the function itself may
 contain multiple calls to keep().</p>
 <p>This function is useful to consider in one evaluation multiple functions that may themselves call keep() or
@@ -382,11 +203,192 @@ In this example, the function is evaluated only once and its result is served to
 </details>
 </div>
 </div>
-<p><strong>dds.set_store</strong></p>
 <div class="doc doc-object doc-function">
-<h2 class="hidden-toc" href="#dds.set_store" id="dds.set_store" style="visibility: hidden; position: absolute;">
-        </h2>
-<div class="doc doc-contents first">
+<h2 class="doc doc-heading" id="dds.__init__.keep">
+
+        <code class="highlight language-python">
+keep<span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
+
+
+      </h2>
+<div class="doc doc-contents ">
+<p>Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,
+the function will be evaluated again (with the given arguments).</p>
+<p>For example, instead of writing:</p>
+<pre><code class="language-py">data = my_function(arg1, arg2)
+</code></pre>
+<p>you should use:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>data = dds.keep(path, my_function, arg1, arg2)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h1 id="accepted-functions">Accepted functions.</h1>
+<p>In general, the functions that should be provided are total, non-recursive, deterministic and referentially
+ transparent.</p>
+<p>Functions have currently the following restrictions:
+- no static method, class method
+- not recursive
+- no generators
+- the functions must be in a whitelisted module to be considered, see the whitelist_module() function</p>
+<p>They must return storable objects. The exact list depends on the store that is currently deployed.</p>
+<h2 id="accepted-arguments">Accepted arguments.</h2>
+<p>Only the following classes of arguments are accepted:
+- the basic types of python (int, str, bool, float)
+- lists and tuples of accepted arguments
+- dictionaries. They are evaluated as sorted lists (by their keys)</p>
+<h2 id="using-complex-arguments">Using complex arguments</h2>
+<p>If more complex arguments should be accepted, two strategies are possible:
+- embed them inside the function call
+- wrap them inside a function which is then called through eval()</p>
+<p>Example: the following code will fail:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>df = pd.DataFrame({"x":[1]})</p>
+<p>def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</p>
+<p>stats = dds.keep("/stats", my_stats, data)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>The workaround is to use a wrapper function that create the dataframe:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>def my_pipeline():
+    df = pd.DataFrame({"x":[1]})
+    return dds.keep("/stats", my_stats, df) # This will work</p>
+<p>stats = dds.eval(my_pipeline)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>Another possibility is to move keep the result of the pipeline instead:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>def my_pipeline2():
+    df = pd.DataFrame({"x":[1]})
+    return my_stats(df)</p>
+<p>stats = dds.keep("/stats", my_pipeline2)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will
+only be evaluated once.</p>
+<p>:param path: a path in the storage system which will store the content of the function, evaluated to the given
+arguments. It is expected to be in absolute form (starting with "/" if a string
+or being an absolute path if a pathlib's Path object).
+If this path exists, it will be overwritten silently.</p>
+<p>:param fun: A function to evaluate. See text above on the limitations over this function
+:param args: the arguments of this function
+:param kwargs: (keyworded arguments are currently unsupported)
+:return: the value that the function would produce for these arguments</p>
+<details class="quote">
+          <summary>Source code in <code>dds/__init__.py</code></summary>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">keep</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
+    <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Out</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,</span>
+<span class="sd">    the function will be evaluated again (with the given arguments).</span>
+
+<span class="sd">    For example, instead of writing:</span>
+
+<span class="sd">    ```py</span>
+<span class="sd">    data = my_function(arg1, arg2)</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    you should use:</span>
+
+<span class="sd">    &gt;&gt;&gt; data = dds.keep(path, my_function, arg1, arg2)</span>
+
+<span class="sd">    Accepted functions.</span>
+<span class="sd">    ===================</span>
+
+<span class="sd">    In general, the functions that should be provided are total, non-recursive, deterministic and referentially</span>
+<span class="sd">     transparent.</span>
+
+<span class="sd">    Functions have currently the following restrictions:</span>
+<span class="sd">    - no static method, class method</span>
+<span class="sd">    - not recursive</span>
+<span class="sd">    - no generators</span>
+<span class="sd">    - the functions must be in a whitelisted module to be considered, see the whitelist_module() function</span>
+
+<span class="sd">    They must return storable objects. The exact list depends on the store that is currently deployed.</span>
+
+<span class="sd">    Accepted arguments.</span>
+<span class="sd">    -------------------</span>
+
+<span class="sd">    Only the following classes of arguments are accepted:</span>
+<span class="sd">    - the basic types of python (int, str, bool, float)</span>
+<span class="sd">    - lists and tuples of accepted arguments</span>
+<span class="sd">    - dictionaries. They are evaluated as sorted lists (by their keys)</span>
+
+<span class="sd">    Using complex arguments</span>
+<span class="sd">    -----------------------</span>
+
+<span class="sd">    If more complex arguments should be accepted, two strategies are possible:</span>
+<span class="sd">    - embed them inside the function call</span>
+<span class="sd">    - wrap them inside a function which is then called through eval()</span>
+
+<span class="sd">    Example: the following code will fail:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({"x":[1]})</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; stats = dds.keep("/stats", my_stats, data)</span>
+
+<span class="sd">    The workaround is to use a wrapper function that create the dataframe:</span>
+
+<span class="sd">    &gt;&gt;&gt; def my_pipeline():</span>
+<span class="sd">    &gt;&gt;&gt;     df = pd.DataFrame({"x":[1]})</span>
+<span class="sd">    &gt;&gt;&gt;     return dds.keep("/stats", my_stats, df) # This will work</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; stats = dds.eval(my_pipeline)</span>
+
+<span class="sd">    Another possibility is to move keep the result of the pipeline instead:</span>
+
+<span class="sd">    &gt;&gt;&gt; def my_pipeline2():</span>
+<span class="sd">    &gt;&gt;&gt;     df = pd.DataFrame({"x":[1]})</span>
+<span class="sd">    &gt;&gt;&gt;     return my_stats(df)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; stats = dds.keep("/stats", my_pipeline2)</span>
+
+<span class="sd">    The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will</span>
+<span class="sd">    only be evaluated once.</span>
+
+<span class="sd">    :param path: a path in the storage system which will store the content of the function, evaluated to the given</span>
+<span class="sd">    arguments. It is expected to be in absolute form (starting with "/" if a string</span>
+<span class="sd">    or being an absolute path if a pathlib's Path object).</span>
+<span class="sd">    If this path exists, it will be overwritten silently.</span>
+
+<span class="sd">    :param fun: A function to evaluate. See text above on the limitations over this function</span>
+<span class="sd">    :param args: the arguments of this function</span>
+<span class="sd">    :param kwargs: (keyworded arguments are currently unsupported)</span>
+<span class="sd">    :return: the value that the function would produce for these arguments</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-function">
+<h2 class="doc doc-heading" id="dds.__init__.set_store">
+
+        <code class="highlight language-python">
+set_store<span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbutils</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commit_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>        </code>
+
+
+      </h2>
+<div class="doc doc-contents ">
 <p>Sets a new store.</p>
 <p>By default, a local store pointing to /tmp/ is created.
 TODO: change this to the user directory.</p>
@@ -450,11 +452,15 @@ to a path in the given data storage.
 </details>
 </div>
 </div>
-<p><strong>dds.whitelist_module</strong></p>
 <div class="doc doc-object doc-function">
-<h2 class="hidden-toc" href="#dds.whitelist_module" id="dds.whitelist_module" style="visibility: hidden; position: absolute;">
-        </h2>
-<div class="doc doc-contents first">
+<h2 class="doc doc-heading" id="dds.__init__.whitelist_module">
+
+        <code class="highlight language-python">
+whitelist_module<span class="p">(</span><span class="n">module</span><span class="p">)</span>        </code>
+
+
+      </h2>
+<div class="doc doc-contents ">
 <p>Marks a module as whitelisted for introspection.</p>
 <p>Example to ensure that all the functions in my_lib are considered by DDS.</p>
 <blockquote>
@@ -496,9 +502,9 @@ dds.whitelist_module(my_lib)</p>
 </details>
 </div>
 </div>
-<h2 id="databricks-integration">Databricks integration</h2>
-<p>TODO: detail DBFS integration</p>
-<p>TODO: dds.codecs.databricks.displayGraph</p>
+</div>
+</div>
+</div>
               
             </div>
           </div>

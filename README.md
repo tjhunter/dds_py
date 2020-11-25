@@ -15,7 +15,7 @@ The DDS package solves the synchronization problem between code and data. It all
 This package is not published on PyPI yet. To use the latest version, run:
 
 ```
-pip install -U git+https://github.com/tjhunter/dds_py
+pip install dds_py
 ```
 
 This package is known to work on python 3.6, 3.7, 3.8. No other versions are officially supported. Python 3.4 and 3.5 might work but they are not supported.
