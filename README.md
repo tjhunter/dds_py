@@ -26,6 +26,10 @@ __Databricks users:__ If you want to use this package with Databricks, some spec
 
 https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/7816249071411394/4492656151009213/5450662050199348/latest.html
 
+## Documentation
+
+API reference, tutorials and FAQs are located here: https://tjhunter.github.io/dds_py/
+
 ## Example
  
 In the world of data-driven software, executing code leads to the creation of _data artifacts_, which can be 
@@ -37,7 +41,7 @@ of any sort and shape that the work requires:
 Combining software with data is currently a hard challenge, because existing programming paradigms
 aim at being universal and are not tuned to the specific challenges of combining data and code 
 within a single product. DDS provides the low-level foundations to do that, in the spirit
-of Karparthy's Software 2.0 directions (TODO: cite). `dds_py` is a software implementation of these ideas
+of Karparthy's Software 2.0 directions. `dds_py` is a software implementation of these ideas.
 
 Here is the Hello world example (using type annotations for clarity)
 
