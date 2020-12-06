@@ -6,7 +6,8 @@ __Why DDS?__
 The `dds` package solves the synchronization problem between code and data. It allows programmers,
  scientists and data scientists to integrate code with data and data with code without fear of
  stale data, disparate storage frameworks or concurrency issues. DDS allows quick collaboration and 
- data software reuse without the complexity. In short, you do not have to think about changes in your data pipelines.
+ data software reuse without the complexity. In short, you do not have to think about changes in your 
+data pipelines.
 
 
 ## Requirements
