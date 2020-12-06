@@ -15,7 +15,7 @@ The DDS package solves the synchronization problem between code and data. It all
 This package is not published on PyPI yet. To use the latest version, run:
 
 ```
-pip install -U git+https://github.com/tjhunter/dds_py
+pip install dds_py
 ```
 
 This package is known to work on python 3.6, 3.7, 3.8. No other versions are officially supported. Python 3.4 and 3.5 might work but they are not supported.
@@ -25,6 +25,10 @@ __Plotting dependencies__ If you want to plot the graph of data dependencies, yo
 __Databricks users:__ If you want to use this package with Databricks, some specific hooks for Spark are available. See this notebook for a complete example:
 
 https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/7816249071411394/4492656151009213/5450662050199348/latest.html
+
+## Documentation
+
+API reference, tutorials and FAQs are located here: https://tjhunter.github.io/dds_py/
 
 ## Example
  
@@ -37,7 +41,7 @@ of any sort and shape that the work requires:
 Combining software with data is currently a hard challenge, because existing programming paradigms
 aim at being universal and are not tuned to the specific challenges of combining data and code 
 within a single product. DDS provides the low-level foundations to do that, in the spirit
-of Karparthy's Software 2.0 directions (TODO: cite). `dds_py` is a software implementation of these ideas
+of Karparthy's Software 2.0 directions. `dds_py` is a software implementation of these ideas.
 
 Here is the Hello world example (using type annotations for clarity)
 
