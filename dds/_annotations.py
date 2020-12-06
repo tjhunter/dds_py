@@ -31,6 +31,7 @@ def dds_function(
         return dds.keep("/function", _function)
     ```
     """
+
     def decorator_(func: F) -> F:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
