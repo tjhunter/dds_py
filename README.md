@@ -12,7 +12,7 @@ The DDS package solves the synchronization problem between code and data. It all
 
 ## How to use
 
-This package is not published on PyPI yet. To use the latest version, run:
+This package is published on PyPI:
 
 ```
 pip install dds_py
@@ -32,17 +32,6 @@ API reference, tutorials and FAQs are located here: https://tjhunter.github.io/d
 
 ## Example
  
-In the world of data-driven software, executing code leads to the creation of _data artifacts_, which can be 
-of any sort and shape that the work requires:
-- _datasets_ : collections of data items
-- _models_ : compact representations of datasets for specific tasks (classification, ...)
-- _insights_: information about datasets and models that provide human-relatable cues about other artifacts
-
-Combining software with data is currently a hard challenge, because existing programming paradigms
-aim at being universal and are not tuned to the specific challenges of combining data and code 
-within a single product. DDS provides the low-level foundations to do that, in the spirit
-of Karparthy's Software 2.0 directions. `dds_py` is a software implementation of these ideas.
-
 Here is the Hello world example (using type annotations for clarity)
 
 ```python
@@ -63,3 +52,7 @@ This example does the following:
 The DDS library guarantees the following after evaluation of the code:
 1. the path `/hello_data` contains a copy of the data returned by `data_creator`, as if the function `data_creator` had been called at this moment
 2. the function `data_creator` is only evaluated when its inputs, or its code, are modified (referential transparency)
+
+## License
+
+The `dds` package is published under the Affero General Public License.

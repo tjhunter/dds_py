@@ -74,6 +74,7 @@ def keep(
      transparent*.
 
     Functions have currently the following restrictions:
+
     - no static method, class method
     - not recursive
     - no generators
@@ -84,6 +85,7 @@ def keep(
     ### Accepted arguments.
 
     Only the following classes of arguments are accepted:
+
     - the basic types of python (int, str, bool, float)
     - lists and tuples of accepted arguments
     - dictionaries. They are evaluated as sorted lists (by their keys)
