@@ -78,6 +78,7 @@ class GlobalContext(object):
             Tuple[CanonicalPath, FunctionArgContextHash], List[CanonicalPath]
         ] = {}
         # The cached interactions
+        # TODO: rethink the global cache, it is currently poorly interacting with variable updates
         self.cached_fun_interactions: Dict[
             Tuple[
                 CanonicalPath,
@@ -119,7 +120,7 @@ class EvalMainContext(object):
     def get_hash(self, path: CanonicalPath, obj: Any) -> PyHash:
         if path not in self._hashes:
             key = _hash(obj)
-            # _logger.debug(f"Cache key: %s: %s %s", path, type(obj), key)
+            _logger.debug(f"Cache key: %s: %s %s", path, type(obj), key)
             self._hashes[path] = key
             return key
         return self._hashes[path]
@@ -182,7 +183,8 @@ def _introspect_class(
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
             obj_ids.append((dep_path, PythonId(id(obj))))
         tup = tuple(obj_ids)
-        _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
+        # _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
+        # _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
 
 
@@ -226,7 +228,7 @@ def _introspect_fun(
             ids.append((dep_path, PythonId(id(obj))))
         tup = tuple(ids)
         if (fun_path, arg_ctx_hash, tup) in _global_context.cached_fun_interactions:
-            # _logger.debug(f"{fun_path} in interaction cache, skipping analysis")
+            _logger.debug(f"{fun_path} in interaction cache, skipping analysis: {(fun_path, arg_ctx_hash, tup)}")
             return _global_context.cached_fun_interactions[
                 (fun_path, arg_ctx_hash, tup)
             ]
@@ -281,7 +283,8 @@ def _introspect_fun(
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
             obj_ids.append((dep_path, PythonId(id(obj))))
         tup = tuple(obj_ids)
-        _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
+        _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
+        # _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
 
 
@@ -806,9 +809,9 @@ class ObjectRetrieval(object):
         obj_key = (local_path, mod_path)
 
         if obj_key in gctx.cached_objects:
-            # _logger.debug(f"retrieve_object: found in cache: obj_key: {obj_key}")
+            _logger.debug(f"retrieve_object: found in cache: obj_key: {obj_key}")
             return gctx.cached_objects[obj_key]
-        # _logger.debug(f"retrieve_object: not found in cache: obj_key: {obj_key}")
+        _logger.debug(f"retrieve_object: not found in cache: obj_key: {obj_key}")
 
         fname = local_path.parts[0]
         sub_path = LocalDepPathUtils.tail(local_path)
