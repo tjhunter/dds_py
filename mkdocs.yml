@@ -19,7 +19,7 @@ nav:
     - Home: index.md
     - Reference: dds-reference.md
     - FAQ: faq.md
+    - Tutorial: tutorial.ipynb
 # TODO
-#    - Tutorial - test: test.ipynb
 #    - Tutorial - scikit-learn: test_sklearn.ipynb
     - Tutorial - plotting: plotting.ipynb

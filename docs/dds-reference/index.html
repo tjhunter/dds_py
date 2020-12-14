@@ -55,6 +55,10 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">Reference</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations">dds._annotations</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations.dds_function">dds_function()</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__">dds.__init__</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.eval">eval()</a>
@@ -73,10 +77,6 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.whitelist_module">whitelist_module()</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations">dds._annotations</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations.dds_function">dds_function()</a>
-    </li>
     </ul>
                     </li>
                 </ul>
@@ -85,7 +85,7 @@
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../test/">Tutorial - test</a>
+                    <li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
                     </li>
                 </ul>
                 <ul>
@@ -126,6 +126,73 @@
               
                 <h1 id="dds-package-documentation">DDS package documentation</h1>
 <p>This is the reference documentation of all the public-facing functions.</p>
+<div class="doc doc-object doc-module">
+<h2 class="hidden-toc" href="#dds._annotations" id="dds._annotations" style="visibility: hidden; position: absolute;">
+        </h2>
+<div class="doc doc-contents first">
+<div class="doc doc-children">
+<div class="doc doc-object doc-function">
+<h2 class="doc doc-heading" id="dds._annotations.dds_function">
+
+        <code class="highlight language-python">
+dds_function<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
+
+
+      </h2>
+<div class="doc doc-contents ">
+<p>Annotation-style for <code>dds.keep</code>.</p>
+<p>This is useful for functions with no arguments that should be cached as DDS functions.</p>
+<p>The following definitions are equivalent:</p>
+<pre><code class="language-py">dds.dds_function("/function")
+def function(): return 1
+</code></pre>
+<pre><code class="language-py">def _function(): return 1
+
+def function():
+    return dds.keep("/function", _function)
+</code></pre>
+<details class="quote">
+          <summary>Source code in <code>dds/_annotations.py</code></summary>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">dds_function</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T_CallableOrType</span><span class="p">],</span> <span class="n">T_CallableOrType</span><span class="p">]:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Annotation-style for `dds.keep`.</span>
+
+<span class="sd">    This is useful for functions with no arguments that should be cached as DDS functions.</span>
+
+<span class="sd">    The following definitions are equivalent:</span>
+
+<span class="sd">    ```py</span>
+<span class="sd">    dds.dds_function("/function")</span>
+<span class="sd">    def function(): return 1</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    ```py</span>
+<span class="sd">    def _function(): return 1</span>
+
+<span class="sd">    def function():</span>
+<span class="sd">        return dds.keep("/function", _function)</span>
+<span class="sd">    ```</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span> <span class="nf">decorator_</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
+        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">decorator_</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="doc doc-object doc-module">
 <h2 class="hidden-toc" href="#dds.__init__" id="dds.__init__" style="visibility: hidden; position: absolute;">
         </h2>
@@ -344,17 +411,21 @@ or being an absolute path if a pathlib's <code>Path</code> object).</p>
 <h3 id="accepted-functions">Accepted functions.</h3>
 <p>In general, the functions that should be provided are <em>total, non-recursive, deterministic and referentially
  transparent</em>.</p>
-<p>Functions have currently the following restrictions:
-- no static method, class method
-- not recursive
-- no generators
-- the functions must be in a whitelisted module to be considered, see the whitelist_module() function</p>
+<p>Functions have currently the following restrictions:</p>
+<ul>
+<li>no static method, class method</li>
+<li>not recursive</li>
+<li>no generators</li>
+<li>the functions must be in a whitelisted module to be considered, see the whitelist_module() function</li>
+</ul>
 <p>They must return storable objects. The exact list depends on the store that is currently deployed.</p>
 <h3 id="accepted-arguments">Accepted arguments.</h3>
-<p>Only the following classes of arguments are accepted:
-- the basic types of python (int, str, bool, float)
-- lists and tuples of accepted arguments
-- dictionaries. They are evaluated as sorted lists (by their keys)</p>
+<p>Only the following classes of arguments are accepted:</p>
+<ul>
+<li>the basic types of python (int, str, bool, float)</li>
+<li>lists and tuples of accepted arguments</li>
+<li>dictionaries. They are evaluated as sorted lists (by their keys)</li>
+</ul>
 <h3 id="using-complex-arguments">Using complex arguments</h3>
 <p>If more complex arguments should be accepted, two strategies are possible:
 - embed them inside the function call
@@ -429,6 +500,7 @@ only be evaluated once.</p>
 <span class="sd">     transparent*.</span>
 
 <span class="sd">    Functions have currently the following restrictions:</span>
+
 <span class="sd">    - no static method, class method</span>
 <span class="sd">    - not recursive</span>
 <span class="sd">    - no generators</span>
@@ -439,6 +511,7 @@ only be evaluated once.</p>
 <span class="sd">    ### Accepted arguments.</span>
 
 <span class="sd">    Only the following classes of arguments are accepted:</span>
+
 <span class="sd">    - the basic types of python (int, str, bool, float)</span>
 <span class="sd">    - lists and tuples of accepted arguments</span>
 <span class="sd">    - dictionaries. They are evaluated as sorted lists (by their keys)</span>
@@ -709,72 +782,6 @@ be passed instead:</p>
 
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_whitelist_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="doc doc-object doc-module">
-<h2 class="hidden-toc" href="#dds._annotations" id="dds._annotations" style="visibility: hidden; position: absolute;">
-        </h2>
-<div class="doc doc-contents first">
-<div class="doc doc-children">
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds._annotations.dds_function">
-
-        <code class="highlight language-python">
-dds_function<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Annotation-style for <code>dds.keep</code>.</p>
-<p>This is useful for functions with no arguments that should be cached as DDS functions.</p>
-<p>The following definitions are equivalent:</p>
-<pre><code class="language-py">dds.dds_function("/function")
-def function(): return 1
-</code></pre>
-<pre><code class="language-py">def _function(): return 1
-
-def function():
-    return dds.keep("/function", _function)
-</code></pre>
-<details class="quote">
-          <summary>Source code in <code>dds/_annotations.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">dds_function</span><span class="p">(</span>
-    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T_CallableOrType</span><span class="p">],</span> <span class="n">T_CallableOrType</span><span class="p">]:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Annotation-style for `dds.keep`.</span>
-
-<span class="sd">    This is useful for functions with no arguments that should be cached as DDS functions.</span>
-
-<span class="sd">    The following definitions are equivalent:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    dds.dds_function("/function")</span>
-<span class="sd">    def function(): return 1</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    def _function(): return 1</span>
-
-<span class="sd">    def function():</span>
-<span class="sd">        return dds.keep("/function", _function)</span>
-<span class="sd">    ```</span>
-<span class="sd">    """</span>
-    <span class="k">def</span> <span class="nf">decorator_</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
-        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">decorator_</span>
 </code></pre>
 </div>
 </details>
