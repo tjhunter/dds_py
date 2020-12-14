@@ -228,7 +228,9 @@ def _introspect_fun(
             ids.append((dep_path, PythonId(id(obj))))
         tup = tuple(ids)
         if (fun_path, arg_ctx_hash, tup) in _global_context.cached_fun_interactions:
-            _logger.debug(f"{fun_path} in interaction cache, skipping analysis: {(fun_path, arg_ctx_hash, tup)}")
+            _logger.debug(
+                f"{fun_path} in interaction cache, skipping analysis: {(fun_path, arg_ctx_hash, tup)}"
+            )
             return _global_context.cached_fun_interactions[
                 (fun_path, arg_ctx_hash, tup)
             ]

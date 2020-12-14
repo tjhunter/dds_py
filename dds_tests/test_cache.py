@@ -8,6 +8,7 @@ path_1 = "/path_1"
 
 my_var = 1
 
+
 @dds.dds_function("/p")
 def f1() -> int:
     return my_var
