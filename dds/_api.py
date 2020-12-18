@@ -175,7 +175,7 @@ def _eval(
 
 
 def _time() -> float:
-    return time.clock_gettime(time.CLOCK_MONOTONIC)
+    return time.monotonic()
 
 
 def _add_delta(start_t: float, stage: ProcessingStage) -> None:

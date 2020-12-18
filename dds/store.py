@@ -1,5 +1,3 @@
-# from __future__ import annotations
-
 import json
 import logging
 import os
@@ -89,7 +87,7 @@ class LocalFileStore(Store):
         p = os.path.join(self._root, "blobs", key)
         return os.path.exists(p)
 
-    def sync_paths(self, paths):
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
         for (path, key) in paths.items():
             splits = [s.replace("/", "") for s in os.path.split(path)]
             loc_dir = os.path.join(self._data_root, *(splits[:-1]))

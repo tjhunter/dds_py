@@ -6,12 +6,9 @@ from ._api import keep as _keep
 from .structures import DDSPath
 
 F = TypeVar("F", bound=Callable[..., Any])
-T_CallableOrType = TypeVar("T_CallableOrType", Callable[..., Any], Type[Any])
 
 
-def dds_function(
-    path: Union[str, DDSPath, pathlib.Path]
-) -> Callable[[T_CallableOrType], T_CallableOrType]:
+def dds_function(path: Union[str, DDSPath, pathlib.Path]) -> Callable[[F], F]:
     """
     Annotation-style for `dds.keep`.
 
