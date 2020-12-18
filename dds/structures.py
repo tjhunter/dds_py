@@ -107,20 +107,20 @@ class CanonicalPath(object):
     def get(self, i: int) -> str:
         return self._path[i]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._path)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         x = ".".join(self._path)
         return f"<{x}>"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return repr(self) == repr(other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not (repr(self) == repr(other))
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         return repr(self) < repr(other)
 
 
