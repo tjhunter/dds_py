@@ -1,4 +1,5 @@
 import ast
+import typing
 import importlib
 import pathlib
 import inspect
@@ -971,6 +972,7 @@ class ObjectRetrieval(object):
                 f"  {local_path} {context_mod.__dict__}"
             )
         obj = context_mod.__dict__[fname]
+        # _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod} {type(obj)} {obj}")
 
         if LocalDepPathUtils.empty(tail_path):
             # Final path.
@@ -984,6 +986,12 @@ class ObjectRetrieval(object):
                     # _logger.debug(
                     #     f"_retrieve_object_rec: cannot infer definition module: path: {local_path} mod: {context_mod} "
                     # )
+                    return None
+                if mod_obj in [typing]:
+                    # The redirection module is a python system module like the typing module.
+                    # Do not attempt to introspect further, this goes into python implementation details and is not
+                    # authorized.
+                    # Note: it skips the definition of the newtype along the way, but this is considered a corner case.
                     return None
                 if mod_obj is not context_mod:
                     # _logger.debug(
