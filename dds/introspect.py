@@ -158,9 +158,9 @@ def _introspect_fun(
             ids.append((dep_path, PythonId(id(obj))))
         tup = tuple(ids)
         if (fun_path, arg_ctx_hash, tup) in _global_context.cached_fun_interactions:
-            _logger.debug(
-                f"{fun_path} in interaction cache, skipping analysis: {(fun_path, arg_ctx_hash, tup)}"
-            )
+            # _logger.debug(
+            #     f"{fun_path} in interaction cache, skipping analysis: {(fun_path, arg_ctx_hash, tup)}"
+            # )
             return _global_context.cached_fun_interactions[
                 (fun_path, arg_ctx_hash, tup)
             ]
@@ -215,7 +215,7 @@ def _introspect_fun(
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
             obj_ids.append((dep_path, PythonId(id(obj))))
         tup = tuple(obj_ids)
-        _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
+        # _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
         # _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
 
@@ -565,9 +565,10 @@ class InspectFunction(object):
 
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
         # _logger.debug(f"inspect_call: local_path: %s", local_path)
-        if str(local_path) in var_names:
+        # We may do sub-method calls on an object -> filter out based on the name of the object
+        if str(local_path.parts[0]) in var_names:
             # _logger.debug(
-            #     f"inspect_call: local_path: %s is rejected (in vars)", local_path
+            #     f"inspect_call: local_path: %s is rejected (head in vars)", local_path
             # )
             return None
 
@@ -679,11 +680,11 @@ class InspectFunction(object):
             raise NotImplementedError(
                 f"{type(local_path_node)} {pformat(local_path_node)}"
             )
-        _logger.debug(
-            f"Keep: store_path_symbol: %s %s",
-            store_path_symbol,
-            type(store_path_symbol),
-        )
+        # _logger.debug(
+        #     f"Keep: store_path_symbol: %s %s",
+        #     store_path_symbol,
+        #     type(store_path_symbol),
+        # )
         store_path_local_path = LocalDepPath(PurePosixPath(store_path_symbol))
         # Retrieve the store path value and the called function
         store_z = ObjectRetrieval.retrieve_object(store_path_local_path, mod, gctx)

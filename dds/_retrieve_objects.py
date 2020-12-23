@@ -49,7 +49,7 @@ def _is_authorized_type(tpe: Type[Any], gctx: EvalMainContext) -> bool:
     if issubclass(tpe, object):
         mod = inspect.getmodule(tpe)
         if mod is None:
-            _logger.debug(f"_is_authorized_type: type %s has no module", tpe)
+            # _logger.debug(f"_is_authorized_type: type %s has no module", tpe)
             return False
         mod_path = _mod_path(mod)
         if gctx.is_authorized_path(mod_path):
@@ -74,9 +74,9 @@ class ObjectRetrieval(object):
         obj_key = (local_path, mod_path)
 
         if obj_key in gctx.cached_objects:
-            _logger.debug(f"retrieve_object: found in cache: obj_key: {obj_key}")
+            # _logger.debug(f"retrieve_object: found in cache: obj_key: {obj_key}")
             return gctx.cached_objects[obj_key]
-        _logger.debug(f"retrieve_object: not found in cache: obj_key: {obj_key}")
+        # _logger.debug(f"retrieve_object: not found in cache: obj_key: {obj_key}")
 
         fname = local_path.parts[0]
         sub_path = LocalDepPathUtils.tail(local_path)

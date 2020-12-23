@@ -168,6 +168,7 @@ def test_6():
 def fun_7_f1(os: List[str]):
     return os.pop()
 
+
 @dds.dds_function("/p")
 def fun_7_f():
     return fun_7_f1(["test"])
