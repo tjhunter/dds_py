@@ -176,8 +176,7 @@ class FunctionInteractions(NamedTuple):
     # The signature of the function (function body)
     fun_body_sig: PyHash
     # The signature of the return of the function (including the evaluated args)
-    # It is optional because it may not be calculated until some indirect dependencies are resolved.
-    fun_return_sig: Optional[PyHash]
+    fun_return_sig: PyHash
     # The external dependencies
     # TODO: merge it with parsed_body
     external_deps: List[ExternalDep]
@@ -189,8 +188,22 @@ class FunctionInteractions(NamedTuple):
     # The path of the function
     fun_path: CanonicalPath
     # The indirect dependencies from this function
-    # The following invariant holds: fun_return_sig is None if and only if there are indirect dependencies (
-    # in this function interaction or any other parsed_body transitively)
     indirect_deps: List[DDSPath]
     # The signature of the inputs
     input_sig: PyHash
+
+
+class FunctionIndirectInteractions(NamedTuple):
+    """
+    The representation of all the indirect calls.
+    This is done as a preprocessing step to find all the calls that need to be resolved before calling the main
+    introspection function that compute the FunctionInteractions.
+    """
+
+    fun_path: CanonicalPath
+    store_path: Optional[DDSPath]
+    # TODO: real type is Union[DDSPath, FunctionIndirectInteractions]
+    # The DDSPath object correspond to load() calls, the other calls correspond to sub function calls.
+    # They are kept in order of calling to validate the order of calls:
+    # indirect calls with that refer to a function also executed must happen after the function has executed
+    indirect_deps: List["Any"]

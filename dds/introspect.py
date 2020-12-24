@@ -7,6 +7,7 @@ from types import ModuleType, FunctionType
 from typing import (
     Tuple,
     Callable,
+    cast,
     Any,
     Dict,
     Set,
@@ -43,17 +44,12 @@ LocalVar = NewType("LocalVar", str)
 
 
 def introspect(
-    f: Callable[[Any], Any], start_globals: Dict[str, Any], arg_ctx: FunctionArgContext
+    f: Callable[[Any], Any], eval_ctx: EvalMainContext, arg_ctx: FunctionArgContext
 ) -> FunctionInteractions:
     # TODO: exposed the whitelist
     # TODO: add the arguments of the function
-    gctx = EvalMainContext(
-        f.__module__,  # type: ignore
-        whitelisted_packages=_whitelisted_packages,
-        start_globals=start_globals,
-    )
-    fun: FunctionType = f  # type: ignore
-    return _introspect(fun, arg_ctx, gctx, call_stack=[])
+    fun: FunctionType = cast(FunctionType, f)
+    return _introspect(fun, arg_ctx, eval_ctx, call_stack=[])
 
 
 class Functions(str, Enum):
@@ -112,7 +108,7 @@ def _introspect_class(
         for dep_path in dep_paths:
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
             obj_ids.append((dep_path, PythonId(id(obj))))
-        tup = tuple(obj_ids)
+        # tup = tuple(obj_ids)
         # _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
         # _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
@@ -205,6 +201,9 @@ def _introspect_fun(
     )
     # Cache the function interactions
     gctx.cached_fun_interactions[fis_key] = fis
+    # Register the path as a potential link to dependencies
+    if fis.store_path:
+        gctx.resolved_references[fis.store_path] = fis.fun_return_sig
     # cache the function interactions in the global context
     if not is_lambda(f) and _global_context is not None:
         dep_paths = sorted(_all_paths(fis))
@@ -214,7 +213,7 @@ def _introspect_fun(
         for dep_path in dep_paths:
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
             obj_ids.append((dep_path, PythonId(id(obj))))
-        tup = tuple(obj_ids)
+        # tup = tuple(obj_ids)
         # _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
         # _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
@@ -246,11 +245,7 @@ class IntroVisitor(ast.NodeVisitor):
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
         # Some calls may not have been calculated at this stage because of indirect dependencies.
-        function_inters_sig: Optional[PyHash]
-        if all([fi.fun_return_sig is not None for fi in self.inters]):
-            function_inters_sig = dds_hash([fi.fun_return_sig for fi in self.inters])
-        else:
-            function_inters_sig = None
+        function_inters_sig = dds_hash([fi.fun_return_sig for fi in self.inters])
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunction.inspect_call(
             node,
@@ -465,14 +460,10 @@ class InspectFunction(object):
         # No input for the functions (for now, that could be refined later)
         input_sig = dds_hash([])
         # Check if any of the functions had a function interaction.
-        if any(i.fun_return_sig is None for i in method_fis):
-            return_sig = None
-        else:
-            # All the sub-dependencies are handled with method introspections
-            return_sig = dds_hash(
-                [input_sig, body_sig]
-                + [i.fun_return_sig for i in method_fis if i.fun_return_sig is not None]
-            )
+        # All the sub-dependencies are handled with method introspections
+        return_sig = dds_hash(
+            [input_sig, body_sig] + [i.fun_return_sig for i in method_fis]
+        )
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -523,22 +514,19 @@ class InspectFunction(object):
         # Remove duplicates but keep the order in the list of paths:
         indirect_deps = _no_dups(calls_v.load_paths)
 
-        # Only compute the hash of the function if the hash is complete (no missing indirect dependencies,
-        # directly or transitively).
-        complete_deps = len(indirect_deps) == 0 and all(
-            i.fun_return_sig is not None for i in calls_v.inters
-        )
-        return_sig = (
-            dds_hash(
-                [input_sig, body_sig]
-                + [
-                    i.fun_return_sig
-                    for i in calls_v.inters
-                    if i.fun_return_sig is not None
-                ]
-            )
-            if complete_deps
-            else None
+        def fetch(dep: DDSPath) -> PyHash:
+            key = gctx.resolved_references.get(dep)
+            assert (
+                key is not None
+            ), f"Missing dep {dep} for {fun_path}: {call_stack} {gctx.resolved_references}"
+            return key
+
+        indirect_deps_sigs = [fetch(dep) for dep in indirect_deps]
+
+        return_sig = dds_hash(
+            [input_sig, body_sig]
+            + [i.fun_return_sig for i in calls_v.inters]
+            + indirect_deps_sigs
         )
 
         # Look at the annotations to see if there is a reference to a dds_function
@@ -597,8 +585,7 @@ class InspectFunction(object):
         mod: ModuleType,
         function_body_hash: PyHash,
         function_args_hash: PyHash,
-        # Some of the function interactions may not have been fully evaluated because of indirect dependencies.
-        function_inter_hash: Optional[PyHash],
+        function_inter_hash: PyHash,
         var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
     ) -> Union[FunctionInteractions, DDSPath, None]:
@@ -746,10 +733,10 @@ class InspectFunction(object):
         return DDSPathUtils.create(store_path)
 
 
-def _no_dups(l: List[DDSPath]) -> List[DDSPath]:
+def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
     s = set()
     res = []
-    for p in l:
+    for p in paths:
         if p not in s:
             s.add(p)
             res.append(p)

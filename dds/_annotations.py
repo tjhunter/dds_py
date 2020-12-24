@@ -1,6 +1,6 @@
 import functools
 import pathlib
-from typing import Any, Callable, TypeVar, cast, Type, Union
+from typing import Any, Callable, TypeVar, cast, Union
 
 from ._api import keep as _keep
 from .structures import DDSPath

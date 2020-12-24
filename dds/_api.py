@@ -4,12 +4,14 @@ The main API functions
 
 import logging
 import pathlib
+import time
 from collections import OrderedDict
 from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union, Set, List
-import time
 
+from ._eval_ctx import EvalMainContext
+from ._introspect_indirect import introspect_indirect
 from .fun_args import get_arg_ctx
-from .introspect import introspect
+from .introspect import introspect, _whitelisted_packages
 from .store import LocalFileStore, Store
 from .structures import (
     DDSPath,
@@ -17,9 +19,12 @@ from .structures import (
     EvalContext,
     PyHash,
     ProcessingStage,
-    FunctionInteractions,
 )
-from .structures_utils import DDSPathUtils, FunctionInteractionsUtils
+from .structures_utils import (
+    DDSPathUtils,
+    FunctionInteractionsUtils,
+    FunctionIndirectInteractionUtils,
+)
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
@@ -224,33 +229,37 @@ def _eval_new_ctx(
         _logger.debug(f"_eval_new_ctx: local_vars: {sorted(local_vars.keys())}")
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
-        inters = introspect(fun, local_vars, arg_ctx)
+        eval_ctx = EvalMainContext(
+            fun.__module__,  # type: ignore
+            whitelisted_packages=_whitelisted_packages,
+            start_globals=local_vars,
+            resolved_references=OrderedDict(),
+        )
+        _logger.debug(f"_eval_new_ctx: introspect_indirect completed")
+        inters_indirect = introspect_indirect(fun, eval_ctx)
+        all_loads = FunctionIndirectInteractionUtils.all_loads(inters_indirect)
+        all_stores = FunctionIndirectInteractionUtils.all_stores(inters_indirect)
+        loads_to_check = sorted([p for p in all_loads if p not in all_stores])
+        # Check that there are no indirect references to resolve:
+        if loads_to_check:
+            _logger.debug(
+                f"_eval_new_ctx: need to resolve indirect references: {loads_to_check}"
+            )
+            resolved_indirect_refs = _store.fetch_paths(loads_to_check)
+            _logger.debug(
+                f"_eval_new_ctx: fetched indirect references: {resolved_indirect_refs}"
+            )
+        else:
+            resolved_indirect_refs = OrderedDict()
+
+        eval_ctx.resolved_references = resolved_indirect_refs
+
+        inters = introspect(fun, eval_ctx, arg_ctx)
         _logger.debug(f"_eval_new_ctx: introspect completed")
         # Also add the current path, if requested:
         if path is not None:
             inters = inters._replace(store_path=path)
         store_paths = FunctionInteractionsUtils.all_store_paths(inters)
-        # Check that there are no indirect references to resolve:
-        if inters.fun_return_sig is None:
-            # Do not attempt to load the function interactions that are about to be computed.
-            # They will be sorted out in the function interaction tree.
-            indirect_refs = sorted(
-                [
-                    p
-                    for p in FunctionInteractionsUtils.all_indirect_deps(inters)
-                    if p not in store_paths
-                ]
-            )
-            _logger.debug(
-                f"_eval_new_ctx: need to resolve indirect references: {indirect_refs}"
-            )
-            resolved_indirect_refs = _store.fetch_paths(indirect_refs)
-            _logger.debug(f"_eval_new_ctx: fetched indirect references")
-            inters = FunctionInteractionsUtils.resolve_indirect_references(
-                inters, resolved_indirect_refs
-            )
-            # Recalculate the store paths with all the functions being resolved
-            store_paths = FunctionInteractionsUtils.all_store_paths(inters)
         _logger.debug(
             f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context"
         )
@@ -291,7 +300,6 @@ def _eval_new_ctx(
         # If the blob for that node already exists, we have computed the path already.
         # We only need to check if the path is committed to the blob
         current_sig = inters.fun_return_sig
-        assert current_sig is not None, inters.fun_path
         _logger.debug(f"_eval_new_ctx:current_sig: {current_sig}")
         t = _time()
         if _store.has_blob(current_sig):
