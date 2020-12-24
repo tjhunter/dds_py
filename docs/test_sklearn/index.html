@@ -7,14 +7,15 @@
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="../img/favicon.ico" rel="shortcut icon"/>
-<title>Tutorial - scikit-learn - DDS documentation</title>
+<title>Test sklearn - DDS documentation</title>
 <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
 <link href="../css/theme.css" rel="stylesheet"/>
 <link href="../css/theme_extra.css" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet"/>
+<link href="../extra.css" rel="stylesheet"/>
 <script>
     // Current page data
-    var mkdocs_page_name = "Tutorial - scikit-learn";
+    var mkdocs_page_name = "Test sklearn";
     var mkdocs_page_input_path = "test_sklearn.ipynb";
     var mkdocs_page_url = null;
   </script>
@@ -44,8 +45,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../dds-reference/">Reference</a>
 </li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - scikit-learn</a>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
 </li>
 </ul>
 <ul>
@@ -65,7 +70,7 @@
 <div aria-label="breadcrumbs navigation" role="navigation">
 <ul class="wy-breadcrumbs">
 <li><a href="..">Docs</a> »</li>
-<li>Tutorial - scikit-learn</li>
+<li>Test sklearn</li>
 <li class="wy-breadcrumbs-aside">
 </li>
 </ul>
@@ -14450,24 +14455,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     </script>
 <!-- End of mathjax configuration -->
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
-<span class="c1"># Small cleanup for reproducibility</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/*</span><span class="n">png</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>This tutorial is an adaptation of the Machine Learning tutorial from Elite Data Science. The original tutorial is here:</p>
 <p><a href="https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn">https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn</a></p>
 <p>Let us start with a few imports</p>
@@ -14475,7 +14463,6 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span>
@@ -14497,14 +14484,12 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>We now add the import to the <code>dds</code> package. By default, the data will be stored in the temporary directory</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
@@ -14514,47 +14499,16 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>The two internal directories (data and internal) are now there</p>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
-<span class="n">ls</span> <span class="o">-</span><span class="n">la</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span>
-</pre></div>
 </div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>totaal 36
-drwxrwxr-x  4 tjhunter tjhunter  4096 Nov 11 22:42 .
-drwxrwxrwt 21 root     root     20480 Nov 11 22:42 ..
-drwxrwxr-x  2 tjhunter tjhunter  4096 Nov 11 22:42 data
-drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Let's start with a familiar problem of accessing data from the internet. This piece of code will download a dataset, but with the additional twist that the dataset will be cached onto the local machine.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">path_model</span> <span class="o">=</span> <span class="s2">"/wine-quality/my_model"</span>
@@ -14571,10 +14525,9 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">"/tmp/2.png"</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
@@ -14585,21 +14538,9 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"/>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">data</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -14608,115 +14549,9 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>*** in _load_data ***
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>/home/tjhunter/work/software/miniconda/envs/dds/lib/python3.8/site-packages/urllib3/connectionpool.py:981: InsecureRequestWarning: Unverified HTTPS request is being made to host 'raw.githubusercontent.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
-  warnings.warn(
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>fixed acidity</th>
-<th>volatile acidity</th>
-<th>citric acid</th>
-<th>residual sugar</th>
-<th>chlorides</th>
-<th>free sulfur dioxide</th>
-<th>total sulfur dioxide</th>
-<th>density</th>
-<th>pH</th>
-<th>sulphates</th>
-<th>alcohol</th>
-<th>quality</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>0</th>
-<td>7.4</td>
-<td>0.70</td>
-<td>0.00</td>
-<td>1.9</td>
-<td>0.076</td>
-<td>11.0</td>
-<td>34.0</td>
-<td>0.9978</td>
-<td>3.51</td>
-<td>0.56</td>
-<td>9.4</td>
-<td>5</td>
-</tr>
-<tr>
-<th>1</th>
-<td>7.8</td>
-<td>0.88</td>
-<td>0.00</td>
-<td>2.6</td>
-<td>0.098</td>
-<td>25.0</td>
-<td>67.0</td>
-<td>0.9968</td>
-<td>3.20</td>
-<td>0.68</td>
-<td>9.8</td>
-<td>5</td>
-</tr>
-<tr>
-<th>2</th>
-<td>7.8</td>
-<td>0.76</td>
-<td>0.04</td>
-<td>2.3</td>
-<td>0.092</td>
-<td>15.0</td>
-<td>54.0</td>
-<td>0.9970</td>
-<td>3.26</td>
-<td>0.65</td>
-<td>9.8</td>
-<td>5</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">):</span>
@@ -14763,7 +14598,6 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
@@ -14773,10 +14607,9 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/p1"</span><span class="p">)</span>
@@ -14804,21 +14637,9 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"/>
-</div>
-</div>
-</div>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">f</span><span class="p">()</span>
@@ -14830,7 +14651,6 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span>
@@ -14845,10 +14665,6 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div>
 </div>
 <footer>
-<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a class="btn btn-neutral float-right" href="../plotting/" title="Tutorial - plotting">Next <span class="icon icon-circle-arrow-right"></span></a>
-<a class="btn btn-neutral" href="../dds-reference/" title="Reference"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-</div>
 <hr/>
 <div role="contentinfo">
 <!-- Copyright etc -->
@@ -14862,8 +14678,6 @@ drwxrwxr-x  3 tjhunter tjhunter  4096 Nov 11 22:42 internal
 </div>
 <div aria-label="versions" class="rst-versions" role="note">
 <span class="rst-current-version" data-toggle="rst-current-version">
-<span><a href="../dds-reference/" style="color: #fcfcfc;">« Previous</a></span>
-<span style="margin-left: 15px"><a href="../plotting/" style="color: #fcfcfc">Next »</a></span>
 </span>
 </div>
 <script>var base_url = '..';</script>

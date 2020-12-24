@@ -47,6 +47,13 @@ def dds_hash(x: Any) -> PyHash:
     raise NotImplementedError(str(type(x)))
 
 
+def get_arg_list(
+    f: Callable,  # type: ignore
+) -> List[str]:
+    arg_sig = inspect.signature(f)
+    return list(arg_sig.parameters.keys())
+
+
 def get_arg_ctx(
     f: Callable,  # type: ignore
     args: Tuple[Any, ...],

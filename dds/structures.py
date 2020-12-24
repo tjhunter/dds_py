@@ -107,20 +107,20 @@ class CanonicalPath(object):
     def get(self, i: int) -> str:
         return self._path[i]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._path)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         x = ".".join(self._path)
         return f"<{x}>"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return repr(self) == repr(other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not (repr(self) == repr(other))
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         return repr(self) < repr(other)
 
 
@@ -187,3 +187,21 @@ class FunctionInteractions(NamedTuple):
     store_path: Optional[DDSPath]
     # The path of the function
     fun_path: CanonicalPath
+    # The indirect dependencies from this function
+    indirect_deps: List[DDSPath]
+
+
+class FunctionIndirectInteractions(NamedTuple):
+    """
+    The representation of all the indirect calls.
+    This is done as a preprocessing step to find all the calls that need to be resolved before calling the main
+    introspection function that compute the FunctionInteractions.
+    """
+
+    fun_path: CanonicalPath
+    store_path: Optional[DDSPath]
+    # TODO: real type is Union[DDSPath, FunctionIndirectInteractions]
+    # The DDSPath object correspond to load() calls, the other calls correspond to sub function calls.
+    # They are kept in order of calling to validate the order of calls:
+    # indirect calls with that refer to a function also executed must happen after the function has executed
+    indirect_deps: List["Any"]

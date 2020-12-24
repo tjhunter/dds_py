@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/theme_extra.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="extra.css" rel="stylesheet" />
   
   <script>
     // Current page data
@@ -50,6 +51,14 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#python-support">Python support</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#license">License</a>
+    </li>
     </ul>
                     </li>
                 </ul>
@@ -58,7 +67,11 @@
                     </li>
                 </ul>
                 <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="test_sklearn/">Tutorial - scikit-learn</a>
+                    <li class="toctree-l1"><a class="reference internal" href="faq/">FAQ</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="tutorial/">Tutorial</a>
                     </li>
                 </ul>
                 <ul>
@@ -99,6 +112,63 @@
               
                 <h1 id="dds-data-driven-software">DDS - Data Driven Software</h1>
 <p>This is the main documentation page for the <code>dds</code> package.</p>
+<p><strong>Why DDS?</strong>
+The <code>dds</code> package solves the synchronization problem between code and data. It allows programmers,
+ scientists and data scientists to integrate code with data and data with code without fear of
+ stale data, disparate storage frameworks or concurrency issues. DDS allows quick collaboration and 
+ data software reuse without the complexity. In short, you do not have to think about changes in your 
+data pipelines.</p>
+<h2 id="requirements">Requirements</h2>
+<p><code>dds</code> is officially supported for Python versions 3.6 to 3.8. It is also
+working on Python 3.9 but not officially supported for that version, due
+to library incompatibilities for major applications (parquet decoding).</p>
+<p><code>dds</code> has one requirement:</p>
+<ul>
+<li>asttokens</li>
+</ul>
+<p>In addition, the following dependency provides support for plotting the 
+graph of calculations:</p>
+<ul>
+<li>pydotplus</li>
+</ul>
+<p>The following Python frameworks are provided out of the box:</p>
+<ul>
+<li>Apache Spark</li>
+<li>pandas</li>
+</ul>
+<p>The following notebook systems have integration points:</p>
+<ul>
+<li>Jupyter</li>
+<li>Databricks notebooks</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>When using PyPI:</p>
+<pre><code class="language-sh">pip install dds_py
+</code></pre>
+<h2 id="python-support">Python support</h2>
+<p>Python is a very rich language, and not all features of Python
+are useful for data scientists. 
+In general, <code>dds</code> takes an opinionated approach about the usefulness of specific 
+Python features. All the essential Python code constructs are supported by <code>dds</code>:</p>
+<ul>
+<li>built-in types (primitives, dictionaries, lists, ...)</li>
+<li>functions, modules, notebook-defined functions, lambda functions, ...</li>
+<li>classes (without subclasses)</li>
+</ul>
+<p>The following features are not expected to be supported:</p>
+<ul>
+<li>async functions</li>
+<li>method reassignment</li>
+<li>advanced machinery to generate code at runtime</li>
+</ul>
+<p>The following features might be added to a feature release:</p>
+<ul>
+<li>decorators</li>
+<li>static and class functions</li>
+<li>futures, concurrency, threading, manual pickling</li>
+</ul>
+<h2 id="license">License</h2>
+<p><code>dds</code> is released under the Affero General Public License (AGPL).</p>
               
             </div>
           </div>
@@ -152,5 +222,5 @@
 
 <!--
 MkDocs version : 1.1.2
-Build Date UTC : 2020-11-11 21:42:22.997053+00:00
+Build Date UTC : 2020-12-13 17:36:46.870608+00:00
 -->

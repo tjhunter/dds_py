@@ -8,6 +8,9 @@ plugins:
   - mkdocstrings
   - mkdocs-jupyter:
       include_source: True
+      execute: True
+
+extra_css: [extra.css]
 
 theme:
   name: "readthedocs"
@@ -15,5 +18,8 @@ theme:
 nav:
     - Home: index.md
     - Reference: dds-reference.md
-    - Tutorial - scikit-learn: test_sklearn.ipynb
+    - FAQ: faq.md
+    - Tutorial: tutorial.ipynb
+# TODO
+#    - Tutorial - scikit-learn: test_sklearn.ipynb
     - Tutorial - plotting: plotting.ipynb

@@ -24,6 +24,6 @@ release:
 
 
 doc:
-	PYTHONPATH=$(PWD) jupyter nbconvert --ClearOutputPreprocessor.enabled=True --ClearMetadataPreprocessor.enabled=True  --execute --clear-output doc_source/test_sklearn.ipynb
-	PYTHONPATH=$(PWD) jupyter nbconvert --ClearOutputPreprocessor.enabled=True --ClearMetadataPreprocessor.enabled=True  --execute --clear-output doc_source/plotting.ipynb
+#	PYTHONPATH=$(PWD) jupyter nbconvert --ClearOutputPreprocessor.enabled=True --ClearMetadataPreprocessor.enabled=False  --execute --clear-output --TagRemovePreprocessor.remove_cell_tags='["hide_cell"]' doc_source/test_sklearn.ipynb
+#	PYTHONPATH=$(PWD) jupyter nbconvert --ClearOutputPreprocessor.enabled=True --ClearMetadataPreprocessor.enabled=False  --execute --clear-output --TagRemovePreprocessor.remove_cell_tags='["hide_cell"]' doc_source/plotting.ipynb
 	mkdocs build

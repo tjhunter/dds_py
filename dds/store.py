@@ -1,9 +1,7 @@
-# from __future__ import annotations
-
 import json
 import logging
 import os
-from typing import Any, Optional
+from typing import Any, Optional, List
 from collections import OrderedDict
 
 from .codec import codec_registry
@@ -34,6 +32,12 @@ class Store(object):
     def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
         """
         Commits all the paths.
+        """
+        pass
+
+    def fetch_paths(self, paths: List[DDSPath]) -> "OrderedDict[DDSPath, PyHash]":
+        """
+        Fetches a set of paths from the store. It is expected that all the paths are returned.
         """
         pass
 
@@ -89,7 +93,7 @@ class LocalFileStore(Store):
         p = os.path.join(self._root, "blobs", key)
         return os.path.exists(p)
 
-    def sync_paths(self, paths):
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
         for (path, key) in paths.items():
             splits = [s.replace("/", "") for s in os.path.split(path)]
             loc_dir = os.path.join(self._data_root, *(splits[:-1]))
@@ -105,3 +109,26 @@ class LocalFileStore(Store):
                     os.remove(loc)
                 _logger.info(f"Link {loc} -> {loc_blob}")
                 os.symlink(loc_blob, loc)
+
+    def fetch_paths(self, paths: List[DDSPath]) -> "OrderedDict[DDSPath, PyHash]":
+        res = OrderedDict()
+        for path in paths:
+            if path not in res:
+                # Assemble the path
+                splits = [s.replace("/", "") for s in os.path.split(path)]
+                loc_dir = os.path.join(self._data_root, *(splits[:-1]))
+                loc = os.path.join(loc_dir, splits[-1])
+                if not os.path.exists(loc_dir):
+                    _logger.debug(f"Dir {loc_dir} does not exist")
+                    raise KSException(
+                        f"Requested to load path {path} but directory {loc_dir} does not exist"
+                    )
+                if not os.path.exists(loc):
+                    raise KSException(
+                        f"Requested to load path {path} but path {loc} does not exist"
+                    )
+                rp = os.path.realpath(loc)
+                # The key is the last element of the path
+                key = PyHash(os.path.split(rp)[-1])
+                res[path] = key
+        return res

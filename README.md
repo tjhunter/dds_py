@@ -12,10 +12,10 @@ The DDS package solves the synchronization problem between code and data. It all
 
 ## How to use
 
-This package is not published on PyPI yet. To use the latest version, run:
+This package is published on PyPI:
 
 ```
-pip install -U git+https://github.com/tjhunter/dds_py
+pip install dds_py
 ```
 
 This package is known to work on python 3.6, 3.7, 3.8. No other versions are officially supported. Python 3.4 and 3.5 might work but they are not supported.
@@ -26,19 +26,12 @@ __Databricks users:__ If you want to use this package with Databricks, some spec
 
 https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/7816249071411394/4492656151009213/5450662050199348/latest.html
 
+## Documentation
+
+API reference, tutorials and FAQs are located here: https://tjhunter.github.io/dds_py/
+
 ## Example
  
-In the world of data-driven software, executing code leads to the creation of _data artifacts_, which can be 
-of any sort and shape that the work requires:
-- _datasets_ : collections of data items
-- _models_ : compact representations of datasets for specific tasks (classification, ...)
-- _insights_: information about datasets and models that provide human-relatable cues about other artifacts
-
-Combining software with data is currently a hard challenge, because existing programming paradigms
-aim at being universal and are not tuned to the specific challenges of combining data and code 
-within a single product. DDS provides the low-level foundations to do that, in the spirit
-of Karparthy's Software 2.0 directions (TODO: cite). `dds_py` is a software implementation of these ideas
-
 Here is the Hello world example (using type annotations for clarity)
 
 ```python
@@ -60,14 +53,6 @@ The DDS library guarantees the following after evaluation of the code:
 1. the path `/hello_data` contains a copy of the data returned by `data_creator`, as if the function `data_creator` had been called at this moment
 2. the function `data_creator` is only evaluated when its inputs, or its code, are modified (referential transparency)
 
-## Programming model
+## License
 
-This model has profound consequences for the programmers:
-- computationally expensive data functions (such as building models) can be composed and built upon _very cheaply_, as if they were
-variables. DDS alleviates the need to decompose data pipelines into multiple stages because of technological requirments. 
-
-At its core, the programming model of DDS is very simple:
-- functions are assumed to be idempotent, if not pure
-- functions are referentially transparent (they can be replaced with their output)
-- artifacts of any sort (models, data, statistics) are stored in a central repository
-- the programming model is assumed to be hermetic (only the I/O tracked within the framework is expected to happen)
+The `dds` package is published under the Affero General Public License.
