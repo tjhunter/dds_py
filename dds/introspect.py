@@ -244,7 +244,6 @@ class IntroVisitor(ast.NodeVisitor):
         function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
-        # Some calls may not have been calculated at this stage because of indirect dependencies.
         function_inters_sig = dds_hash([fi.fun_return_sig for fi in self.inters])
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunction.inspect_call(
@@ -457,13 +456,8 @@ class InspectFunction(object):
                     # _logger.debug(f"inspect_class: {fis_}")
 
         body_sig = dds_hash(class_body_lines)
-        # No input for the functions (for now, that could be refined later)
-        input_sig = dds_hash([])
-        # Check if any of the functions had a function interaction.
         # All the sub-dependencies are handled with method introspections
-        return_sig = dds_hash(
-            [input_sig, body_sig] + [i.fun_return_sig for i in method_fis]
-        )
+        return_sig = dds_hash([body_sig] + [i.fun_return_sig for i in method_fis])
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -474,7 +468,6 @@ class InspectFunction(object):
             store_path=None,  # No store path can be associated by default to a class
             fun_path=fun_path,
             indirect_deps=[],
-            input_sig=input_sig,
         )
 
     @classmethod
@@ -545,7 +538,6 @@ class InspectFunction(object):
             store_path=store_path,
             fun_path=fun_path,
             indirect_deps=indirect_deps,
-            input_sig=input_sig,
         )
 
     @classmethod
@@ -684,8 +676,6 @@ class InspectFunction(object):
                 f"Call stack: {' '.join([str(p) for p in call_stack])}"
             )
 
-        if function_inter_hash is None:
-            raise KSException("not implemented: function_inter_hash")
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here

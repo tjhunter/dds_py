@@ -263,15 +263,11 @@ def _eval_new_ctx(
         _logger.debug(
             f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context"
         )
-        full_store_path: OrderedDict[DDSPath, PyHash] = OrderedDict(
-            [(p, key) for (p, key) in store_paths.items() if key is not None]
-        )
-        assert len(full_store_path) == len(store_paths), (full_store_path, store_paths)
-        _eval_ctx = _eval_ctx._replace(requested_paths=full_store_path)
+        _eval_ctx = _eval_ctx._replace(requested_paths=store_paths)
         present_blobs: Optional[Set[PyHash]]
         if extra_debug:
             present_blobs = set(
-                [key for key in set(full_store_path.values()) if _store.has_blob(key)]
+                [key for key in set(store_paths.values()) if _store.has_blob(key)]
             )
             _logger.debug(f"_eval_new_ctx: {len(present_blobs)} present blobs")
         else:
@@ -294,7 +290,7 @@ def _eval_new_ctx(
             _logger.debug("Stopping here")
             return None
 
-        for (p, key) in full_store_path.items():
+        for (p, key) in store_paths.items():
             _logger.debug(f"Updating path: {p} -> {key}")
 
         # If the blob for that node already exists, we have computed the path already.
@@ -330,7 +326,7 @@ def _eval_new_ctx(
         if ProcessingStage.PATH_COMMIT in stages:
             _logger.debug(f"Starting stage {ProcessingStage.PATH_COMMIT}")
             t = _time()
-            _store.sync_paths(full_store_path)
+            _store.sync_paths(store_paths)
             _add_delta(t, ProcessingStage.PATH_COMMIT)
             _logger.debug(f"Stage {ProcessingStage.PATH_COMMIT} done")
         else:

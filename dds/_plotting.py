@@ -73,7 +73,6 @@ def _structure(fis: FunctionInteractions) -> Graph:
     # All the nodes that can be evaluated independently inside a function.
     def traverse(fis_: FunctionInteractions) -> List[Node]:
         sig = fis_.fun_return_sig
-        assert sig is not None, fis_.fun_path
         if sig in head_nodes:
             return head_nodes[sig]
         # Recurse

@@ -18,7 +18,7 @@ from ._eval_ctx import EvalMainContext
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash as dds_hash
+from .fun_args import dds_hash as dds_hash, get_arg_list
 from .introspect import (
     InspectFunction,
     ExternalVarsVisitor,
@@ -125,8 +125,10 @@ def _introspect_fun(
         assert isinstance(ast_f, ast.FunctionDef), type(ast_f)
         # _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
 
+    # The names of the arguments, which are considered as variable names.
+    arg_names = [LocalVar(v) for v in get_arg_list(f)]
     fiis = InspectFunctionIndirect.inspect_fun(
-        ast_f, gctx, fun_module, fun_path, call_stack
+        ast_f, gctx, fun_module, fun_path, arg_names, call_stack
     )
     # Cache the function interactions
     gctx.cached_indirect_interactions[fun_path] = fiis
@@ -141,6 +143,7 @@ class InspectFunctionIndirect(object):
         gctx: EvalMainContext,
         mod: ModuleType,
         fun_path: CanonicalPath,
+        arg_names: List[LocalVar],
         call_stack: List[CanonicalPath],
     ) -> FunctionIndirectInteractions:
         body: Sequence[ast.AST]
@@ -151,7 +154,9 @@ class InspectFunctionIndirect(object):
         else:
             raise KSException(f"unknown ast node {type(node)}")
         dummy_arg_ctx = FunctionArgContext(OrderedDict(), None)
-        local_vars = set(InspectFunction.get_local_vars(body, dummy_arg_ctx))
+        local_vars = set(
+            InspectFunction.get_local_vars(body, dummy_arg_ctx) + arg_names
+        )
         # _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
         for n in body:
@@ -191,7 +196,8 @@ class InspectFunctionIndirect(object):
         for elem in node.body:
             if isinstance(elem, ast.FunctionDef):
                 # Parsing the function call
-                fis_ = cls.inspect_fun(elem, gctx, mod, fun_path, call_stack)
+                # TODO: this does not include the names of the args. Class parsing will break if args have the same names as packages.
+                fis_ = cls.inspect_fun(elem, gctx, mod, fun_path, [], call_stack)
                 if fis_ is not None:
                     method_fis.append(fis_)
                     # _logger.debug(f"inspect_class: {fis_}")

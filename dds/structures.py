@@ -189,8 +189,6 @@ class FunctionInteractions(NamedTuple):
     fun_path: CanonicalPath
     # The indirect dependencies from this function
     indirect_deps: List[DDSPath]
-    # The signature of the inputs
-    input_sig: PyHash
 
 
 class FunctionIndirectInteractions(NamedTuple):

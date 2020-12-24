@@ -28,6 +28,8 @@ Package = NewType("Package", str)
 class EvalMainContext(object):
     """
     The shared information across a single run.
+
+    TODO: rename RunEvalContext
     """
 
     def __init__(
