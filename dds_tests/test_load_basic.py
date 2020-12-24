@@ -75,19 +75,19 @@ def test_no_unnecessary_exec_eval():
     assert dds.eval(f2b) == "a"
     assert dds.eval(f2b) == "a"
     assert _c2b.value == 1
-#
-# @pytest.mark.usefixtures("cleandir")
-# def test_2():
-#     assert f2() == "a"
-#     assert _c2a.value == 1
-#     assert _c2b.value == 1
-#     assert f2() == "a"
-#     assert _c2a.value == 1
-#     assert _c2b.value == 1
-#     assert dds.eval(f2) == "a"
-#     assert _c2a.value == 1
-#     assert _c2b.value == 1
-#
+
+@pytest.mark.usefixtures("cleandir")
+def test_2():
+    assert f2() == "a"
+    assert _c2a.value == 1
+    assert _c2b.value == 1
+    assert f2() == "a"
+    assert _c2a.value == 1
+    assert _c2b.value == 1
+    assert dds.eval(f2) == "a"
+    assert _c2a.value == 1
+    assert _c2b.value == 1
+
 # @pytest.mark.usefixtures("cleandir")
 # def test_3():
 #     """

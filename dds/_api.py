@@ -228,9 +228,6 @@ def _eval_new_ctx(
             # Do not attempt to load the function interactions that are about to be computed.
             # They will be sorted out in the function interaction tree.
             indirect_refs = sorted([p for p in FunctionInteractionsUtils.all_indirect_deps(inters) if p not in store_paths])
-            if not indirect_refs:
-                raise KSException(f"No return signature computed but also no indirect references found. This is a "
-                                  f"programming error.")
             _logger.debug(f"_eval_new_ctx: need to resolve indirect references: {indirect_refs}")
             resolved_indirect_refs = _store.fetch_paths(indirect_refs)
             _logger.debug(f"_eval_new_ctx: fetched indirect references")
