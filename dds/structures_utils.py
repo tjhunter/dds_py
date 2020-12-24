@@ -6,9 +6,20 @@ import pathlib
 from collections import OrderedDict
 from typing import Callable, Any, Optional, List, Tuple, Set, Dict
 from typing import Union
+import logging
 
-from .structures import DDSPath, KSException, FunctionInteractions, PyHash, LocalDepPath, CanonicalPath
+from .structures import (
+    DDSPath,
+    KSException,
+    FunctionInteractions,
+    PyHash,
+    LocalDepPath,
+    CanonicalPath,
+)
 from .fun_args import dds_hash
+
+_logger = logging.getLogger(__name__)
+
 
 class DDSPathUtils(object):
     @staticmethod
@@ -59,38 +70,57 @@ class FunctionInteractionsUtils(object):
         return res
 
     @classmethod
-    def resolve_indirect_references(cls, fi: FunctionInteractions, resolved_paths: Dict[DDSPath, PyHash]) -> FunctionInteractions:
+    def resolve_indirect_references(
+        cls, fi: FunctionInteractions, resolved_paths: Dict[DDSPath, PyHash]
+    ) -> FunctionInteractions:
         # Making a copy of the dict to ensure that the transform has no visible side effect
+        _logger.debug(f"resolve_indirect_references: {resolved_paths}")
         return cls._resolve_indirect_rec(fi, dict(resolved_paths), [])
 
     @classmethod
-    def _resolve_indirect_rec(cls,
-                              fi: FunctionInteractions,
-                              resolved_paths: Dict[DDSPath, PyHash],
-                              stack: List[CanonicalPath]) -> FunctionInteractions:
+    def _resolve_indirect_rec(
+        cls,
+        fi: FunctionInteractions,
+        resolved_paths: Dict[DDSPath, PyHash],
+        stack: List[CanonicalPath],
+    ) -> FunctionInteractions:
+        _logger.debug(
+            f"resolve_indirect_references_rec: {fi.fun_path} {resolved_paths}"
+        )
         # Already resolved
         if fi.fun_return_sig is not None:
             # Check that the path is not already taken by something else
             if fi.store_path is not None:
-                if resolved_paths.get(fi.store_path) != fi.fun_return_sig:
-                    raise KSException(f"The path {fi.store_path} has already been assigned with a different signature")
+                sig = resolved_paths.get(fi.store_path)
+                if sig is not None and sig != fi.fun_return_sig:
+                    raise KSException(
+                        f"The path {fi.store_path} has already been assigned with a different signature"
+                    )
                 # Keep the current path
                 resolved_paths[fi.store_path] = fi.fun_return_sig
             return fi
         # Resolve first all the sub-calls. The ordering might not be exact, so this currently might fail.
         stack0 = stack + [fi.fun_path]
-        resolved_fi_deps = [cls._resolve_indirect_rec(fi0, resolved_paths, stack0) for fi0 in fi.parsed_body]
+        resolved_fi_deps = [
+            cls._resolve_indirect_rec(fi0, resolved_paths, stack0)
+            for fi0 in fi.parsed_body
+        ]
         # Invariant: the paths must have been seen and are already in the dictionary.
         indirect_dep_keys = [(p, resolved_paths.get(p)) for p in fi.indirect_deps]
         missing_keys = [p for (p, k) in indirect_dep_keys if not k]
         if missing_keys:
             raise KSException(f"Missing paths {missing_keys}. ")
         ideps_sig = dds_hash(indirect_dep_keys)
-        return_sig = dds_hash([fi.input_sig, fi.fun_body_sig, ideps_sig] + [i.fun_return_sig for i in resolved_fi_deps])
+        return_sig = dds_hash(
+            [fi.input_sig, fi.fun_body_sig, ideps_sig]
+            + [i.fun_return_sig for i in resolved_fi_deps]
+        )
 
         if fi.store_path is not None:
             if resolved_paths.get(fi.store_path) != fi.fun_return_sig:
-                raise KSException(f"The path {fi.store_path} has already been assigned with a different signature")
+                raise KSException(
+                    f"The path {fi.store_path} has already been assigned with a different signature"
+                )
             # Keep the current path
             resolved_paths[fi.store_path] = return_sig
 
@@ -147,12 +177,7 @@ class FunctionInteractionsUtils(object):
                     )
                     for ed in fi_.external_deps
                 ]
-                + [
-                    _PrintNode(
-                        value=f"Ind {ed}"
-                    )
-                    for ed in fi_.indirect_deps
-                ]
+                + [_PrintNode(value=f"Ind {ed}") for ed in fi_.indirect_deps]
                 + [
                     to_nodes(fi0)
                     for fi0 in fi_.parsed_body

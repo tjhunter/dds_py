@@ -11,7 +11,14 @@ import time
 from .fun_args import get_arg_ctx
 from .introspect import introspect
 from .store import LocalFileStore, Store
-from .structures import DDSPath, KSException, EvalContext, PyHash, ProcessingStage, FunctionInteractions
+from .structures import (
+    DDSPath,
+    KSException,
+    EvalContext,
+    PyHash,
+    ProcessingStage,
+    FunctionInteractions,
+)
 from .structures_utils import DDSPathUtils, FunctionInteractionsUtils
 
 _Out = TypeVar("_Out")
@@ -227,11 +234,21 @@ def _eval_new_ctx(
         if inters.fun_return_sig is None:
             # Do not attempt to load the function interactions that are about to be computed.
             # They will be sorted out in the function interaction tree.
-            indirect_refs = sorted([p for p in FunctionInteractionsUtils.all_indirect_deps(inters) if p not in store_paths])
-            _logger.debug(f"_eval_new_ctx: need to resolve indirect references: {indirect_refs}")
+            indirect_refs = sorted(
+                [
+                    p
+                    for p in FunctionInteractionsUtils.all_indirect_deps(inters)
+                    if p not in store_paths
+                ]
+            )
+            _logger.debug(
+                f"_eval_new_ctx: need to resolve indirect references: {indirect_refs}"
+            )
             resolved_indirect_refs = _store.fetch_paths(indirect_refs)
             _logger.debug(f"_eval_new_ctx: fetched indirect references")
-            inters = FunctionInteractionsUtils.resolve_indirect_references(inters, resolved_indirect_refs)
+            inters = FunctionInteractionsUtils.resolve_indirect_references(
+                inters, resolved_indirect_refs
+            )
             # Recalculate the store paths with all the functions being resolved
             store_paths = FunctionInteractionsUtils.all_store_paths(inters)
         _logger.debug(
@@ -316,7 +333,6 @@ def _eval_new_ctx(
             x = _eval_ctx.stats_time[stage]
             _logger.info(f"Stage {stage}: {x:.3f} sec {100 * x / s:.2f}%")
         _eval_ctx = None
-
 
 
 def _fetch_ipython_vars() -> Dict[str, Any]:

@@ -120,9 +120,13 @@ class LocalFileStore(Store):
                 loc = os.path.join(loc_dir, splits[-1])
                 if not os.path.exists(loc_dir):
                     _logger.debug(f"Dir {loc_dir} does not exist")
-                    raise KSException(f"Requested to load path {path} but directory {loc_dir} does not exist")
+                    raise KSException(
+                        f"Requested to load path {path} but directory {loc_dir} does not exist"
+                    )
                 if not os.path.exists(loc):
-                    raise KSException(f"Requested to load path {path} but path {loc} does not exist")
+                    raise KSException(
+                        f"Requested to load path {path} but path {loc} does not exist"
+                    )
                 rp = os.path.realpath(loc)
                 # The key is the last element of the path
                 key = PyHash(os.path.split(rp)[-1])

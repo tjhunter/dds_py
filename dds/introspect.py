@@ -468,7 +468,9 @@ class InspectFunction(object):
             return_sig = None
         else:
             # All the sub-dependencies are handled with method introspections
-            return_sig = _hash([input_sig, body_sig] + [i.fun_return_sig for i in method_fis])
+            return_sig = _hash(
+                [input_sig, body_sig] + [i.fun_return_sig for i in method_fis]
+            )
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -479,7 +481,7 @@ class InspectFunction(object):
             store_path=None,  # No store path can be associated by default to a class
             fun_path=fun_path,
             indirect_deps=[],
-            input_sig=input_sig
+            input_sig=input_sig,
         )
 
     @classmethod
@@ -521,10 +523,14 @@ class InspectFunction(object):
 
         # Only compute the hash of the function if the hash is complete (no missing indirect dependencies,
         # directly or transitively).
-        complete_deps = len(indirect_deps) == 0 and all(i.fun_return_sig is not None for i in calls_v.inters)
-        return_sig = _hash(
-            [input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters]
-        ) if complete_deps else None
+        complete_deps = len(indirect_deps) == 0 and all(
+            i.fun_return_sig is not None for i in calls_v.inters
+        )
+        return_sig = (
+            _hash([input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters])
+            if complete_deps
+            else None
+        )
 
         # Look at the annotations to see if there is a reference to a dds_function
         if isinstance(node, ast.FunctionDef):
@@ -542,7 +548,7 @@ class InspectFunction(object):
             store_path=store_path,
             fun_path=fun_path,
             indirect_deps=indirect_deps,
-            input_sig=input_sig
+            input_sig=input_sig,
         )
 
     @classmethod
@@ -739,6 +745,7 @@ def _no_dups(l: List[DDSPath]) -> List[DDSPath]:
             s.add(p)
             res.append(p)
     return res
+
 
 _whitelisted_packages: Set[Package] = {
     Package("dds"),

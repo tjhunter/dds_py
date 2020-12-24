@@ -4,6 +4,7 @@ from .utils import cleandir, Counter
 
 _ = cleandir
 
+
 @dds.dds_function("/p")
 def f():
     return "a"
@@ -25,6 +26,7 @@ _c2b = Counter()
 v2a = 1
 v2b = 1
 
+
 @dds.dds_function("/p1")
 def f2a():
     _ = v2a
@@ -44,6 +46,7 @@ def f2():
     f2b()
     return dds.load("/p1")
 
+
 @pytest.mark.usefixtures("cleandir")
 def test_exec_separately():
     _c2a.value = 0
@@ -51,12 +54,14 @@ def test_exec_separately():
     f2a()
     assert f2b() == "a"
 
+
 @pytest.mark.usefixtures("cleandir")
 def test_exec_then_eval():
     _c2a.value = 0
     _c2b.value = 0
     f2a()
     assert dds.eval(f2b) == "a"
+
 
 @pytest.mark.usefixtures("cleandir")
 def test_no_unnecessary_exec():
@@ -67,6 +72,7 @@ def test_no_unnecessary_exec():
     assert f2b() == "a"
     assert _c2b.value == 1
 
+
 @pytest.mark.usefixtures("cleandir")
 def test_no_unnecessary_exec_eval():
     _c2a.value = 0
@@ -76,11 +82,23 @@ def test_no_unnecessary_exec_eval():
     assert dds.eval(f2b) == "a"
     assert _c2b.value == 1
 
+
 @pytest.mark.usefixtures("cleandir")
-def test_2():
+def test_2_simple():
+    _c2a.value = 0
+    _c2b.value = 0
     assert f2() == "a"
     assert _c2a.value == 1
     assert _c2b.value == 1
+    assert f2() == "a"
+    assert _c2a.value == 1
+    assert _c2b.value == 1
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_2_simple_eval():
+    _c2a.value = 0
+    _c2b.value = 0
     assert f2() == "a"
     assert _c2a.value == 1
     assert _c2b.value == 1
@@ -88,18 +106,19 @@ def test_2():
     assert _c2a.value == 1
     assert _c2b.value == 1
 
-# @pytest.mark.usefixtures("cleandir")
-# def test_3():
-#     """
-#     Changes a path and expects the soft dependency to pick the update
-#     """
-#     global v2a, v2b
-#     _c2a.value = 0
-#     _c2b.value = 0
-#     assert f2() == "a"
-#     assert _c2a.value == 1
-#     assert _c2b.value == 1
-#     v2a = 2
-#     assert f2() == "a"
-#     assert _c2a.value == 2
-#     assert _c2b.value == 2
+
+@pytest.mark.usefixtures("cleandir")
+def test_3_changes():
+    """
+    Changes a path and expects the soft dependency to pick the update
+    """
+    global v2a, v2b
+    _c2a.value = 0
+    _c2b.value = 0
+    assert f2() == "a"
+    assert _c2a.value == 1
+    assert _c2b.value == 1
+    v2a = 2
+    assert f2() == "a"
+    assert _c2a.value == 2
+    assert _c2b.value == 2

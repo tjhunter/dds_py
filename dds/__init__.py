@@ -7,7 +7,7 @@ from ._annotations import dds_function
 from ._api import (
     keep as _keep,
     eval as _eval,
-load as _load,
+    load as _load,
     set_store as _set_store,
 )
 from ._version import version
@@ -187,6 +187,7 @@ def eval(
 
     """
     return _eval(fun, args, kwargs, dds_export_graph, dds_extra_debug, dds_stages)
+
 
 def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
     """
