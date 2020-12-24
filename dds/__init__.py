@@ -7,6 +7,7 @@ from ._annotations import dds_function
 from ._api import (
     keep as _keep,
     eval as _eval,
+load as _load,
     set_store as _set_store,
 )
 from ._version import version
@@ -186,6 +187,34 @@ def eval(
 
     """
     return _eval(fun, args, kwargs, dds_export_graph, dds_extra_debug, dds_stages)
+
+def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
+    """
+    Loads the content of an object that has already been stored.
+
+    This command is useful to refer to an object by its *path* instead of using the data function that was used
+    to generate it.
+
+    For example, if an object was created with a call to the *keep* function, then *load* can be used
+    to retrieve an object later:
+
+    ```py
+    _ = dds.keep("/my_path", data_function)
+    data = dds.load("/my_path")
+    ```
+
+    This function can be used standalone or within an evaluation (i.e. through using *eval()*). In that case,
+    some invariants will be checked:
+    - loops are not allowed: it is not allowed to both load and output the same path within the same evaluation
+    - the signature of the latest version of the loaded data is included in the signature calculation. If the data
+    accessed through *load* changes, this will change the signature of the function and may retrigger some evaluations.
+
+    This is useful in the case the data function that generated the data artifact in the first place is not accessible,
+    for security reasons for example. The data artifact can still be loaded with the latest version, but it may not
+    be up to date with the data function. See the user guide of dds for a more complete presentation on when
+    to use *keep*.
+    """
+    return _load(path)
 
 
 def set_store(

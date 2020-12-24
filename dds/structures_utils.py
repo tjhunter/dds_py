@@ -4,11 +4,11 @@ Utilities related to structures
 
 import pathlib
 from collections import OrderedDict
-from typing import Callable, Any, Optional, List, Tuple, Set
+from typing import Callable, Any, Optional, List, Tuple, Set, Dict
 from typing import Union
 
-from .structures import DDSPath, KSException, FunctionInteractions, PyHash, LocalDepPath
-
+from .structures import DDSPath, KSException, FunctionInteractions, PyHash, LocalDepPath, CanonicalPath
+from .fun_args import dds_hash
 
 class DDSPathUtils(object):
     @staticmethod
@@ -50,6 +50,51 @@ class FunctionInteractionsUtils(object):
             if isinstance(fi0, FunctionInteractions):
                 res += cls.all_store_paths(fi0).items()
         return OrderedDict(res)
+
+    @classmethod
+    def all_indirect_deps(cls, fis: FunctionInteractions) -> Set[DDSPath]:
+        res = set(fis.indirect_deps)
+        for fis_ in fis.parsed_body:
+            res.update(cls.all_indirect_deps(fis_))
+        return res
+
+    @classmethod
+    def resolve_indirect_references(cls, fi: FunctionInteractions, resolved_paths: Dict[DDSPath, PyHash]) -> FunctionInteractions:
+        # Making a copy of the dict to ensure that the transform has no visible side effect
+        return cls._resolve_indirect_rec(fi, dict(resolved_paths), [])
+
+    @classmethod
+    def _resolve_indirect_rec(cls,
+                              fi: FunctionInteractions,
+                              resolved_paths: Dict[DDSPath, PyHash],
+                              stack: List[CanonicalPath]) -> FunctionInteractions:
+        # Already resolved
+        if fi.fun_return_sig is not None:
+            # Check that the path is not already taken by something else
+            if fi.store_path is not None:
+                if resolved_paths.get(fi.store_path) != fi.fun_return_sig:
+                    raise KSException(f"The path {fi.store_path} has already been assigned with a different signature")
+                # Keep the current path
+                resolved_paths[fi.store_path] = fi.fun_return_sig
+            return fi
+        # Resolve first all the sub-calls. The ordering might not be exact, so this currently might fail.
+        stack0 = stack + [fi.fun_path]
+        resolved_fi_deps = [cls._resolve_indirect_rec(fi0, resolved_paths, stack0) for fi0 in fi.parsed_body]
+        # Invariant: the paths must have been seen and are already in the dictionary.
+        indirect_dep_keys = [(p, resolved_paths.get(p)) for p in fi.indirect_deps]
+        missing_keys = [p for (p, k) in indirect_dep_keys if not k]
+        if missing_keys:
+            raise KSException(f"Missing paths {missing_keys}. ")
+        ideps_sig = dds_hash(indirect_dep_keys)
+        return_sig = dds_hash([fi.input_sig, fi.fun_body_sig, ideps_sig] + [i.fun_return_sig for i in resolved_fi_deps])
+
+        if fi.store_path is not None:
+            if resolved_paths.get(fi.store_path) != fi.fun_return_sig:
+                raise KSException(f"The path {fi.store_path} has already been assigned with a different signature")
+            # Keep the current path
+            resolved_paths[fi.store_path] = return_sig
+
+        return fi._replace(parsed_body=resolved_fi_deps, fun_return_sig=return_sig)
 
     @classmethod
     def pprint_tree(
@@ -101,6 +146,12 @@ class FunctionInteractionsUtils(object):
                         value=f"Dep {ed.local_path} -> {ed.path}: {str(ed.sig)[:10]}"
                     )
                     for ed in fi_.external_deps
+                ]
+                + [
+                    _PrintNode(
+                        value=f"Ind {ed}"
+                    )
+                    for ed in fi_.indirect_deps
                 ]
                 + [
                     to_nodes(fi0)

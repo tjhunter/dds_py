@@ -11,7 +11,7 @@ import time
 from .fun_args import get_arg_ctx
 from .introspect import introspect
 from .store import LocalFileStore, Store
-from .structures import DDSPath, KSException, EvalContext, PyHash, ProcessingStage
+from .structures import DDSPath, KSException, EvalContext, PyHash, ProcessingStage, FunctionInteractions
 from .structures_utils import DDSPathUtils, FunctionInteractionsUtils
 
 _Out = TypeVar("_Out")
@@ -44,6 +44,15 @@ def eval(
     dds_stages: Optional[List[Union[str, ProcessingStage]]],
 ) -> Optional[_Out]:
     return _eval(fun, None, args, kwargs, dds_export_graph, dds_extra_debug, dds_stages)
+
+
+def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
+    path_ = DDSPathUtils.create(path)
+    key = _store.fetch_paths([path_]).get(path_)
+    if key is None:
+        raise KSException(f"The store {_store} did not return path {path_}")
+    else:
+        return _store.fetch_blob(key)
 
 
 def set_store(
@@ -214,6 +223,20 @@ def _eval_new_ctx(
         if path is not None:
             inters = inters._replace(store_path=path)
         store_paths = FunctionInteractionsUtils.all_store_paths(inters)
+        # Check that there are no indirect references to resolve:
+        if inters.fun_return_sig is None:
+            # Do not attempt to load the function interactions that are about to be computed.
+            # They will be sorted out in the function interaction tree.
+            indirect_refs = sorted([p for p in FunctionInteractionsUtils.all_indirect_deps(inters) if p not in store_paths])
+            if not indirect_refs:
+                raise KSException(f"No return signature computed but also no indirect references found. This is a "
+                                  f"programming error.")
+            _logger.debug(f"_eval_new_ctx: need to resolve indirect references: {indirect_refs}")
+            resolved_indirect_refs = _store.fetch_paths(indirect_refs)
+            _logger.debug(f"_eval_new_ctx: fetched indirect references")
+            inters = FunctionInteractionsUtils.resolve_indirect_references(inters, resolved_indirect_refs)
+            # Recalculate the store paths with all the functions being resolved
+            store_paths = FunctionInteractionsUtils.all_store_paths(inters)
         _logger.debug(
             f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context"
         )
@@ -296,6 +319,7 @@ def _eval_new_ctx(
             x = _eval_ctx.stats_time[stage]
             _logger.info(f"Stage {stage}: {x:.3f} sec {100 * x / s:.2f}%")
         _eval_ctx = None
+
 
 
 def _fetch_ipython_vars() -> Dict[str, Any]:

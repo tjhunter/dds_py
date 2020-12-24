@@ -176,7 +176,8 @@ class FunctionInteractions(NamedTuple):
     # The signature of the function (function body)
     fun_body_sig: PyHash
     # The signature of the return of the function (including the evaluated args)
-    fun_return_sig: PyHash
+    # It is optional because it may not be calculated until some indirect dependencies are resolved.
+    fun_return_sig: Optional[PyHash]
     # The external dependencies
     # TODO: merge it with parsed_body
     external_deps: List[ExternalDep]
@@ -187,3 +188,9 @@ class FunctionInteractions(NamedTuple):
     store_path: Optional[DDSPath]
     # The path of the function
     fun_path: CanonicalPath
+    # The indirect dependencies from this function
+    # The following invariant holds: fun_return_sig is None if and only if there are indirect dependencies (
+    # in this function interaction or any other parsed_body transitively)
+    indirect_deps: List[DDSPath]
+    # The signature of the inputs
+    input_sig: PyHash

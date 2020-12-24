@@ -238,14 +238,20 @@ class IntroVisitor(ast.NodeVisitor):
         self._args_hash = function_args_hash
         self._call_stack = call_stack
         self.inters: List[FunctionInteractions] = []
+        self.load_paths: List[DDSPath] = []
 
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)} {pformat(node)}")
         function_body_hash = _hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
-        function_inters_sig = _hash([fi.fun_return_sig for fi in self.inters])
-        fi = InspectFunction.inspect_call(
+        # Some calls may not have been calculated at this stage because of indirect dependencies.
+        if all([fi.fun_return_sig is not None for fi in self.inters]):
+            function_inters_sig = _hash([fi.fun_return_sig for fi in self.inters])
+        else:
+            function_inters_sig = None
+        # Check the call for dds calls or sub_calls.
+        fi_or_p = InspectFunction.inspect_call(
             node,
             self._gctx,
             self._start_mod,
@@ -255,8 +261,11 @@ class IntroVisitor(ast.NodeVisitor):
             self._function_var_names,
             self._call_stack,
         )
-        if fi is not None:
-            self.inters.append(fi)
+        if fi_or_p is not None and isinstance(fi_or_p, FunctionInteractions):
+            self.inters.append(fi_or_p)
+        # str is the underlying type of a DDSPath
+        if fi_or_p is not None and isinstance(fi_or_p, str):
+            self.load_paths.append(fi_or_p)
         self.generic_visit(node)
 
 
@@ -452,8 +461,14 @@ class InspectFunction(object):
                     # _logger.debug(f"inspect_class: {fis_}")
 
         body_sig = _hash(class_body_lines)
-        # All the sub-dependencies are handled with method introspections
-        return_sig = _hash([body_sig] + [i.fun_return_sig for i in method_fis])
+        # No input for the functions (for now, that could be refined later)
+        input_sig = _hash([])
+        # Check if any of the functions had a function interaction.
+        if any(i.fun_return_sig is None for i in method_fis):
+            return_sig = None
+        else:
+            # All the sub-dependencies are handled with method introspections
+            return_sig = _hash([input_sig, body_sig] + [i.fun_return_sig for i in method_fis])
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -463,6 +478,8 @@ class InspectFunction(object):
             parsed_body=method_fis,
             store_path=None,  # No store path can be associated by default to a class
             fun_path=fun_path,
+            indirect_deps=[],
+            input_sig=input_sig
         )
 
     @classmethod
@@ -499,9 +516,15 @@ class InspectFunction(object):
         for n in body:
             calls_v.visit(n)
         body_sig = _hash(function_body_lines)
+        # Remove duplicates but keep the order in the list of paths:
+        indirect_deps = _no_dups(calls_v.load_paths)
+
+        # Only compute the hash of the function if the hash is complete (no missing indirect dependencies,
+        # directly or transitively).
+        complete_deps = len(indirect_deps) == 0 and all(i.fun_return_sig is not None for i in calls_v.inters)
         return_sig = _hash(
             [input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters]
-        )
+        ) if complete_deps else None
 
         # Look at the annotations to see if there is a reference to a dds_function
         if isinstance(node, ast.FunctionDef):
@@ -518,6 +541,8 @@ class InspectFunction(object):
             parsed_body=calls_v.inters,
             store_path=store_path,
             fun_path=fun_path,
+            indirect_deps=indirect_deps,
+            input_sig=input_sig
         )
 
     @classmethod
@@ -557,10 +582,11 @@ class InspectFunction(object):
         mod: ModuleType,
         function_body_hash: PyHash,
         function_args_hash: PyHash,
-        function_inter_hash: PyHash,
+        # Some of the function interactions may not have been fully evaluated because of indirect dependencies.
+        function_inter_hash: Optional[PyHash],
         var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
-    ) -> Optional[FunctionInteractions]:
+    ) -> Union[FunctionInteractions, DDSPath, None]:
         # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
@@ -617,6 +643,8 @@ class InspectFunction(object):
                     f"Function: {call_fun_path}"
                     f"Call stack: {' '.join([str(p) for p in call_stack])}"
                 )
+            if function_inter_hash is None:
+                raise KSException("not implemented: function_inter_hash")
             context_sig = _hash(
                 [function_body_hash, function_args_hash, function_inter_hash]
             )
@@ -634,10 +662,16 @@ class InspectFunction(object):
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
+        if caller_fun_path == CanonicalPath(["dds", "load"]):
+            # Evaluation call: get the argument and returns the function interaction for this call.
+            if len(node.args) != 1:
+                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
+            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
+            _logger.debug(f"inspect_call:eval: store_path: {store_path}")
+            return store_path
+
         if caller_fun_path == CanonicalPath(["dds", "eval"]):
             raise NotImplementedError("eval")
-        if caller_fun_path == CanonicalPath(["dds", "load"]):
-            raise NotImplementedError("load")
 
         if caller_fun_path in call_stack:
             raise KSException(
@@ -648,6 +682,8 @@ class InspectFunction(object):
                 f"Call stack: {' '.join([str(p) for p in call_stack])}"
             )
 
+        if function_inter_hash is None:
+            raise KSException("not implemented: function_inter_hash")
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here
@@ -694,6 +730,15 @@ class InspectFunction(object):
         store_path, _ = store_z
         return DDSPathUtils.create(store_path)
 
+
+def _no_dups(l: List[DDSPath]) -> List[DDSPath]:
+    s = set()
+    res = []
+    for p in l:
+        if p not in s:
+            s.add(p)
+            res.append(p)
+    return res
 
 _whitelisted_packages: Set[Package] = {
     Package("dds"),
