@@ -53,8 +53,8 @@ class FunctionInteractionsUtils(object):
     @classmethod
     def all_store_paths(
         cls, fi: FunctionInteractions
-    ) -> "OrderedDict[DDSPath, PyHash]":
-        res: List[Tuple[DDSPath, PyHash]] = []
+    ) -> "OrderedDict[DDSPath, Optional[PyHash]]":
+        res: List[Tuple[DDSPath, Optional[PyHash]]] = []
         if fi.store_path is not None:
             res.append((fi.store_path, fi.fun_return_sig))
         for fi0 in fi.parsed_body:
@@ -111,9 +111,14 @@ class FunctionInteractionsUtils(object):
         if missing_keys:
             raise KSException(f"Missing paths {missing_keys}. ")
         ideps_sig = dds_hash(indirect_dep_keys)
+        assert all([i.fun_return_sig is not None for i in resolved_fi_deps])
         return_sig = dds_hash(
             [fi.input_sig, fi.fun_body_sig, ideps_sig]
-            + [i.fun_return_sig for i in resolved_fi_deps]
+            + [
+                i.fun_return_sig
+                for i in resolved_fi_deps
+                if i.fun_return_sig is not None
+            ]
         )
 
         if fi.store_path is not None:
@@ -184,7 +189,8 @@ class FunctionInteractionsUtils(object):
                     if isinstance(fi0, FunctionInteractions)
                 ]
             )
-            printed_nodes.add(fi_.fun_return_sig)
+            if fi_.fun_return_sig is not None:
+                printed_nodes.add(fi_.fun_return_sig)
 
             return _PrintNode(value=name, children=nodes)
 

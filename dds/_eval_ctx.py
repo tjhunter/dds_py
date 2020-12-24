@@ -14,7 +14,7 @@ from typing import (
     NewType,
 )
 
-from .fun_args import dds_hash as _hash
+from .fun_args import dds_hash as dds_hash
 from .structures import (
     PyHash,
     FunctionInteractions,
@@ -54,7 +54,7 @@ class EvalMainContext(object):
 
     def get_hash(self, path: CanonicalPath, obj: Any) -> PyHash:
         if path not in self._hashes:
-            key = _hash(obj)
+            key = dds_hash(obj)
             _logger.debug(f"Cache key: %s: %s %s", path, type(obj), key)
             self._hashes[path] = key
             return key

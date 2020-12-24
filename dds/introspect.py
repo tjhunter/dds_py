@@ -22,7 +22,7 @@ from ._global_ctx import _global_context, PythonId
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash as _hash, get_arg_ctx_ast
+from .fun_args import dds_hash as dds_hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
     FunctionArgContext,
@@ -175,7 +175,7 @@ def _introspect_fun(
     if is_lambda(f):
         # _logger.debug(f"_introspect: is_lambda: {f}")
         src = inspect.getsource(f)
-        h = _hash(src)
+        h = dds_hash(src)
         # Have a stable name for the lambda function
         fun_path = CanonicalPath(fun_path._path[:-1] + [fun_path._path[-1] + h])
         fis_key = (fun_path, arg_ctx_hash)
@@ -242,12 +242,13 @@ class IntroVisitor(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)} {pformat(node)}")
-        function_body_hash = _hash(self._body_lines[: node.lineno + 1])
+        function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
         # Some calls may not have been calculated at this stage because of indirect dependencies.
+        function_inters_sig: Optional[PyHash]
         if all([fi.fun_return_sig is not None for fi in self.inters]):
-            function_inters_sig = _hash([fi.fun_return_sig for fi in self.inters])
+            function_inters_sig = dds_hash([fi.fun_return_sig for fi in self.inters])
         else:
             function_inters_sig = None
         # Check the call for dds calls or sub_calls.
@@ -460,16 +461,17 @@ class InspectFunction(object):
                     method_fis.append(fis_)
                     # _logger.debug(f"inspect_class: {fis_}")
 
-        body_sig = _hash(class_body_lines)
+        body_sig = dds_hash(class_body_lines)
         # No input for the functions (for now, that could be refined later)
-        input_sig = _hash([])
+        input_sig = dds_hash([])
         # Check if any of the functions had a function interaction.
         if any(i.fun_return_sig is None for i in method_fis):
             return_sig = None
         else:
             # All the sub-dependencies are handled with method introspections
-            return_sig = _hash(
-                [input_sig, body_sig] + [i.fun_return_sig for i in method_fis]
+            return_sig = dds_hash(
+                [input_sig, body_sig]
+                + [i.fun_return_sig for i in method_fis if i.fun_return_sig is not None]
             )
 
         return FunctionInteractions(
@@ -511,13 +513,13 @@ class InspectFunction(object):
         # _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
         sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)  # type: ignore
-        input_sig = _hash(sig_list)
+        input_sig = dds_hash(sig_list)
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
         )
         for n in body:
             calls_v.visit(n)
-        body_sig = _hash(function_body_lines)
+        body_sig = dds_hash(function_body_lines)
         # Remove duplicates but keep the order in the list of paths:
         indirect_deps = _no_dups(calls_v.load_paths)
 
@@ -527,7 +529,14 @@ class InspectFunction(object):
             i.fun_return_sig is not None for i in calls_v.inters
         )
         return_sig = (
-            _hash([input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters])
+            dds_hash(
+                [input_sig, body_sig]
+                + [
+                    i.fun_return_sig
+                    for i in calls_v.inters
+                    if i.fun_return_sig is not None
+                ]
+            )
             if complete_deps
             else None
         )
@@ -651,7 +660,7 @@ class InspectFunction(object):
                 )
             if function_inter_hash is None:
                 raise KSException("not implemented: function_inter_hash")
-            context_sig = _hash(
+            context_sig = dds_hash(
                 [function_body_hash, function_args_hash, function_inter_hash]
             )
             new_call_stack = call_stack + [call_fun_path]
@@ -693,7 +702,7 @@ class InspectFunction(object):
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here
-        context_sig = _hash(
+        context_sig = dds_hash(
             [function_body_hash, function_args_hash, function_inter_hash]
         )
         # For now, do not look carefully at the arguments, just parse the arguments of
