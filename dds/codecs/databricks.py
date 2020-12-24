@@ -266,6 +266,29 @@ class DBFSStore(Store):
             else:
                 _logger.debug(f"Path {dds_p} is up to date (key {key})")
 
+    def fetch_paths(self, paths: List[DDSPath]) -> "OrderedDict[DDSPath, PyHash]":
+        res = OrderedDict()
+        # This is a brute force approach that copies all the data and writes extra meta data.
+        for dds_p in paths:
+            # TODO: this is the same code as sync_path, factorize
+            # Look for the redirection file associated to this file
+            # The paths are /_dds_meta/path
+            redir_p = Path("_dds_meta/").joinpath("./" + dds_p)
+            redir_path = self._physical_path(redir_p)
+            # Try to read the redirection information:
+            _logger.debug(
+                f"Attempting to read metadata: {redir_path} {redir_p} {dds_p}"
+            )
+            meta: Optional[str]
+            try:
+                meta = self._head(redir_path)
+            except Exception as e:
+                _logger.debug(f"Could not read metadata: {_pprint_exception(e)}")
+                raise e
+            redir_key = json.loads(meta)["redirection_key"]
+            res[dds_p] = PyHash(redir_key)
+        return res
+
     def _blob_path(self, key: PyHash) -> Path:
         return self._internal_dir.joinpath("blobs", key)
 

@@ -7,6 +7,7 @@ from types import ModuleType, FunctionType
 from typing import (
     Tuple,
     Callable,
+    cast,
     Any,
     Dict,
     Set,
@@ -22,7 +23,7 @@ from ._global_ctx import _global_context, PythonId
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash as _hash, get_arg_ctx_ast
+from .fun_args import dds_hash as dds_hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
     FunctionArgContext,
@@ -43,17 +44,12 @@ LocalVar = NewType("LocalVar", str)
 
 
 def introspect(
-    f: Callable[[Any], Any], start_globals: Dict[str, Any], arg_ctx: FunctionArgContext
+    f: Callable[[Any], Any], eval_ctx: EvalMainContext, arg_ctx: FunctionArgContext
 ) -> FunctionInteractions:
     # TODO: exposed the whitelist
     # TODO: add the arguments of the function
-    gctx = EvalMainContext(
-        f.__module__,  # type: ignore
-        whitelisted_packages=_whitelisted_packages,
-        start_globals=start_globals,
-    )
-    fun: FunctionType = f  # type: ignore
-    return _introspect(fun, arg_ctx, gctx, call_stack=[])
+    fun: FunctionType = cast(FunctionType, f)
+    return _introspect(fun, arg_ctx, eval_ctx, call_stack=[])
 
 
 class Functions(str, Enum):
@@ -112,7 +108,7 @@ def _introspect_class(
         for dep_path in dep_paths:
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
             obj_ids.append((dep_path, PythonId(id(obj))))
-        tup = tuple(obj_ids)
+        # tup = tuple(obj_ids)
         # _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
         # _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
@@ -175,7 +171,7 @@ def _introspect_fun(
     if is_lambda(f):
         # _logger.debug(f"_introspect: is_lambda: {f}")
         src = inspect.getsource(f)
-        h = _hash(src)
+        h = dds_hash(src)
         # Have a stable name for the lambda function
         fun_path = CanonicalPath(fun_path._path[:-1] + [fun_path._path[-1] + h])
         fis_key = (fun_path, arg_ctx_hash)
@@ -205,6 +201,9 @@ def _introspect_fun(
     )
     # Cache the function interactions
     gctx.cached_fun_interactions[fis_key] = fis
+    # Register the path as a potential link to dependencies
+    if fis.store_path:
+        gctx.resolved_references[fis.store_path] = fis.fun_return_sig
     # cache the function interactions in the global context
     if not is_lambda(f) and _global_context is not None:
         dep_paths = sorted(_all_paths(fis))
@@ -214,7 +213,7 @@ def _introspect_fun(
         for dep_path in dep_paths:
             obj = ObjectRetrieval.retrieve_object_global(dep_path, gctx)
             obj_ids.append((dep_path, PythonId(id(obj))))
-        tup = tuple(obj_ids)
+        # tup = tuple(obj_ids)
         # _logger.debug(f"cached_fun_interactions: {(fun_path, arg_ctx_hash, tup)}")
         # _global_context.cached_fun_interactions[(fun_path, arg_ctx_hash, tup)] = fis
     return fis
@@ -238,14 +237,16 @@ class IntroVisitor(ast.NodeVisitor):
         self._args_hash = function_args_hash
         self._call_stack = call_stack
         self.inters: List[FunctionInteractions] = []
+        self.load_paths: List[DDSPath] = []
 
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)} {pformat(node)}")
-        function_body_hash = _hash(self._body_lines[: node.lineno + 1])
+        function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
-        function_inters_sig = _hash([fi.fun_return_sig for fi in self.inters])
-        fi = InspectFunction.inspect_call(
+        function_inters_sig = dds_hash([fi.fun_return_sig for fi in self.inters])
+        # Check the call for dds calls or sub_calls.
+        fi_or_p = InspectFunction.inspect_call(
             node,
             self._gctx,
             self._start_mod,
@@ -255,8 +256,11 @@ class IntroVisitor(ast.NodeVisitor):
             self._function_var_names,
             self._call_stack,
         )
-        if fi is not None:
-            self.inters.append(fi)
+        if fi_or_p is not None and isinstance(fi_or_p, FunctionInteractions):
+            self.inters.append(fi_or_p)
+        # str is the underlying type of a DDSPath
+        if fi_or_p is not None and isinstance(fi_or_p, str):
+            self.load_paths.append(fi_or_p)
         self.generic_visit(node)
 
 
@@ -451,9 +455,9 @@ class InspectFunction(object):
                     method_fis.append(fis_)
                     # _logger.debug(f"inspect_class: {fis_}")
 
-        body_sig = _hash(class_body_lines)
+        body_sig = dds_hash(class_body_lines)
         # All the sub-dependencies are handled with method introspections
-        return_sig = _hash([body_sig] + [i.fun_return_sig for i in method_fis])
+        return_sig = dds_hash([body_sig] + [i.fun_return_sig for i in method_fis])
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -463,6 +467,7 @@ class InspectFunction(object):
             parsed_body=method_fis,
             store_path=None,  # No store path can be associated by default to a class
             fun_path=fun_path,
+            indirect_deps=[],
         )
 
     @classmethod
@@ -492,15 +497,29 @@ class InspectFunction(object):
         # _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
         sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)  # type: ignore
-        input_sig = _hash(sig_list)
+        input_sig = dds_hash(sig_list)
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
         )
         for n in body:
             calls_v.visit(n)
-        body_sig = _hash(function_body_lines)
-        return_sig = _hash(
-            [input_sig, body_sig] + [i.fun_return_sig for i in calls_v.inters]
+        body_sig = dds_hash(function_body_lines)
+        # Remove duplicates but keep the order in the list of paths:
+        indirect_deps = _no_dups(calls_v.load_paths)
+
+        def fetch(dep: DDSPath) -> PyHash:
+            key = gctx.resolved_references.get(dep)
+            assert (
+                key is not None
+            ), f"Missing dep {dep} for {fun_path}: {call_stack} {gctx.resolved_references}"
+            return key
+
+        indirect_deps_sigs = [fetch(dep) for dep in indirect_deps]
+
+        return_sig = dds_hash(
+            [input_sig, body_sig]
+            + [i.fun_return_sig for i in calls_v.inters]
+            + indirect_deps_sigs
         )
 
         # Look at the annotations to see if there is a reference to a dds_function
@@ -518,6 +537,7 @@ class InspectFunction(object):
             parsed_body=calls_v.inters,
             store_path=store_path,
             fun_path=fun_path,
+            indirect_deps=indirect_deps,
         )
 
     @classmethod
@@ -560,7 +580,7 @@ class InspectFunction(object):
         function_inter_hash: PyHash,
         var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
-    ) -> Optional[FunctionInteractions]:
+    ) -> Union[FunctionInteractions, DDSPath, None]:
         # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
@@ -617,7 +637,9 @@ class InspectFunction(object):
                     f"Function: {call_fun_path}"
                     f"Call stack: {' '.join([str(p) for p in call_stack])}"
                 )
-            context_sig = _hash(
+            if function_inter_hash is None:
+                raise KSException("not implemented: function_inter_hash")
+            context_sig = dds_hash(
                 [function_body_hash, function_args_hash, function_inter_hash]
             )
             new_call_stack = call_stack + [call_fun_path]
@@ -634,10 +656,16 @@ class InspectFunction(object):
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
+        if caller_fun_path == CanonicalPath(["dds", "load"]):
+            # Evaluation call: get the argument and returns the function interaction for this call.
+            if len(node.args) != 1:
+                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
+            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
+            _logger.debug(f"inspect_call:eval: store_path: {store_path}")
+            return store_path
+
         if caller_fun_path == CanonicalPath(["dds", "eval"]):
             raise NotImplementedError("eval")
-        if caller_fun_path == CanonicalPath(["dds", "load"]):
-            raise NotImplementedError("load")
 
         if caller_fun_path in call_stack:
             raise KSException(
@@ -651,7 +679,7 @@ class InspectFunction(object):
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here
-        context_sig = _hash(
+        context_sig = dds_hash(
             [function_body_hash, function_args_hash, function_inter_hash]
         )
         # For now, do not look carefully at the arguments, just parse the arguments of
@@ -693,6 +721,16 @@ class InspectFunction(object):
             raise NotImplementedError(f"Invalid store_z: {store_path_local_path} {mod}")
         store_path, _ = store_z
         return DDSPathUtils.create(store_path)
+
+
+def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
+    s = set()
+    res = []
+    for p in paths:
+        if p not in s:
+            s.add(p)
+            res.append(p)
+    return res
 
 
 _whitelisted_packages: Set[Package] = {
