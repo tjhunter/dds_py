@@ -38,7 +38,7 @@ Here is the Hello world example (using type annotations for clarity)
 import dds
 import requests 
 
-@dds.dds_function("/hello_data")
+@dds.data_function("/hello_data")
 def data() -> str:
   url = "https://gist.githubusercontent.com/bigsnarfdude/515849391ad37fe593997fe0db98afaa/raw/f663366d17b7d05de61a145bbce7b2b961b3b07f/weather.csv"
   return requests.get(url=url, verify=False).content.decode("utf-8")

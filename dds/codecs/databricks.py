@@ -29,7 +29,7 @@ def displayGraph(f: FunctionType) -> None:
     Example:
 
     ```py
-    @dds.dds_function("/my_fun")
+    @dds.data_function("/my_fun")
     def my_fun(): return 1
 
     displayGraph(my_fun)
