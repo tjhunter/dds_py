@@ -21,13 +21,11 @@ black==19.10b0
 mkdocs
 mkdocs-jupyter
 mkdocstrings
+jupyter
 
 # Test
 pytest
 pytest-cov
 scikit-learn
 requests
-#openpyxl
-#xlrd
-#plotly>=4.8
 
