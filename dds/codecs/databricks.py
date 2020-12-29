@@ -2,29 +2,47 @@
 Databricks-specific storage implementation. It is based on the dbutils object
 which has to be provided at runtime.
 """
-import os
 import json
-import pickle
 import logging
+import os
+import pickle
 import tempfile
-from pathlib import Path
-from typing import Any, Optional, List, Type
-from types import FunctionType
 from collections import OrderedDict
 from enum import Enum
-
-import pyspark.sql  # type:ignore
-from pyspark.sql import DataFrame
+from pathlib import Path
+from types import FunctionType
+from typing import Any, Optional, List
 
 from ..codec import CodecRegistry
 from ..store import Store
 from ..structures import CodecProtocol, ProtocolRef
-from ..structures import PyHash, DDSPath, GenericLocation
+from ..structures import PyHash, DDSPath, GenericLocation, SupportedType as ST
+from ..structures_utils import SupportedTypeUtils as STU
 
 _logger = logging.getLogger(__name__)
 
 
 def displayGraph(f: FunctionType) -> None:
+    """
+    Displays the graph of computation of a data function in a Databricks cell.
+
+    Example:
+
+    ```py
+    @dds.dds_function("/my_fun")
+    def my_fun(): return 1
+
+    displayGraph(my_fun)
+    ```
+
+    Arguments:
+        f: any function that is supported by the [[dds.eval]] function.
+
+    Limitations:
+    - The browser must support SVG format. Some browser such as Chrome or Edge have limitations around this support.
+
+    Recommended browser: Firefox.
+    """
     name = str(id(f))
     from .._api import eval as dds_eval, _fetch_ipython_vars
 
@@ -62,16 +80,19 @@ class PySparkDatabricksCodec(CodecProtocol):
     def ref(self):
         return ProtocolRef("dbfs.pyspark")
 
-    # TODO: just use strings, it will be faster
     def handled_types(self):
-        return [pyspark.sql.DataFrame]
+        return [ST("pyspark.sql.DataFrame")]
 
-    def serialize_into(self, blob: DataFrame, loc: GenericLocation) -> None:
+    def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
+        from pyspark.sql import DataFrame  # type: ignore
+
         assert isinstance(blob, DataFrame), type(blob)
         blob.write.parquet(loc)
         _logger.debug(f"Committed dataframe to parquet: {loc}")
 
-    def deserialize_from(self, loc: GenericLocation) -> DataFrame:
+    def deserialize_from(self, loc: GenericLocation) -> Any:
+        import pyspark  # type: ignore
+
         session = pyspark.sql.SparkSession.getActiveSession()
         _logger.debug(f"Reading parquet from loc {loc} using session {session}")
         df = session.read.parquet(loc)
@@ -90,8 +111,8 @@ class BytesDBFSCodec(CodecProtocol):
     def ref(self):
         return ProtocolRef("dbfs.bytes")
 
-    def handled_types(self):
-        return [bytes]
+    def handled_types(self) -> List[ST]:
+        return [STU.from_type(bytes)]
 
     def serialize_into(self, blob: bytes, loc: GenericLocation) -> None:
         with tempfile.NamedTemporaryFile() as f:
@@ -129,8 +150,8 @@ class StringDBFSCodec(CodecProtocol):
     def ref(self) -> ProtocolRef:
         return ProtocolRef("dbfs.string")
 
-    def handled_types(self) -> List[Type[Any]]:
-        return [str]
+    def handled_types(self) -> List[ST]:
+        return [STU.from_type(str)]
 
     def serialize_into(self, blob: str, loc: GenericLocation) -> None:
         self._dbutils.fs.put(loc, blob, overwrite=True)
@@ -146,11 +167,10 @@ class PickleDBFSCodec(CodecProtocol):
     def ref(self) -> ProtocolRef:
         return ProtocolRef("dbfs.pickle")
 
-    def handled_types(self) -> List[Type[Any]]:
-        return [object, type(None)]
+    def handled_types(self) -> List[ST]:
+        return [STU.from_type(o) for o in [type(object), type(None)]]
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
-
         self._codec.serialize_into(pickle.dumps(blob), loc)
 
     def deserialize_from(self, loc: GenericLocation) -> Any:
@@ -189,7 +209,7 @@ class DBFSStore(Store):
     def store_blob(
         self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
     ) -> None:
-        protocol = self._registry.get_codec(type(blob), codec)
+        protocol = self._registry.get_codec(STU.from_type(type(blob)), codec)
         p = self._blob_path(key)
         protocol.serialize_into(blob, GenericLocation(str(p)))
         meta_p = self._blob_meta_path(key)
@@ -246,6 +266,8 @@ class DBFSStore(Store):
                     if blob_meta.get("protocol") == "dbfs.pyspark":
                         _logger.debug(f"Using pyspark to copy {blob_path}")
                         df = self.fetch_blob(key)
+                        from pyspark.sql import DataFrame
+
                         assert isinstance(df, DataFrame), (type(df), key, blob_path)
                         self._dbutils.fs.rm(str(obj_path), recurse=True)
                         df.write.parquet(str(obj_path))

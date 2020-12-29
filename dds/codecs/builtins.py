@@ -2,14 +2,16 @@
 The string protocol.
 """
 import pickle
-from typing import Any
+from typing import Any, List
 
 from ..structures import (
     CodecProtocol,
     ProtocolRef,
     GenericLocation,
     CodecBackend,
+    SupportedType,
 )
+from ..structures_utils import SupportedTypeUtils as STU
 
 Local = CodecBackend("Local")
 
@@ -18,8 +20,8 @@ class StringLocalCodec(CodecProtocol):
     def ref(self):
         return ProtocolRef("default.string")
 
-    def handled_types(self):
-        return [str]
+    def handled_types(self) -> List[SupportedType]:
+        return [STU.from_type(str)]
 
     def serialize_into(self, blob: str, loc: GenericLocation) -> None:
         assert isinstance(blob, str)
@@ -35,8 +37,8 @@ class PickleLocalCodec(CodecProtocol):
     def ref(self):
         return ProtocolRef("builtins.pickle")
 
-    def handled_types(self):
-        return [object, type(None)]
+    def handled_types(self) -> List[SupportedType]:
+        return [STU.from_type(o) for o in [object, type(None)]]
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         with open(loc, "wb") as f:

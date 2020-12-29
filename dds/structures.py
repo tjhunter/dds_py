@@ -62,12 +62,14 @@ GenericLocation = NewType("GenericLocation", str)
 
 CodecBackend = NewType("CodecBackend", str)
 
+SupportedType = NewType("SupportedType", str)
+
 
 class CodecProtocol(object):
     def ref(self) -> ProtocolRef:
         pass
 
-    def handled_types(self) -> List[Type[Any]]:
+    def handled_types(self) -> List[SupportedType]:
         """ The list of types that this codec can handle """
         pass
 

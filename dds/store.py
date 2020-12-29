@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 from .codec import codec_registry
 from .structures import PyHash, DDSPath, KSException, GenericLocation, ProtocolRef
+from .structures_utils import SupportedTypeUtils as STU
 
 _logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ class LocalFileStore(Store):
     def store_blob(
         self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
     ) -> None:
-        protocol = codec_registry().get_codec(type(blob), codec)
+        protocol = codec_registry().get_codec(STU.from_type(type(blob)), codec)
         p = os.path.join(self._root, "blobs", key)
         protocol.serialize_into(blob, GenericLocation(p))
         meta_p = os.path.join(self._root, "blobs", key + ".meta")
