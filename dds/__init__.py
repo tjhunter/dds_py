@@ -3,7 +3,7 @@ from types import ModuleType
 from typing import Tuple, Dict
 from typing import TypeVar, Callable, Any, Optional, Union, List
 
-from ._annotations import dds_function
+from ._annotations import dds_function, data_function
 from ._api import (
     keep as _keep,
     eval as _eval,
@@ -23,6 +23,7 @@ __all__ = [
     "set_store",
     "__version__",
     "dds_function",
+    "data_function",
 ]
 
 __version__ = version
