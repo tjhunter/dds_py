@@ -199,7 +199,12 @@ class ObjectRetrieval(object):
         z = cls.retrieve_object(dep_path, mod, gctx)
         if z is None:
             raise KSException(
-                f"Cannot process path {path}: object cannot be retrieved. dep_path: {dep_path} module: {mod}"
+                f"Cannot load path {path}: this object cannot be retrieved, however "
+                f"the module '{mod_name}' exists. The typical cause of the issue is "
+                f"that the module {mod_name} has not been whitelisted for use by DDS. Use the "
+                f"function 'dds.accept_module' to whitelist {mod_name} or one of its "
+                f"submodules."
+                f" dep_path: {dep_path} module: {mod}"
             )
         obj, _ = z
         gctx.cached_objects[obj_key] = (obj, path)
