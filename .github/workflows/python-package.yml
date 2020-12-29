@@ -44,4 +44,5 @@ jobs:
         pytest -o log_cli=true -o log_cli_level=debug
     - name: Run the documentation notebooks
       run: |
+        jupyter kernelspec list
         PYTHONPATH=$(PWD) jupyter nbconvert --to rst --execute doc_source/plotting.ipynb
