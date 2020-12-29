@@ -5,7 +5,7 @@ from .utils import cleandir, Counter
 _ = cleandir
 
 
-@dds.dds_function("/p")
+@dds.data_function("/p")
 def f():
     return "a"
 
@@ -27,13 +27,13 @@ v2a = 1
 v2b = 1
 
 
-@dds.dds_function("/p1")
+@dds.data_function("/p1")
 def f2a():
     _c2a.increment()
     return "a" + str(v2a)
 
 
-@dds.dds_function("/p2")
+@dds.data_function("/p2")
 def f2b():
     _c2b.increment()
     return dds.load("/p1") + str(v2b)

@@ -11,7 +11,7 @@ def f(b):
     return f(True)
 
 
-@dds.dds_function("/path")
+@dds.data_function("/path")
 def fun1():
     return f(False)
 
