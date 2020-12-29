@@ -67,7 +67,7 @@ def keep(
 
         kwargs: *(keyworded arguments are currently unsupported)*
 
-        return: the value that the function would produce for these arguments
+    return: the value that the function would produce for these arguments
 
 
     ### Accepted functions.
