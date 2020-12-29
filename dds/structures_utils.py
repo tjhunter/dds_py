@@ -15,6 +15,7 @@ from .structures import (
     PyHash,
     LocalDepPath,
     FunctionIndirectInteractions,
+    SupportedType,
 )
 
 _logger = logging.getLogger(__name__)
@@ -166,3 +167,9 @@ class FunctionIndirectInteractionUtils(object):
             if isinstance(fis0, FunctionIndirectInteractions):
                 res.update(list(FunctionIndirectInteractionUtils.all_stores(fis0)))
         return res
+
+
+class SupportedTypeUtils(object):
+    @staticmethod
+    def from_type(t: type) -> SupportedType:
+        return SupportedType(str(t.__name__))

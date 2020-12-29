@@ -1,8 +1,8 @@
 from collections import OrderedDict
+from enum import Enum
 from functools import total_ordering
 from pathlib import PurePosixPath
-from typing import Any, NewType, NamedTuple, Optional, Dict, List, Type, Tuple
-from enum import Enum
+from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
 
 
 class ProcessingStage(str, Enum):
@@ -62,12 +62,14 @@ GenericLocation = NewType("GenericLocation", str)
 
 CodecBackend = NewType("CodecBackend", str)
 
+SupportedType = NewType("SupportedType", str)
+
 
 class CodecProtocol(object):
     def ref(self) -> ProtocolRef:
         pass
 
-    def handled_types(self) -> List[Type[Any]]:
+    def handled_types(self) -> List[SupportedType]:
         """ The list of types that this codec can handle """
         pass
 
