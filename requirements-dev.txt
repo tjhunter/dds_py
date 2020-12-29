@@ -21,6 +21,7 @@ black==19.10b0
 mkdocs
 mkdocs-jupyter
 mkdocstrings
+jupyter
 
 # Test
 pytest
