@@ -38,7 +38,7 @@ class PickleLocalCodec(CodecProtocol):
         return ProtocolRef("builtins.pickle")
 
     def handled_types(self) -> List[SupportedType]:
-        return [STU.from_type(o) for o in [object, type(None)]]
+        return [STU.from_type(type(None)), SupportedType("object")]
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         with open(loc, "wb") as f:
