@@ -47,6 +47,4 @@ jobs:
     - name: Run the documentation notebooks
       run: |
         jupyter kernelspec list
-        PYTHONPATH=$(pwd) jupyter nbconvert --to rst --execute  --ExecutePreprocessor.kernel_name=python  doc_source/plotting.ipynb
-        PYTHONPATH=$(pwd) jupyter nbconvert --to rst --execute  --ExecutePreprocessor.kernel_name=python  doc_source/test_sklearn.ipynb
-        PYTHONPATH=$(pwd) jupyter nbconvert --to rst --execute  --ExecutePreprocessor.kernel_name=python  doc_source/tutorial.ipynb
+        PYTHONPATH=$(pwd) jupyter nbconvert --to python --execute  --ExecutePreprocessor.kernel_name=python  doc_source/*.ipynb
