@@ -28,7 +28,4 @@ pytest
 pytest-cov
 scikit-learn
 requests
-#openpyxl
-#xlrd
-#plotly>=4.8
 
