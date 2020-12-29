@@ -1,6 +1,6 @@
 from dds.structures import KSException
 import pytest
-from .utils import cleandir, unreachable
+from .utils import cleandir
 from dds_tests.unauthorized_mod.unauthorized import my_fun
 
 _ = cleandir
