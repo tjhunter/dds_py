@@ -57,7 +57,7 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#dds._annotations">dds._annotations</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations.dds_function">dds_function()</a>
+    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations.data_function">data_function()</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__">dds.__init__</a>
     </li>
@@ -90,6 +90,10 @@
                 </ul>
                 <ul>
                     <li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../test_sklearn/">Tutorial - scikit-learn</a>
                     </li>
                 </ul>
       </div>
@@ -132,10 +136,10 @@
 <div class="doc doc-contents first">
 <div class="doc doc-children">
 <div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds._annotations.dds_function">
+<h2 class="doc doc-heading" id="dds._annotations.data_function">
 
         <code class="highlight language-python">
-dds_function<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
+data_function<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
 
 
       </h2>
@@ -143,7 +147,7 @@ dds_function<span class="p">(</span><span class="n">path</span><span class="p">)
 <p>Annotation-style for <code>dds.keep</code>.</p>
 <p>This is useful for functions with no arguments that should be cached as DDS functions.</p>
 <p>The following definitions are equivalent:</p>
-<pre><code class="language-py">dds.dds_function("/function")
+<pre><code class="language-py">dds.data_function("/function")
 def function(): return 1
 </code></pre>
 <pre><code class="language-py">def _function(): return 1
@@ -154,9 +158,7 @@ def function():
 <details class="quote">
           <summary>Source code in <code>dds/_annotations.py</code></summary>
           <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">dds_function</span><span class="p">(</span>
-    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T_CallableOrType</span><span class="p">],</span> <span class="n">T_CallableOrType</span><span class="p">]:</span>
+<pre><span></span><code><span class="k">def</span> <span class="nf">data_function</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">F</span><span class="p">],</span> <span class="n">F</span><span class="p">]:</span>
     <span class="sd">"""</span>
 <span class="sd">    Annotation-style for `dds.keep`.</span>
 
@@ -165,7 +167,7 @@ def function():
 <span class="sd">    The following definitions are equivalent:</span>
 
 <span class="sd">    ```py</span>
-<span class="sd">    dds.dds_function("/function")</span>
+<span class="sd">    dds.data_function("/function")</span>
 <span class="sd">    def function(): return 1</span>
 <span class="sd">    ```</span>
 
@@ -398,16 +400,9 @@ or being an absolute path if a pathlib's <code>Path</code> object).</p>
 </td>
 <td><code>{}</code></td>
 </tr>
-<tr>
-<td><code>return</code></td>
-<td><code></code></td>
-<td>
-<p>the value that the function would produce for these arguments</p>
-</td>
-<td><em>required</em></td>
-</tr>
 </tbody>
 </table>
+<p>return: the value that the function would produce for these arguments</p>
 <h3 id="accepted-functions">Accepted functions.</h3>
 <p>In general, the functions that should be provided are <em>total, non-recursive, deterministic and referentially
  transparent</em>.</p>
@@ -491,7 +486,7 @@ only be evaluated once.</p>
 
 <span class="sd">        kwargs: *(keyworded arguments are currently unsupported)*</span>
 
-<span class="sd">        return: the value that the function would produce for these arguments</span>
+<span class="sd">    return: the value that the function would produce for these arguments</span>
 
 
 <span class="sd">    ### Accepted functions.</span>

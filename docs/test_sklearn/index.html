@@ -7,7 +7,7 @@
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="../img/favicon.ico" rel="shortcut icon"/>
-<title>Test sklearn - DDS documentation</title>
+<title>Tutorial - scikit-learn - DDS documentation</title>
 <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
 <link href="../css/theme.css" rel="stylesheet"/>
 <link href="../css/theme_extra.css" rel="stylesheet"/>
@@ -15,7 +15,7 @@
 <link href="../extra.css" rel="stylesheet"/>
 <script>
     // Current page data
-    var mkdocs_page_name = "Test sklearn";
+    var mkdocs_page_name = "Tutorial - scikit-learn";
     var mkdocs_page_input_path = "test_sklearn.ipynb";
     var mkdocs_page_url = null;
   </script>
@@ -57,6 +57,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
 </li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - scikit-learn</a>
+</li>
+</ul>
 </div>
 </div>
 </nav>
@@ -70,7 +74,7 @@
 <div aria-label="breadcrumbs navigation" role="navigation">
 <ul class="wy-breadcrumbs">
 <li><a href="..">Docs</a> »</li>
-<li>Test sklearn</li>
+<li>Tutorial - scikit-learn</li>
 <li class="wy-breadcrumbs-aside">
 </li>
 </ul>
@@ -80,8 +84,13 @@
 <div class="section">
 <div class="notebook-content">
 <style type="text/css">
-    .highlight .hll { background-color: var(--jp-cell-editor-active-background) }
-.highlight  { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
+    pre { line-height: 125%; }
+td.linenos pre { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
+td.linenos pre.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.highlight .hll { background-color: var(--jp-cell-editor-active-background) }
+.highlight { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
 .highlight .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
 .highlight .err { color: var(--jp-mirror-editor-error-color) } /* Error */
 .highlight .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
@@ -14455,7 +14464,8 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     </script>
 <!-- End of mathjax configuration -->
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>This tutorial is an adaptation of the Machine Learning tutorial from Elite Data Science. The original tutorial is here:</p>
 <p><a href="https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn">https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn</a></p>
 <p>Let us start with a few imports</p>
@@ -14463,6 +14473,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span>
@@ -14484,12 +14495,14 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>We now add the import to the <code>dds</code> package. By default, the data will be stored in the temporary directory</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
@@ -14499,22 +14512,25 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>The two internal directories (data and internal) are now there</p>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Let's start with a familiar problem of accessing data from the internet. This piece of code will download a dataset, but with the additional twist that the dataset will be cached onto the local machine.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">path_model</span> <span class="o">=</span> <span class="s2">"/wine-quality/my_model"</span>
 <span class="n">path_model_stats</span> <span class="o">=</span> <span class="s2">"/wine-quality/my_model_stats.json"</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/wine-quality/raw"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/wine-quality/raw"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">data</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in _load_data ***"</span><span class="p">)</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/zygmuntz/wine-quality/master/winequality/winequality-red.csv"</span>
@@ -14525,9 +14541,10 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">"/tmp/2.png"</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
@@ -14538,9 +14555,21 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
+<img src="data:image/png;base64,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
+"/>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">data</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -14549,9 +14578,100 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>fixed acidity</th>
+<th>volatile acidity</th>
+<th>citric acid</th>
+<th>residual sugar</th>
+<th>chlorides</th>
+<th>free sulfur dioxide</th>
+<th>total sulfur dioxide</th>
+<th>density</th>
+<th>pH</th>
+<th>sulphates</th>
+<th>alcohol</th>
+<th>quality</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>7.4</td>
+<td>0.70</td>
+<td>0.00</td>
+<td>1.9</td>
+<td>0.076</td>
+<td>11.0</td>
+<td>34.0</td>
+<td>0.9978</td>
+<td>3.51</td>
+<td>0.56</td>
+<td>9.4</td>
+<td>5</td>
+</tr>
+<tr>
+<th>1</th>
+<td>7.8</td>
+<td>0.88</td>
+<td>0.00</td>
+<td>2.6</td>
+<td>0.098</td>
+<td>25.0</td>
+<td>67.0</td>
+<td>0.9968</td>
+<td>3.20</td>
+<td>0.68</td>
+<td>9.8</td>
+<td>5</td>
+</tr>
+<tr>
+<th>2</th>
+<td>7.8</td>
+<td>0.76</td>
+<td>0.04</td>
+<td>2.3</td>
+<td>0.092</td>
+<td>15.0</td>
+<td>54.0</td>
+<td>0.9970</td>
+<td>3.26</td>
+<td>0.65</td>
+<td>9.8</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">):</span>
@@ -14571,7 +14691,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in model_stats ***"</span><span class="p">)</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
-<span class="c1">#         "r2_score": r2_score(y_test, pred),</span>
+<span class="c1">#         "r2_score": r2_score(y_test, pred), # uncomment me, see what happens</span>
         <span class="s2">"mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
     <span class="p">})</span>
     
@@ -14589,72 +14709,96 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     <span class="nb">print</span><span class="p">(</span><span class="s2">"*** done ***"</span><span class="p">)</span>
 
 
-<span class="c1"># dds.eval(pipeline, dds_export_graph="1.png")</span>
+<span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>*** done ***
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
-<span class="c1"># cat /tmp/data/wine-quality/my_model_stats.json</span>
+<span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">wine</span><span class="o">-</span><span class="n">quality</span><span class="o">/</span><span class="n">my_model_stats</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>{"mse": 0.33930333333333335}</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/p1"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f1</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> 
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">model_stats</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in model_stats ***"</span><span class="p">)</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
+        <span class="s2">"r2_score"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span> <span class="c1"># now it was uncommented</span>
+        <span class="s2">"mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+    <span class="p">})</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/p2"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f2</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">f1</span><span class="p">()</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/p3"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f3</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">f1</span><span class="p">()</span> <span class="o">+</span> <span class="n">f2</span><span class="p">()</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/p4"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f4</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span>
-
-
-<span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
-    <span class="n">f4</span><span class="p">()</span>
-    <span class="n">f3</span><span class="p">()</span>
-
-<span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">"/tmp/2.png"</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="n">Image</span><span class="p">(</span><span class="s2">"/tmp/2.png"</span><span class="p">)</span>
+<span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>*** done ***
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">f</span><span class="p">()</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
+<span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">wine</span><span class="o">-</span><span class="n">quality</span><span class="o">/</span><span class="n">my_model_stats</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span>
-</pre></div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>{"r2_score": 0.47427378614660387, "mse": 0.33930333333333335}</pre>
 </div>
 </div>
 </div>
@@ -14665,6 +14809,9 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 <footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a class="btn btn-neutral" href="../plotting/" title="Tutorial - plotting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+</div>
 <hr/>
 <div role="contentinfo">
 <!-- Copyright etc -->
@@ -14678,6 +14825,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 <div aria-label="versions" class="rst-versions" role="note">
 <span class="rst-current-version" data-toggle="rst-current-version">
+<span><a href="../plotting/" style="color: #fcfcfc;">« Previous</a></span>
 </span>
 </div>
 <script>var base_url = '..';</script>
