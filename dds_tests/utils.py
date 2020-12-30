@@ -24,7 +24,7 @@ def _add_tests():
     ]
     _logger.info(str(test_mods))
     for tm in test_mods:
-        dds.whitelist_module(tm)
+        dds.accept_module(tm)
 
 
 _add_tests()
