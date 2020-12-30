@@ -59,6 +59,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
 </li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../test_sklearn/">Tutorial - scikit-learn</a>
+</li>
+</ul>
 </div>
 </div>
 </nav>
@@ -82,8 +86,13 @@
 <div class="section">
 <div class="notebook-content">
 <style type="text/css">
-    .highlight .hll { background-color: var(--jp-cell-editor-active-background) }
-.highlight  { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
+    pre { line-height: 125%; }
+td.linenos pre { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
+td.linenos pre.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.highlight .hll { background-color: var(--jp-cell-editor-active-background) }
+.highlight { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
 .highlight .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
 .highlight .err { color: var(--jp-mirror-editor-error-color) } /* Error */
 .highlight .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
@@ -14457,20 +14466,8 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     </script>
 <!-- End of mathjax configuration -->
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># import logging</span>
-<span class="c1"># logging.basicConfig(level=logging.DEBUG)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="tutorial">Tutorial<a class="anchor-link" href="#Tutorial">¶</a></h2><p>The <code>dds</code> package solves the data integration problem in data science codebases. By using the <code>dds</code> package, you can safely assume that:</p>
 <ul>
 <li>data consumed or produced is up to date with the current code</li>
@@ -14488,11 +14485,12 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/hello_world"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/hello_world"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">hello_world</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"hello_world() has been called"</span><span class="p">)</span>
     <span class="k">return</span> <span class="s2">"Hello, world"</span>
@@ -14506,12 +14504,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>hello_world() has been called
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[1]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
@@ -14519,7 +14512,8 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>When we called the function, a few things happened:</p>
 <ul>
 <li><code>dds</code> calculated a unique fingerprint for this function and checked if a blob was already associated for this fingerprint in its storage</li>
@@ -14531,6 +14525,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">hello_world</span>
@@ -14542,6 +14537,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Hello, world</pre>
 </div>
@@ -14549,15 +14545,17 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>But that file is just a link to the unique signature associated with this piece of code:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">readlink</span> <span class="o">-</span><span class="n">f</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">hello_world</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">readlink</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">hello_world</span>
 </pre></div>
 </div>
 </div>
@@ -14566,20 +14564,23 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>/tmp/dds/internal/blobs/7f96a7c7b03977a1b296381ce9ecdcd6a378e6f891ef7da1433d2bfb1f747f8c
+<pre>/tmp/dds/internal/blobs/a4a7492042d58fe1746b5c006ee5e2fb5f267d213698240016b855572b0272c3
 </pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>This function prints a message whenever it executes. Now, if we try to run it again, it will actually not run, because the code has not changed.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">hello_world</span><span class="p">()</span>
@@ -14591,6 +14592,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
@@ -14598,15 +14600,17 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>In fact, because <code>dds</code> looks at the source code, if you redefine the function with the same content, it still does not recompute:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/hello_world"</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/hello_world"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">hello_world</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"hello_world() has been called"</span><span class="p">)</span>
     <span class="k">return</span> <span class="s2">"Hello, world"</span>
@@ -14620,6 +14624,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
@@ -14627,17 +14632,19 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Functions can include arbitrary dependencies, as shown with this example. The function <code>f</code> has a dependency on an extra variable:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">my_var</span> <span class="o">=</span> <span class="mi">1</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">dds_function</span><span class="p">(</span><span class="s2">"/f"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Calling f"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">my_var</span>
@@ -14651,12 +14658,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Calling f
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>1</pre>
 </div>
@@ -14664,12 +14666,14 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>If we call the function again, as seen before, the function does not get called again:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">f</span><span class="p">()</span>
@@ -14681,6 +14685,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>1</pre>
 </div>
@@ -14688,12 +14693,14 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>However, if we change any dependency of the function, such as <code>my_var</code>, then the function will get evaluated again:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">my_var</span> <span class="o">=</span> <span class="mi">2</span>
@@ -14706,12 +14713,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Calling f
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>2</pre>
 </div>
@@ -14719,12 +14721,14 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Interestingly, if we change the variable again to its previous value, the function does not get evaluated again! The signature of the function will match a signature that was calculated before, hence there is no need to recompute it.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">my_var</span> <span class="o">=</span> <span class="mi">1</span>
@@ -14737,6 +14741,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>1</pre>
 </div>
@@ -14744,15 +14749,18 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>This mechanism covers all the basic structures in python (functions, dictionaries, lists, basic types, ...).</p>
-<p>As we said, the <code>dds_function</code> annotation requires little code change but only works for functions that do not have arguments. How to deal with more complicated functions?
-This is the object of the next sections.</p>
+<p>A function that is annotated with a <code>dds</code> annotation is called a <em>data function</em>. It is a function that not only a name in code but also a data path associated with it, and for which the output is captured and stored in a data system.</p>
+<p>As we said, the <code>data_function</code> annotation requires little code change but only works for functions that do not have arguments. How to deal with more complicated functions?
+This is the object of the next section.</p>
 <h2 id="functions-with-arguments-keep-and-eval">Functions with arguments: keep() and eval()<a class="anchor-link" href="#Functions-with-arguments:-keep()-and-eval()">¶</a></h2><p><code>dds</code> can also wrap functions that have arguments using the <code>dds.keep()</code> function. Here is a simple example, in which the <code>hello</code> function expects an extra word to be provided:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
@@ -14769,12 +14777,14 @@ This is the object of the next sections.</p>
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Calling function hello on world
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
@@ -14782,12 +14792,14 @@ This is the object of the next sections.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>In order to capture a specific call to this function with <code>dds</code>, the function call has to be wrapped with the <code>dds.keep</code> function:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">greeting</span> <span class="o">=</span> <span class="n">dds</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="s2">"/greeting"</span><span class="p">,</span> <span class="n">hello</span><span class="p">,</span> <span class="s2">"world"</span><span class="p">)</span>
@@ -14800,12 +14812,7 @@ This is the object of the next sections.</p>
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Calling function hello on world
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
@@ -14813,13 +14820,15 @@ This is the object of the next sections.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Again, try to change the argument of the function to see when it calls the function. This substitution can be done everywhere the function <code>hello(world)</code> was called. It can also be wrapped in a separate function instead of <code>hello</code>. This is in fact how the decorator <code>dds_function</code> works.</p>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Again, try to change the argument of the function to see when it calls the function. This substitution can be done everywhere the function <code>hello(world)</code> was called. It can also be wrapped in a separate function instead of <code>hello</code>. This is in fact how the decorator <code>data_function</code> works.</p>
 <p>This constructs works well if the arguments can be summarized to a signature. It will fail for complex objects such as files, because <code>dds</code> needs to understand basic information about the input of a function to decide if it has changed or not. As an example:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">hello_from_file</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
@@ -14837,12 +14846,14 @@ This is the object of the next sections.</p>
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Calling hello_from_file
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
@@ -14852,6 +14863,7 @@ This is the object of the next sections.</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># This line will trigger a NotImplementedError</span>
@@ -14862,12 +14874,14 @@ This is the object of the next sections.</p>
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>How do we still use files? <code>dds</code> does not need to understand the content passed to a function <em>if</em> it is called as a sub-function within <code>dds</code>. More concretely in this example, we can create a wrapper function that contains the file call and the call to the function to keep:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">wrapper_hello</span><span class="p">():</span>
@@ -14885,13 +14899,14 @@ This is the object of the next sections.</p>
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Opening file &lt;_io.TextIOWrapper name='input.txt' mode='r' encoding='UTF-8'&gt;
-Calling hello_from_file
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
@@ -14899,7 +14914,8 @@ Calling hello_from_file
 </div>
 </div>
 </div>
-<div class="jp-Cell-inputWrapper"><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Calling the function again shows that:</p>
 <ul>
 <li>we still open the file: the content of <code>wrapper_hello</code> is still executed. </li>
@@ -14910,6 +14926,7 @@ Calling hello_from_file
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">wrapper_hello</span><span class="p">)</span>
@@ -14921,28 +14938,30 @@ Calling hello_from_file
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Opening file &lt;_io.TextIOWrapper name='input.txt' mode='r' encoding='UTF-8'&gt;
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span>
-</pre></div>
 </div>
-</div>
-</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>As a conclusion, <code>dds</code> provides 3 basic functions to track and cache pieces of data:</p>
+<ul>
+<li><code>data_function</code> is an annotation for functions that take no arguments and return a piece of data that should be tracked</li>
+<li><code>keep</code> is a function that wraps function calls. It can be used standalone when the function uses basic types as arguments.</li>
+<li><code>eval</code> is used in conjunction with <code>keep</code> when data functions take complex arguments.</li>
+</ul>
+<p>By building on these foundations, <code>dds</code> allows you to do many more things such as visualizing all the dependencies between data, speeding up Machine Learning pipelines, and parallelizing your code automatically. The other tutorials provide more information.</p>
 </div>
 </div>
 </body>
