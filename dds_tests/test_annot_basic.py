@@ -9,7 +9,7 @@ _c = Counter()
 _p = "/path2"
 
 
-@dds.dds_function("/p")
+@dds.data_function("/p")
 def f():
     _c.increment()
     return "a"

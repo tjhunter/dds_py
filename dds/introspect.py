@@ -522,7 +522,7 @@ class InspectFunction(object):
             + indirect_deps_sigs
         )
 
-        # Look at the annotations to see if there is a reference to a dds_function
+        # Look at the annotations to see if there is a reference to a data_function
         if isinstance(node, ast.FunctionDef):
             store_path = cls._path_annotation(node, mod, gctx)
         else:
@@ -560,6 +560,8 @@ class InspectFunction(object):
                 # _logger.debug(f"_path_annotation: caller_fun_path: %s", caller_fun_path)
                 if caller_fun_path == CanonicalPath(
                     ["dds", "_annotations", "dds_function"]
+                ) or caller_fun_path == CanonicalPath(
+                    ["dds", "_annotations", "data_function"]
                 ):
                     if len(dec.args) != 1:
                         raise KSException(

@@ -165,7 +165,7 @@ class InspectFunctionIndirect(object):
         for n in body:
             calls_v.visit(n)
 
-        # Look at the annotations to see if there is a reference to a dds_function
+        # Look at the annotations to see if there is a reference to a data_function
         if isinstance(node, ast.FunctionDef):
             store_path = InspectFunction._path_annotation(node, mod, gctx)
         else:

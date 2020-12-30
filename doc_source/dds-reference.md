@@ -6,7 +6,7 @@ This is the reference documentation of all the public-facing functions.
     handler: python
     selection:
       members:
-        - dds_function
+        - data_function
 
 ::: dds.__init__
     handler: python

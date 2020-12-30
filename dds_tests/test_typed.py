@@ -5,7 +5,7 @@ from .utils import cleandir
 _ = cleandir
 
 
-@dds.dds_function("/test")
+@dds.data_function("/test")
 def f() -> str:
     return ""
 
