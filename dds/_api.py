@@ -11,7 +11,7 @@ from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union, Set, Li
 from ._eval_ctx import EvalMainContext
 from ._introspect_indirect import introspect_indirect
 from .fun_args import get_arg_ctx
-from .introspect import introspect, _whitelisted_packages
+from .introspect import introspect, _accepted_packages
 from .store import LocalFileStore, Store
 from .structures import (
     DDSPath,
@@ -231,7 +231,7 @@ def _eval_new_ctx(
         _logger.debug(f"arg_ctx: {arg_ctx}")
         eval_ctx = EvalMainContext(
             fun.__module__,  # type: ignore
-            whitelisted_packages=_whitelisted_packages,
+            whitelisted_packages=_accepted_packages,
             start_globals=local_vars,
             resolved_references=OrderedDict(),
         )

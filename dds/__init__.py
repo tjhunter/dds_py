@@ -12,7 +12,7 @@ from ._api import (
     set_store as _set_store,
 )
 from ._version import version
-from .introspect import whitelist_module as _whitelist_module
+from .introspect import accept_module as _accept_module
 from .store import Store
 from .structures import DDSPath, ProcessingStage
 
@@ -82,7 +82,7 @@ def keep(
     - no static method, class method
     - not recursive
     - no generators
-    - the functions must be in a whitelisted module to be considered, see the whitelist_module() function
+    - the functions must be in an accepted module to be considered, see the `accept_module()` function
 
     They must return storable objects. The exact list depends on the store that is currently deployed.
 
@@ -305,7 +305,7 @@ def accept_module(module: Union[str, ModuleType]) -> None:
     ```
 
     """
-    return _whitelist_module(module)
+    return _accept_module(module)
 
 
 def whitelist_module(module: Union[str, ModuleType]) -> None:
@@ -319,4 +319,4 @@ def whitelist_module(module: Union[str, ModuleType]) -> None:
         "The whitelist_module function has been renamed to 'accept_module', use 'accept_module' instead.",
         DeprecationWarning,
     )
-    return _whitelist_module(module)
+    return _accept_module(module)
