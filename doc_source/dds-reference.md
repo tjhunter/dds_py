@@ -15,6 +15,6 @@ This is the reference documentation of all the public-facing functions.
         - keep
         - eval
         - set_store
-        - whitelist_module
+        - accept_module
 
 

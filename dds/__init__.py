@@ -1,4 +1,5 @@
 import pathlib
+import warnings
 from types import ModuleType
 from typing import Tuple, Dict
 from typing import TypeVar, Callable, Any, Optional, Union, List
@@ -11,7 +12,7 @@ from ._api import (
     set_store as _set_store,
 )
 from ._version import version
-from .introspect import whitelist_module as _whitelist_module
+from .introspect import accept_module as _accept_module
 from .store import Store
 from .structures import DDSPath, ProcessingStage
 
@@ -20,6 +21,7 @@ __all__ = [
     "keep",
     "eval",
     "whitelist_module",
+    "accept_module",
     "set_store",
     "__version__",
     "dds_function",
@@ -80,7 +82,7 @@ def keep(
     - no static method, class method
     - not recursive
     - no generators
-    - the functions must be in a whitelisted module to be considered, see the whitelist_module() function
+    - the functions must be in an accepted module to be considered, see the `accept_module()` function
 
     They must return storable objects. The exact list depends on the store that is currently deployed.
 
@@ -283,24 +285,38 @@ def set_store(
     _set_store(store, internal_dir, data_dir, dbutils, commit_type)
 
 
-def whitelist_module(module: Union[str, ModuleType]) -> None:
+def accept_module(module: Union[str, ModuleType]) -> None:
     """
-    Marks a module as whitelisted for introspection. Only functions in the current scope and in whitelisted modules
+    Marks a module as accepted for introspection. Only functions in the current scope and in accepted modules
     will be considered for the evaluation.
 
     Example to ensure that all the functions in my_lib are considered by DDS.
 
     ```py
     import my_lib
-    dds.whitelist_module(my_lib)
+    dds.accept_module(my_lib)
     ```
 
     The example above causes the `my_lib` module to be imported. If it is not desired, the name of the module can
     be passed instead:
 
     ```py
-    dds.whitelist_module("my_lib")
+    dds.accept_module("my_lib")
     ```
 
     """
-    return _whitelist_module(module)
+    return _accept_module(module)
+
+
+def whitelist_module(module: Union[str, ModuleType]) -> None:
+    """
+    Marks a module as whitelisted for introspection. Only functions in the current scope and in whitelisted modules
+    will be considered for the evaluation.
+
+    DEPRECATED: use the `accept_module` function instead.
+    """
+    warnings.warn(
+        "The whitelist_module function has been renamed to 'accept_module', use 'accept_module' instead.",
+        DeprecationWarning,
+    )
+    return _accept_module(module)

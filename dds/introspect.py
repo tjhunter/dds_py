@@ -735,16 +735,16 @@ def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
     return res
 
 
-_whitelisted_packages: Set[Package] = {
+_accepted_packages: Set[Package] = {
     Package("dds"),
     Package("__main__"),
     Package("__global__"),
 }
 
 
-def whitelist_module(module: Union[str, ModuleType]) -> None:
-    global _whitelisted_packages
+def accept_module(module: Union[str, ModuleType]) -> None:
+    global _accepted_packages
     if isinstance(module, ModuleType):
         module = module.__name__
     assert isinstance(module, str), (module, type(module))
-    _whitelisted_packages.add(Package(module))
+    _accepted_packages.add(Package(module))
