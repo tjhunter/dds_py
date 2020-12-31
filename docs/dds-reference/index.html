@@ -59,8 +59,6 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds._annotations.data_function">data_function()</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations.dds_function">dds_function()</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__">dds.__init__</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.accept_module">accept_module()</a>
@@ -77,11 +75,7 @@
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.load">load()</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.set_store">set_store()</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.whitelist_module">whitelist_module()</a>
     </li>
     </ul>
                     </li>
@@ -198,51 +192,9 @@ def function():
 </details>
 </div>
 </div>
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds._annotations.dds_function">
-
-        <code class="highlight language-python">
-dds_function<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Annotation-style for <code>dds.keep</code>.</p>
-<p>DEPRECATED. Use data_function instead. 'data_function' provides the
-same functionality but has a more understandable name.</p>
-<details class="quote">
-          <summary>Source code in <code>dds/_annotations.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">dds_function</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">F</span><span class="p">],</span> <span class="n">F</span><span class="p">]:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Annotation-style for `dds.keep`.</span>
-
-<span class="sd">    DEPRECATED. Use data_function instead. 'data_function' provides the</span>
-<span class="sd">    same functionality but has a more understandable name.</span>
-<span class="sd">    """</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">"The name 'dds_function' is deprecated. Use 'data_function' instead. "</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">decorator_</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
-        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">decorator_</span>
-</code></pre>
-</div>
-</details>
 </div>
 </div>
 </div>
-</div>
-</div>
-<pre><code>    - data_function
-</code></pre>
 <div class="doc doc-object doc-module">
 <h2 class="hidden-toc" href="#dds.__init__" id="dds.__init__" style="visibility: hidden; position: absolute;">
         </h2>
@@ -655,67 +607,6 @@ only be evaluated once.</p>
 </div>
 </div>
 <div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds.__init__.load">
-
-        <code class="highlight language-python">
-load<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Loads the content of an object that has already been stored.</p>
-<p>This command is useful to refer to an object by its <em>path</em> instead of using the data function that was used
-to generate it.</p>
-<p>For example, if an object was created with a call to the <em>keep</em> function, then <em>load</em> can be used
-to retrieve an object later:</p>
-<pre><code class="language-py">_ = dds.keep("/my_path", data_function)
-data = dds.load("/my_path")
-</code></pre>
-<p>This function can be used standalone or within an evaluation (i.e. through using <em>eval()</em>). In that case,
-some invariants will be checked:
-- loops are not allowed: it is not allowed to both load and output the same path within the same evaluation
-- the signature of the latest version of the loaded data is included in the signature calculation. If the data
-accessed through <em>load</em> changes, this will change the signature of the function and may retrigger some evaluations.</p>
-<p>This is useful in the case the data function that generated the data artifact in the first place is not accessible,
-for security reasons for example. The data artifact can still be loaded with the latest version, but it may not
-be up to date with the data function. See the user guide of dds for a more complete presentation on when
-to use <em>keep</em>.</p>
-<details class="quote">
-          <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Loads the content of an object that has already been stored.</span>
-
-<span class="sd">    This command is useful to refer to an object by its *path* instead of using the data function that was used</span>
-<span class="sd">    to generate it.</span>
-
-<span class="sd">    For example, if an object was created with a call to the *keep* function, then *load* can be used</span>
-<span class="sd">    to retrieve an object later:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    _ = dds.keep("/my_path", data_function)</span>
-<span class="sd">    data = dds.load("/my_path")</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    This function can be used standalone or within an evaluation (i.e. through using *eval()*). In that case,</span>
-<span class="sd">    some invariants will be checked:</span>
-<span class="sd">    - loops are not allowed: it is not allowed to both load and output the same path within the same evaluation</span>
-<span class="sd">    - the signature of the latest version of the loaded data is included in the signature calculation. If the data</span>
-<span class="sd">    accessed through *load* changes, this will change the signature of the function and may retrigger some evaluations.</span>
-
-<span class="sd">    This is useful in the case the data function that generated the data artifact in the first place is not accessible,</span>
-<span class="sd">    for security reasons for example. The data artifact can still be loaded with the latest version, but it may not</span>
-<span class="sd">    be up to date with the data function. See the user guide of dds for a more complete presentation on when</span>
-<span class="sd">    to use *keep*.</span>
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_load</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-<div class="doc doc-object doc-function">
 <h2 class="doc doc-heading" id="dds.__init__.set_store">
 
         <code class="highlight language-python">
@@ -891,46 +782,9 @@ the final place. In the case of large tables, this may incur extra storage costs
 </details>
 </div>
 </div>
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds.__init__.whitelist_module">
-
-        <code class="highlight language-python">
-whitelist_module<span class="p">(</span><span class="n">module</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Marks a module as whitelisted for introspection. Only functions in the current scope and in whitelisted modules
-will be considered for the evaluation.</p>
-<p>DEPRECATED: use the <code>accept_module</code> function instead.</p>
-<details class="quote">
-          <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">whitelist_module</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Marks a module as whitelisted for introspection. Only functions in the current scope and in whitelisted modules</span>
-<span class="sd">    will be considered for the evaluation.</span>
-
-<span class="sd">    DEPRECATED: use the `accept_module` function instead.</span>
-<span class="sd">    """</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">"The whitelist_module function has been renamed to 'accept_module', use 'accept_module' instead."</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">_accept_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
 </div>
 </div>
 </div>
-</div>
-</div>
-<pre><code>    - keep
-    - eval
-    - set_store
-    - accept_module
-</code></pre>
               
             </div>
           </div>

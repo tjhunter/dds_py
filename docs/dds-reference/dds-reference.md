@@ -6,14 +6,12 @@ This is the reference documentation of all the public-facing functions.
     handler: python
     selection:
       members:
-      
         - data_function
 
 ::: dds.__init__
     handler: python
     selection:
       members:
-      
         - keep
         - eval
         - set_store

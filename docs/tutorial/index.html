@@ -14476,8 +14476,8 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <p><code>dds</code> works by inspecting python code and checking against a central store if its output has already been calculated. In that sense, it can be thought of as a smart caching system that detects if it should rerun calculations.</p>
 <p>In order to work, <code>dds</code> needs two pieces of information:</p>
 <ul>
-<li>where to store all the pieces of data (called blobs in <code>dds</code> jargon) that have been already calculated. This is by default in <code>/tmp/dds/data_internal</code> (or equivalent for your operating system)</li>
-<li><p>where to store all the paths that are being requested for evaluation. It is by default in <code>/tmp/dds/data_paths</code>.</p>
+<li>where to store all the pieces of data (called blobs in <code>dds</code> jargon) that have been already calculated. This is by default in <code>/tmp/dds/internal</code> (or equivalent for your operating system)</li>
+<li><p>where to store all the paths that are being requested for evaluation. It is by default in <code>/tmp/dds/data</code>.</p>
 <p>Here is a simple "Hello world" example in DDS:</p>
 </li>
 </ul>
@@ -14495,7 +14495,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     <span class="nb">print</span><span class="p">(</span><span class="s2">"hello_world() has been called"</span><span class="p">)</span>
     <span class="k">return</span> <span class="s2">"Hello, world"</span>
 
-<span class="n">hello_world</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">hello_world</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -14504,9 +14504,11 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[1]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>'Hello, world'</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>hello_world() has been called
+Hello, world
+</pre>
 </div>
 </div>
 </div>
@@ -14649,7 +14651,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Calling f"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">my_var</span>
 
-<span class="n">f</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -14658,9 +14660,11 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>1</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Calling f
+1
+</pre>
 </div>
 </div>
 </div>
@@ -14704,7 +14708,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">my_var</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">f</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -14713,9 +14717,11 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>2</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Calling f
+2
+</pre>
 </div>
 </div>
 </div>
@@ -14812,6 +14818,13 @@ This is the object of the next section.</p>
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Calling function hello on world
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
 <pre>'Hello, world'</pre>
@@ -14902,6 +14915,7 @@ This is the object of the next section.</p>
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Opening file &lt;_io.TextIOWrapper name='input.txt' mode='r' encoding='UTF-8'&gt;
+Calling hello_from_file
 </pre>
 </div>
 </div>
