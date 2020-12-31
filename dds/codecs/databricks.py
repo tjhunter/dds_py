@@ -168,7 +168,7 @@ class PickleDBFSCodec(CodecProtocol):
         return ProtocolRef("dbfs.pickle")
 
     def handled_types(self) -> List[ST]:
-        return [STU.from_type(o) for o in [type(object), type(None)]]
+        return [STU.from_type(type(None)), ST("object")]
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         self._codec.serialize_into(pickle.dumps(blob), loc)
