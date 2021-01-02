@@ -20,5 +20,6 @@ nav:
     - Reference: dds-reference.md
     - FAQ: faq.md
     - Tutorial: tutorial.ipynb
+    - Tutorial - modules: tut_modules.ipynb
     - Tutorial - plotting: plotting.ipynb
     - Tutorial - scikit-learn: test_sklearn.ipynb

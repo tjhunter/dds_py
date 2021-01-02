@@ -7,7 +7,7 @@
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="../img/favicon.ico" rel="shortcut icon"/>
-<title>Tutorial - plotting - DDS documentation</title>
+<title>Tutorial - modules - DDS documentation</title>
 <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
 <link href="../css/theme.css" rel="stylesheet"/>
 <link href="../css/theme_extra.css" rel="stylesheet"/>
@@ -15,8 +15,8 @@
 <link href="../extra.css" rel="stylesheet"/>
 <script>
     // Current page data
-    var mkdocs_page_name = "Tutorial - plotting";
-    var mkdocs_page_input_path = "plotting.ipynb";
+    var mkdocs_page_name = "Tutorial - modules";
+    var mkdocs_page_input_path = "tut_modules.ipynb";
     var mkdocs_page_url = null;
   </script>
 <script defer="" src="../js/jquery-2.1.1.min.js"></script>
@@ -53,14 +53,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Tutorial - modules</a>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - modules</a>
+<ul class="current">
+</ul>
 </li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - plotting</a>
-<ul class="current">
-</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
 </li>
 </ul>
 <ul>
@@ -80,7 +80,7 @@
 <div aria-label="breadcrumbs navigation" role="navigation">
 <ul class="wy-breadcrumbs">
 <li><a href="..">Docs</a> »</li>
-<li>Tutorial - plotting</li>
+<li>Tutorial - modules</li>
 <li class="wy-breadcrumbs-aside">
 </li>
 </ul>
@@ -14465,88 +14465,21 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     </script>
 <!-- End of mathjax configuration -->
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
-</div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="plotting-network-dependencies-with-dds">Plotting network dependencies with DDS<a class="anchor-link" href="#Plotting-network-dependencies-with-DDS">¶</a></h2><p><code>DDS</code> allows you to track and display the dependencies between data objects that get tracked with a name.</p>
-<blockquote><p>Reminder:</p>
-<p>In order to use the plotting facilities, you must have the <code>pydotplus</code> package installed, as well as its own dependency (Graphviz).</p>
-</blockquote>
-<p>Exporting the function graph without running the actual function is done with the <code>dds.eval</code> function:</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_function</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span> <span class="o">...</span>
-
-<span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span>
-         <span class="n">arg1</span><span class="p">,</span>
-         <span class="n">arg2</span><span class="p">,</span>
-         <span class="o">...</span>
-         <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">"path_to_png_file"</span><span class="p">,</span>
-         <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-         <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
-</pre></div>
-<p>With this call, the function will not be executed. Instead, all its code dependencies will be resolved and analyzed.</p>
-<p>Here is an example that leverages the integration with Jupyter. This shows a single function the output of which is registered
-under the path <code>/f</code>.</p>
+<h2 id="working-with-modules">Working with modules<a class="anchor-link" href="#Working-with-modules">¶</a></h2><p><code>dds</code> works by tracking changes in the source code. Because a lot of the code are irrelevant to be tracked (for example, the low-level python modules to open files), <code>dds</code> makes the decision that the <em>user needs to indicate which code should be tracked</em>. This whitelisting approach allows users to track only pieces of code that matter. For example, all the logging system may not be very relevant for the outcome of the business logic.</p>
+<p>This fact is not usually important in simple cases. When working with a single notebook, or when working with a single python file, then there is nothing to do: all the functions written in a standalone python script or notebook are automatically considered. How to work with more complicated code bases, which include modules and other packages with important business logic to track? This is the topic of this tutorial.</p>
+<p>Consider the following python module <code>my_module</code>, which has one data function:</p>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
-
-<span class="c1"># A small utility to plot a function without executing it:</span>
-<span class="k">def</span> <span class="nf">plot_function</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Image</span><span class="p">:</span>
-    <span class="n">f_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"/tmp/dds_plot_</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">fun</span><span class="p">))</span><span class="si">}</span><span class="s2">.png"</span>
-    <span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="n">f_name</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">Image</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span>
-
-<span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFMAAAA7CAYAAAAHFbY3AAAABmJLR0QA/wD/AP+gvaeTAAACk0lEQVR4nO3cTUgUcRjH8e+IFdKLpRFB9yS6BRVBRWpZYhqFzhwEbxJLGXiJwm6yRUGnIoUohAicWZPewYJKqN2kkKKDRC8WrAeJJJZC2Reng4dodTHlyfm7PB8YWP57+fFlZ1l2YS3f932UhEhB0AvyicYUpDEFFWYfxONxotFoEFsWFdu2px/6WVzX9QG9Zrlm4OW8zX3f12uGy3XdXMn0PVOSxhSkMQVpTEEaU5DGFKQxBWlMQRpTkMYUpDEFaUxBGlOQxhSkMQUZGzMzdI6txfvojE9OHUyO0n8xRPPJs5xu2Mbm7UcIPxsLdmSWaT9bmCHDUE+EDztCHNpQAEwy3NlIXZvFheErHC2tZ9OJUwyOjQc99C9mxky/w4sMs7O1jvUWkH7L9Y5+EtZhSkssWLqRps5emoLemcXI2zz9xqMnvhv74DosgMxXPn/JBD1rVgbGTPHau8VouUPNWp+RB2GOt3QwMOFDepCrLSFCx84Q+WheXPNu8+QAbu93KsPVlFgFWDVtXN5bhn3jEZ/YQvOlDuqXBT1yZsa9MieiLrcTVTgH1kzd4ouIYTHHee7eYXy/Q1Vx0FvmzqyYv/px76WodipZGfSWeTAq5s+nLvf9GuzyFUFPmReDYiZ43P2QJbUOe5ZnPZVKkpp6QDK18Mv+lTEx/R99uH1F1Nq7KPpzSuL9E26e7yKWBJIvuBbu4u6rEdKBLc3NmI9G1uoGur81ZJ+yqqyCxvYKGtsDmTUnxrwy84HGFKQxBWlMQRpTkMYUpDEFaUxBGlOQxhSkMQVpTEEaU5DGFKQxBWlMQRpTUM5v2j3PW8gdi0YsFsv5XM6YjuP8lzH5zNJ/jxGj/x4jSWMK0piCCoFI0CPyxMvfFRjhIfcnpO8AAAAASUVORK5CYII=
-"/>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>How to show multiple independent functions? Multiple DDS functions can be packaged under a single function.
-In most cases, DDS can infer that they are independent of each other and will show them 
-separately. Here is the examle of two independent functions <code>f1</code> and <code>f2</code>:</p>
-</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">ex1a</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">ex1b</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span>
-
-<span class="k">def</span> <span class="nf">ex1</span><span class="p">():</span>
-    <span class="n">ex1a</span><span class="p">()</span>
-    <span class="n">ex1b</span><span class="p">()</span>
-
-<span class="n">plot_function</span><span class="p">(</span><span class="n">ex1</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -14555,10 +14488,14 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALMAAAA7CAYAAAAw97tGAAAABmJLR0QA/wD/AP+gvaeTAAAEh0lEQVR4nO3cf0zUdRzH8echkC7TiZU2Vv1BlOWWykRXKAUkaKAuwmPNIlpjZq2ELWuMP8Q/kFVUNENYPxyb6PzeKcXQSgmMNE62chEti36I7apRkxXjl3ccn/4Il9KB3MXd9/jwfmyff2734/197fX97nO33deilFIIMfXZw8yeQIjJImUW2pAyC22Ej37A6XTS0tJixixTitVqDcj7Sv4T4zV/NYphGAqQdZUVKJK/3/nbxtxmKKVkeVmGYYwV2aQy+zhDdY2Xv+yZhTakzEIbUmahDSmz0IaUWWhDyiy0IWUW2pAyC21ImYU2pMxCG1JmoQ0ps9CGlFloQ8ostCFlFtoImTJ7zpYSP3cNVc7hfx4Y7qL51a3kvbCLwk0rWLwyk5JPLtD/WxvH95WxPSeVpTG51F40dWxtTCj/hq9peiWXpLtvYd6cG4hZvpHt+7/iL2Xu7JeESJk9nD1k5/t7rGyMDgOGOVe1mQ1FP7C8oJDS/TW8uAz+6B5k5k1LSEqYQavRQNuv/QybPboWJpD/Eie7MzN46edFPLxlG89kxtLXVk9ZTjLWyg7cZh8CXv4DaIqhdmz2c6wq2MBCCzDUxt7KZnosDzE/ygKRt5NTVUvOyNPDom9mYYichlqYQP7WR9I4FZ/LnryYkdJsIycujRX5TTS+vIfTeeWsjjD3MEKiEkNf2jjkTMSacSMWAM95fur0mD3WtHH1/Ifp8qwi//GYy65+4cQ++hgJkaD6e+kLga1GCFyZ3XxuO0xX0g7Sr1f8cnQXpXWf0jqogDO8/exWGiPmk1ywk023zTB7WA35kH/kla9Ufb30Kwtz7r2PZSZflSEUyuxqxai9QErJOqIsYVjSi3jzgTuw7jvOj8SRt7uSrGvMHlJjfuev+P3jjzgTHkd+URYLLMEe/L9M32YMthi835NK9tp5hEAe047f+fc5eL28ncTXaiiKnxWo8XxicpkHOGXUMZCWTepccyeZnvzMX3XTtKOYjifrOLhlEZFXf0VQmFvmvmaMejfrslO4ztRBpim/8u+nvbKQw4vf4MBzS7k2gOP5ytQy954wOKLSsSbNNnOMacv3/Af4proYY0Eh5U/cyb+bCzedrV8EZkgfmPgFsIeGgx8Qsb6G+0ef3m7XyI/wblxuYPQXkIEBBgEYxiO/4PnJ1/wv8u07uTz1YSxZyUd5q2LkucpFd0cjrVHFHFkZvOm9Ma3M6s9jGMdmsd5YfdkZruj57gT1NdU4XACf8W5JNbMz1/BgfDThuOhsNnjvQAUnXYDFwd6dFQylZ7A58VaTjmRq8i3/FO7qeJ61T9s571acrL3yvSwzEyhrjwvm+N6pUS7duE94F+h8JP/xjZPP2DdOFGKqkTILbUiZhTakzEIbUmahDSmz0IaUWWhDyiy0IWUW2pAyC21ImYU2pMxCG1JmoQ0ps9CGlFloQ8ostCFlFtoY829TNpstmHNMGQ6HIyifI/l7N17+Y5Y5Ozs7IMOIiZH8fWdRSoXALe+E+N/ssmcW2pAyC21ImYU2wgG72UMIMQlO/w1E2hLKD+8LzwAAAABJRU5ErkJggg==
-"/>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>import dds
+
+
+@dds.data_function("/my_function")
+def my_function():
+    return "my_function"</pre>
 </div>
 </div>
 </div>
@@ -14566,37 +14503,19 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p><strong>Data dependencies</strong></p>
-<p>The DDS function <code>f1</code> depends on the DDS function <code>f2</code>. This is tracked with a solid line. The graph shows the outputs first at the top, and the dependencies at the bottom.</p>
+<p>Just trying to run this function is going to give an error:</p>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">ex2a</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">my_module</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">ex2b</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">ex2a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">ex2</span><span class="p">():</span>
-    <span class="n">ex2b</span><span class="p">()</span>
-
-<span class="n">plot_function</span><span class="p">(</span><span class="n">ex2</span><span class="p">)</span>
+<span class="c1"># This statement will fail!</span>
+<span class="c1"># my_module.my_function()</span>
 </pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"/>
 </div>
 </div>
 </div>
@@ -14604,8 +14523,11 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p><strong>Implicit dependencies</strong></p>
-<p>In the function <code>f</code>, the output of the DDS function <code>f1</code> is passed as an argument to the DDS function <code>f2</code>. This is a case of implicit dependency: DDS has infered that the calculation of <code>f2</code> is dependent on the calculation of <code>f1</code> (through potentially other steps in the function <code>f</code>). It indicates that through dashed arrows.</p>
+<p>Here is the error message that you would get:</p>
+<blockquote><p>Cannot load path &lt;my_module.my_function&gt;: this object cannot be retrieved, however the module 'my_module' exists. The typical cause of the issue is that the module my_module has not been whitelisted for use by DDS. Use the function 'dds.accept_module' to whitelist my_module or one of its submodules. dep_path: my_function module: &lt;module 'my_module' from './dds_py/doc_source/my_module.py'&gt;</p>
+</blockquote>
+<p>How do deal with this? The error message includes a hint to the usage of the <code>accept_module</code> function. This function instructs <code>dds</code> to consider a specific module or package for inclusion when inspecting the code. In particular, <em>all the data functions must be whitelisted</em>.</p>
+<p>Here is our previous example, fixed:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14613,18 +14535,10 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f1</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
+<span class="n">dds</span><span class="o">.</span><span class="n">accept_module</span><span class="p">(</span><span class="s2">"my_module"</span><span class="p">)</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f2</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span>
-
-<span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
-    <span class="n">res1</span> <span class="o">=</span> <span class="n">f1</span><span class="p">()</span>
-    <span class="n">my_var</span> <span class="o">=</span> <span class="n">res1</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">f2</span><span class="p">(</span><span class="n">my_var</span><span class="p">)</span>
-
-<span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">my_module</span><span class="o">.</span><span class="n">my_function</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14634,9 +14548,8 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"/>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>'my_function'</pre>
 </div>
 </div>
 </div>
@@ -14644,7 +14557,8 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Note that only the most significant dependencies are represented. In this case, <code>f1</code> is evaluated twice: before and after <code>f2</code>. Because <code>f2</code> implicitly depends on <code>f1</code> but not the opposite, only the first call to <code>f1</code> is taken into account.</p>
+<p>All sub-modules are automatically accepted. For example in our case, <code>my_module.sub_module</code> is now also accepted.</p>
+<p>Dependencies to other modules are <em>not</em> automatically accepted, and should be also added if they are important. Consider this example with two modules: one module containing the business logic, and one module containing some utilities that we do not want to track:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14652,18 +14566,7 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">ex4a</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">ex4b</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span>
-
-<span class="k">def</span> <span class="nf">ex4</span><span class="p">():</span>
-    <span class="n">res1</span> <span class="o">=</span> <span class="n">ex4a</span><span class="p">()</span>
-    <span class="n">ex4b</span><span class="p">(</span><span class="n">res1</span><span class="p">)</span>
-    <span class="n">ex4a</span><span class="p">()</span>
-
-<span class="n">plot_function</span><span class="p">(</span><span class="n">ex4</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module_utils</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -14672,18 +14575,14 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"/>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>variable = 1
+
+def get_util_variable(): return variable</pre>
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>The functions call can be arbitrarily nested. In this case, because <code>f1</code> is already a dependency of <code>f3</code>, it is not brought further even if it is called in <code>f</code>.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14691,25 +14590,7 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f1</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> 
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f2</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">f1</span><span class="p">()</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f3"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f3</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">f2</span><span class="p">()</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f4"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f4</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span>
-
-
-<span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">f4</span><span class="p">()</span>
-    <span class="n">f3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">f1</span><span class="p">()</span>
-
-<span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module_important</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -14718,18 +14599,19 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"/>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>import dds
+from my_module_utils import get_util_variable
+
+@dds.data_function("/f")
+def f():
+    print("executing f")
+
+    return get_util_variable() * 2</pre>
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Note that in general when the functions take arguments, DDS cannot infer independencies. In this case, <code>f3</code> and <code>f5</code> could be independent. However, because they share an argument call through <code>x</code>, this argument could be modified during the call and as such, no further independence can be assumed.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14737,17 +14619,10 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f5"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">f5</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">accept_module</span><span class="p">(</span><span class="s2">"my_module_important"</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">my_module_important</span>
 
-<span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
-    <span class="n">f1</span><span class="p">()</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">f4</span><span class="p">()</span>
-    <span class="n">f3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">f5</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">f1</span><span class="p">()</span>
-
-<span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">my_module_important</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14756,10 +14631,76 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>executing f
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"/>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>2</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>my_module_utils</code> is not whitelisted. If we modify it, it is not going to retrigger a calculation</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">my_module_utils</span>
+<span class="n">my_module_utils</span><span class="o">.</span><span class="n">variable</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<span class="n">my_module_important</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>2</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>We can decide later to include <code>my_module_utils</code> as well, by calling <code>accept_module('my_module_utils')</code>.</p>
+<p>This is a tradeoff for the user:</p>
+<ul>
+<li>add more code to track more changes, which could be irrelevant to the result</li>
+<li>track less code and focus on the core business logic, at the expense of missing some important changes</li>
+</ul>
+<p>As a recommendation, accept the packages that you are working on, and possibly some important dependencies that contain data functions themselves.</p>
+<p>To conclude this tutorial:</p>
+<ul>
+<li><code>dds</code> can track code in module using the <code>accept_module</code> function</li>
+<li>all the data functions must be in whitelisted modules or sub-modules</li>
+<li>dependencies are not automatically tracked</li>
+</ul>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -14771,8 +14712,8 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a class="btn btn-neutral float-right" href="../test_sklearn/" title="Tutorial - scikit-learn">Next <span class="icon icon-circle-arrow-right"></span></a>
-<a class="btn btn-neutral" href="../tut_modules/" title="Tutorial - modules"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+<a class="btn btn-neutral float-right" href="../plotting/" title="Tutorial - plotting">Next <span class="icon icon-circle-arrow-right"></span></a>
+<a class="btn btn-neutral" href="../tutorial/" title="Tutorial"><span class="icon icon-circle-arrow-left"></span> Previous</a>
 </div>
 <hr/>
 <div role="contentinfo">
@@ -14787,8 +14728,8 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 </div>
 <div aria-label="versions" class="rst-versions" role="note">
 <span class="rst-current-version" data-toggle="rst-current-version">
-<span><a href="../tut_modules/" style="color: #fcfcfc;">« Previous</a></span>
-<span style="margin-left: 15px"><a href="../test_sklearn/" style="color: #fcfcfc">Next »</a></span>
+<span><a href="../tutorial/" style="color: #fcfcfc;">« Previous</a></span>
+<span style="margin-left: 15px"><a href="../plotting/" style="color: #fcfcfc">Next »</a></span>
 </span>
 </div>
 <script>var base_url = '..';</script>
