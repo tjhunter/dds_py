@@ -211,7 +211,9 @@ class DBFSStore(Store):
     ) -> None:
         _logger.debug(f"store_blob: registry: {self._registry._handled_types}")
         _logger.debug(f"store_blob: {key} {type(blob)} {codec}")
-        _logger.debug(f"store_blob: {key} {type(blob)} type: {STU.from_type(type(blob))}")
+        _logger.debug(
+            f"store_blob: {key} {type(blob)} type: {STU.from_type(type(blob))}"
+        )
         protocol = self._registry.get_codec(STU.from_type(type(blob)), codec)
         _logger.debug(f"store_blob: {key} {type(blob)} {codec} -> protocol: {protocol}")
         p = self._blob_path(key)
