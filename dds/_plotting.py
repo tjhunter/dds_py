@@ -5,12 +5,22 @@ https://github.com/BVLC/caffe/blob/master/python/caffe/draw.py
 """
 import pathlib
 from collections import OrderedDict
-from typing import NamedTuple, Optional, List, Tuple, Set
+from typing import NamedTuple, Optional, List, Tuple, Set, NewType, Dict
 
 import pydotplus as pydot  # type: ignore
 
 from dds.structures import FunctionInteractions, DDSPath, PyHash
 
+EdgeType = NewType("EdgeType", int)
+DirectEdge = EdgeType(1)
+ImplicitEdge = EdgeType(2)
+IndirectEdge = EdgeType(3)
+
+_edge_styles: Dict[EdgeType, Dict[str, str]] = {
+    DirectEdge: {"style": "solid"},
+    IndirectEdge: {"style": "dashed"},
+    ImplicitEdge: {"style": "dotted"},
+}
 
 NORMAL_NODE_STYLE = {"shape": "box"}
 
@@ -18,31 +28,37 @@ BLOB_NODE_STYLE = {"shape": "box", "fillcolor": "#E0E0E0", "style": "filled"}
 
 EVAL_NODE_STYLE = {"shape": "box", "fillcolor": "#90EE90", "style": "filled"}
 
-IMPLICIT_EDGE_STYLE = {"style": "dashed"}
-
-EXPLICIT_EDGE_STYLE = {"style": "solid"}
-
 
 def build_graph(
-    fis: FunctionInteractions, present_blobs: Optional[Set[PyHash]]
+    fis: FunctionInteractions,
+    present_blobs: Optional[Set[PyHash]],
+    indirect_refs: Dict[DDSPath, PyHash],
 ) -> pydot.Dot:
-    s = _structure(fis)
+    s = _structure(fis, indirect_refs)
     g = pydot.Dot("interactions", graph_type="digraph", rankdir="BT")
+    indirect_hashes = set(indirect_refs.values())
     for n in s.fnodes:
         style = NORMAL_NODE_STYLE
+        if n.node_hash in indirect_hashes:
+            style = BLOB_NODE_STYLE
         if present_blobs:
             style = BLOB_NODE_STYLE if n.node_hash in present_blobs else EVAL_NODE_STYLE
         g.add_node(pydot.Node(name=str(n.path), **style))
     for e in s.deps:
-        style = IMPLICIT_EDGE_STYLE if e.is_implicit else EXPLICIT_EDGE_STYLE
+        style = _edge_styles[e.edge_type]
         g.add_edge(pydot.Edge(src=str(e.from_path), dst=str(e.to_path), **style))
     return g
 
 
 def draw_graph(
-    fis: FunctionInteractions, out: pathlib.Path, present_blobs: Optional[Set[PyHash]]
+    fis: FunctionInteractions,
+    out: pathlib.Path,
+    present_blobs: Optional[Set[PyHash]],
+    indirect_refs: Dict[DDSPath, PyHash],
 ) -> None:
-    out.write_bytes(build_graph(fis, present_blobs).create(format=out.suffix[1:]))
+    out.write_bytes(
+        build_graph(fis, present_blobs, indirect_refs).create(format=out.suffix[1:])
+    )
 
 
 class Node(NamedTuple):
@@ -53,7 +69,7 @@ class Node(NamedTuple):
 class Edge(NamedTuple):
     from_path: DDSPath
     to_path: DDSPath
-    is_implicit: bool
+    edge_type: EdgeType
 
 
 class Graph(NamedTuple):
@@ -61,8 +77,11 @@ class Graph(NamedTuple):
     deps: List[Edge]
 
 
-def _structure(fis: FunctionInteractions) -> Graph:
+def _structure(
+    fis: FunctionInteractions, indirect_refs: Dict[DDSPath, PyHash]
+) -> Graph:
     nodes: OrderedDict[PyHash, Node] = OrderedDict()
+    all_refs: Dict[DDSPath, PyHash] = dict(indirect_refs)
     # The head nodes for each function
     head_nodes: OrderedDict[PyHash, List[Node]] = OrderedDict()
     # The set of all known dependencies to a node
@@ -118,7 +137,7 @@ def _structure(fis: FunctionInteractions) -> Graph:
                             and k1 not in sub_set
                             and k2 not in sub_set
                         ):
-                            deps[k] = Edge(n1.path, n2.path, True)
+                            deps[k] = Edge(n1.path, n2.path, ImplicitEdge)
                             node_deps[k2].add(k1)
                             node_deps[k2].update(node_deps[k1])
                 # Restart the list of deps just based on the last implicit node
@@ -130,13 +149,23 @@ def _structure(fis: FunctionInteractions) -> Graph:
             # We are returning a path -> create a node
             res_node = Node(fis_.store_path, sig)
             nodes[sig] = res_node
+            all_refs[fis_.store_path] = sig
             sub_set.update([n.node_hash for n in sub_nodes])
             node_deps[res_node.node_hash] = sub_set
             for sub_n in sub_nodes:
                 k = (sub_n.node_hash, res_node.node_hash)
-                if k not in deps or deps[k].is_implicit:
-                    deps[k] = Edge(sub_n.path, res_node.path, False)
+                if k not in deps or deps[k].edge_type != DirectEdge:
+                    deps[k] = Edge(sub_n.path, res_node.path, DirectEdge)
                 node_deps[res_node.node_hash].update(node_deps[sub_n.node_hash])
+            # Add the indirect references
+            for p in fis_.indirect_deps:
+                assert p in all_refs, p
+                sig2 = all_refs[p]
+                if sig2 not in nodes:
+                    nodes[sig2] = Node(p, sig2)
+                k = (sig2, res_node.node_hash)
+                if k not in deps:
+                    deps[k] = Edge(p, res_node.path, IndirectEdge)
             return [res_node]
 
     traverse(fis)
