@@ -252,7 +252,9 @@ def _eval_new_ctx(
         else:
             resolved_indirect_refs = OrderedDict()
 
-        eval_ctx.resolved_references = resolved_indirect_refs
+        # Make a copy of the dictionary: the context will use it to track all the nodes, which means that
+        # at plotting stage, it will contain all the nodes, not just the indirect refs.
+        eval_ctx.resolved_references = OrderedDict(resolved_indirect_refs)
 
         inters = introspect(fun, eval_ctx, arg_ctx)
         _logger.debug(f"_eval_new_ctx: introspect completed")
@@ -281,7 +283,7 @@ def _eval_new_ctx(
             # Attempt to run the export module:
             from ._plotting import draw_graph
 
-            draw_graph(inters, export_graph, present_blobs)
+            draw_graph(inters, export_graph, present_blobs, resolved_indirect_refs)
             _logger.debug(f"_eval_new_ctx: draw_graph_completed")
 
         _logger.debug(f"Stage {ProcessingStage.ANALYSIS} completed")
