@@ -14474,19 +14474,19 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="tutorial">Tutorial<a class="anchor-link" href="#Tutorial">¶</a></h2><p>The <code>dds</code> package solves the data integration problem in data science codebases. By using the <code>dds</code> package, you can safely assume that:</p>
+<h2 id="user-guide">User guide<a class="anchor-link" href="#User-guide">¶</a></h2><p>The <code>dds</code> package solves the data integration problem in data science codebases. By using the <code>dds</code> package, you can safely assume that:</p>
 <ul>
-<li>data consumed or produced is up to date with the current code</li>
-<li>if a piece of data (machine learning models, datasets, ...) has already been calculated for a given code, it will immediately be used, dramatically accelerating the run of the code</li>
+<li>data consumed or produced is up to date with the current code (<em>coherence guarantee</em>)</li>
+<li>if a piece of data (machine learning models, datasets, ...) has already been calculated for a given code, it will immediately be used, dramatically accelerating the run of the code (caching)</li>
 </ul>
-<p><code>dds</code> works by inspecting python code and checking against a central store if its output has already been calculated. In that sense, it can be thought of as a smart caching system that detects if it should rerun calculations.</p>
-<p>In order to work, <code>dds</code> needs two pieces of information:</p>
+<p><code>dds</code> works by inspecting python code and checking against a central store if its output has already been calculated. In that sense, it can be thought of as a smart caching system that detects if it should rerun calculations. As we will see, this makes <code>dds</code> a very simple foundation to build a <em>feature store</em> that keeps models, transformed data and feature data all in sync.</p>
+<p>In order to work, <code>dds</code> needs three pieces of information:</p>
 <ul>
 <li>where to store all the pieces of data (called blobs in <code>dds</code> jargon) that have been already calculated. This is by default in <code>/tmp/dds/internal</code> (or equivalent for your operating system)</li>
-<li><p>where to store all the paths that are being requested for evaluation. It is by default in <code>/tmp/dds/data</code>.</p>
-<p>Here is a simple "Hello world" example in DDS:</p>
-</li>
+<li>where to store all the paths that are being requested for evaluation. It is by default in <code>/tmp/dds/data</code>.</li>
+<li>what code should be tracked. Using the default configuration is enough for this tutorial in a notebook.</li>
 </ul>
+<p>Here is a simple "Hello world" example in DDS:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14990,11 +14990,99 @@ Calling hello_from_file
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>As a conclusion, <code>dds</code> provides 3 basic functions to track and cache pieces of data:</p>
+<h2 id="indirect-references-load">Indirect references: load()<a class="anchor-link" href="#Indirect-references:-load()">¶</a></h2><p>So far, we have seen only one way to access data: using <code>dds.keep</code> (or its shortcut <code>@data_function</code>). 
+It is not always convenient to refer to the data function that created the piece of data in the first place.
+For example, the function that created the data in the first place contains some secrets that should not be accessible.
+This is why <code>dds</code> provides an alternative way to access data, using only the <em>path to the data</em>. This is what the <code>dds.load</code> function provides.</p>
+<p>For example, if we want to retrieve the data stored in <code>/hello_world</code>, we can directly retrieve it in the following way:</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"/hello_world"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>'Hello, world'</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Just like the other functions, changes to the underlying data will cause the signature of a <code>dds.load</code> call to change. 
+This function seems convenient, but it comes at some cost: because it refers only to the result and not to how the data was calculated, it cannot check for loop dependencies, or if this reference should be updated.</p>
+<p>When to use <code>dds.load</code> and when to directly call the function?</p>
+<ul>
+<li>directly calling the function ensure that the most recent version will be taken into account, at the expense of a code dependency</li>
+<li>loading the data indirectly hides the implementation, but may introduce coherency and synchronization issues</li>
+</ul>
+<p>Furthermore, some extra rules must be respected when mixing <code>load</code> and other functions. In particular, <code>dds</code> will prevent you from reading a dataset first through <code>load</code> and then evaluating it using <code>keep</code>. This example will fail for example:</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
+    <span class="k">return</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">h</span><span class="p">():</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">dds</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"/f"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">g</span><span class="p">():</span>
+    <span class="n">h</span><span class="p">()</span>
+    <span class="n">f</span><span class="p">()</span>
+
+<span class="c1"># This will fail with a DDSException</span>
+<span class="c1"># dds.eval(g)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Rearranging the call <code>h()</code> after <code>f()</code> solves the problem:</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">g</span><span class="p">():</span>
+    <span class="n">f</span><span class="p">()</span>
+    <span class="n">h</span><span class="p">()</span>
+<span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="conclusion">Conclusion<a class="anchor-link" href="#Conclusion">¶</a></h2><p>As a conclusion, <code>dds</code> provides 4 basic functions to track and cache pieces of data:</p>
 <ul>
 <li><code>data_function</code> is an annotation for functions that take no arguments and return a piece of data that should be tracked</li>
 <li><code>keep</code> is a function that wraps function calls. It can be used standalone when the function uses basic types as arguments.</li>
 <li><code>eval</code> is used in conjunction with <code>keep</code> when data functions take complex arguments.</li>
+<li><code>load</code> directly loads a piece of data from its path (without having to refer its generating data function)</li>
 </ul>
 <p>By building on these foundations, <code>dds</code> allows you to do many more things such as visualizing all the dependencies between data, speeding up Machine Learning pipelines, and parallelizing your code automatically. The other tutorials provide more information.</p>
 </div>
