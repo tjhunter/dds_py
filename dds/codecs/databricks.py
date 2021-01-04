@@ -209,13 +209,10 @@ class DBFSStore(Store):
     def store_blob(
         self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
     ) -> None:
-        _logger.debug(f"store_blob: registry: {self._registry._handled_types}")
-        _logger.debug(f"store_blob: {key} {type(blob)} {codec}")
-        _logger.debug(
-            f"store_blob: {key} {type(blob)} type: {STU.from_type(type(blob))}"
-        )
         protocol = self._registry.get_codec(STU.from_type(type(blob)), codec)
-        _logger.debug(f"store_blob: {key} {type(blob)} {codec} -> protocol: {protocol}")
+        _logger.debug(
+            f"store_blob: {key} {type(blob)} {codec} {STU.from_type(type(blob))} -> protocol: {protocol}"
+        )
         p = self._blob_path(key)
         protocol.serialize_into(blob, GenericLocation(str(p)))
         meta_p = self._blob_meta_path(key)
