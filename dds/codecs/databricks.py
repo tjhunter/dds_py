@@ -81,7 +81,7 @@ class PySparkDatabricksCodec(CodecProtocol):
         return ProtocolRef("dbfs.pyspark")
 
     def handled_types(self):
-        return [ST("pyspark.sql.DataFrame")]
+        return [ST("pyspark.sql.DataFrame"), ST("pyspark.sql.dataframe.DataFrame")]
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         from pyspark.sql import DataFrame  # type: ignore
