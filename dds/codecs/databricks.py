@@ -209,7 +209,9 @@ class DBFSStore(Store):
     def store_blob(
         self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
     ) -> None:
+        _logger.debug(f"store_blob: registry: {self._registry._handled_types}")
         _logger.debug(f"store_blob: {key} {type(blob)} {codec}")
+        _logger.debug(f"store_blob: {key} {type(blob)} type: {STU.from_type(type(blob))}")
         protocol = self._registry.get_codec(STU.from_type(type(blob)), codec)
         _logger.debug(f"store_blob: {key} {type(blob)} {codec} -> protocol: {protocol}")
         p = self._blob_path(key)
