@@ -222,7 +222,7 @@ class DBFSStore(Store):
                 lp = Path(td).joinpath("file")
                 lp2 = f"file://{lp}"
                 _logger.debug(f"Temporary copy from DBFS: {p} -> {lp2}")
-                self._dbutils.fs.cp(p, str(lp2))
+                self._dbutils.fs.cp(str(p), str(lp2))
                 return codec.deserialize_from(lp)
         else:
             raise KSException(f"{type(codec)} codec")
@@ -244,7 +244,7 @@ class DBFSStore(Store):
                 protocol.serialize_into(blob, lp)
                 lp2 = f"file://{lp}"
                 _logger.debug(f"Temporary copy from DBFS: {lp2} -> {p}")
-                self._dbutils.fs.cp(lp2, p)
+                self._dbutils.fs.cp(lp2, str(p))
         else:
             raise KSException(f"{type(protocol)} codec")
         meta_p = self._blob_meta_path(key)
