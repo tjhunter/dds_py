@@ -7,7 +7,7 @@
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="../img/favicon.ico" rel="shortcut icon"/>
-<title>Tutorial - modules - DDS documentation</title>
+<title>Tutorial - collaboration - DDS documentation</title>
 <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
 <link href="../css/theme.css" rel="stylesheet"/>
 <link href="../css/theme_extra.css" rel="stylesheet"/>
@@ -15,8 +15,8 @@
 <link href="../extra.css" rel="stylesheet"/>
 <script>
     // Current page data
-    var mkdocs_page_name = "Tutorial - modules";
-    var mkdocs_page_input_path = "tut_modules.ipynb";
+    var mkdocs_page_name = "Tutorial - collaboration";
+    var mkdocs_page_input_path = "tut_collab.ipynb";
     var mkdocs_page_url = null;
   </script>
 <script defer="" src="../js/jquery-2.1.1.min.js"></script>
@@ -53,18 +53,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
 </li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - modules</a>
-<ul class="current">
-</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Tutorial - modules</a>
 </li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Tutorial - collaboration</a>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - collaboration</a>
+<ul class="current">
+</ul>
 </li>
 </ul>
 <ul>
@@ -84,7 +84,7 @@
 <div aria-label="breadcrumbs navigation" role="navigation">
 <ul class="wy-breadcrumbs">
 <li><a href="..">Docs</a> »</li>
-<li>Tutorial - modules</li>
+<li>Tutorial - collaboration</li>
 <li class="wy-breadcrumbs-aside">
 </li>
 </ul>
@@ -14476,19 +14476,54 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="working-with-modules">Working with modules<a class="anchor-link" href="#Working-with-modules">¶</a></h2><p><code>dds</code> works by tracking changes in the source code. Because a lot of the code are irrelevant to be tracked (for example, the low-level python modules to open files), <code>dds</code> makes the decision that the <em>user needs to indicate which code should be tracked</em>. This whitelisting approach allows users to track only pieces of code that matter. For example, all the logging system may not be very relevant for the outcome of the business logic.</p>
-<p>This fact is not usually important in simple cases. When working with a single notebook, or when working with a single python file, then there is nothing to do: all the functions written in a standalone python script or notebook are automatically considered. How to work with more complicated code bases, which include modules and other packages with important business logic to track? This is the topic of this tutorial.</p>
-<p>Consider the following python module <code>my_module</code>, which has one data function:</p>
+<h1 id="using-dds-to-collaborated-between-data-branches">Using dds to collaborated between data branches<a class="anchor-link" href="#Using-dds-to-collaborated-between-data-branches">¶</a></h1><p><code>dds</code> can be used within a team to collaborate on data, just like one would collaborate on source code. This tutorial shows how two people, Alice and Bob, can work on the same code base and checkout each other's versions of their data.</p>
+<p>Let us start with a data function written in the <code>main</code>branch.</p>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_collab</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
+
+<span class="k">def</span> <span class="nf">store_main</span><span class="p">():</span>
+    <span class="n">dds</span><span class="o">.</span><span class="n">set_store</span><span class="p">(</span><span class="s2">"local"</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="s2">"/tmp/dds/tut_collab/data_main"</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="s2">"/tmp/dds/tut_collab/internal"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">store_fork</span><span class="p">():</span>
+    <span class="n">dds</span><span class="o">.</span><span class="n">set_store</span><span class="p">(</span><span class="s2">"local"</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="s2">"/tmp/dds/tut_collab/data_fork"</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="s2">"/tmp/dds/tut_collab/internal"</span><span class="p">)</span>
+
+<span class="n">store_main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># main branch</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/my_data"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">my_data</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"calculating my_data"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"Alice"</span>
+
+<span class="n">my_data</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14499,12 +14534,14 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>import dds
-
-
-@dds.data_function("/my_function")
-def my_function():
-    return "my_function"</pre>
+<pre>calculating my_data
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>'Alice'</pre>
 </div>
 </div>
 </div>
@@ -14512,7 +14549,7 @@ def my_function():
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Just trying to run this function is going to give an error:</p>
+<p>Bob branches the code in his fork. So far, there is no change. When evaluating the data functions, he gets the same content</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
@@ -14520,23 +14557,11 @@ def my_function():
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">my_module</span>
-
-<span class="c1"># This statement will fail!</span>
-<span class="c1"># my_module.my_function()</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">store_fork</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Here is the error message that you would get:</p>
-<blockquote><p>Cannot load path &lt;my_module.my_function&gt;: this object cannot be retrieved, however the module 'my_module' exists. The typical cause of the issue is that the module my_module has not been whitelisted for use by DDS. Use the function 'dds.accept_module' to whitelist my_module or one of its submodules. dep_path: my_function module: &lt;module 'my_module' from './dds_py/doc_source/my_module.py'&gt;</p>
-</blockquote>
-<p>How do deal with this? The error message includes a hint to the usage of the <code>accept_module</code> function. This function instructs <code>dds</code> to consider a specific module or package for inclusion when inspecting the code. In particular, <em>all the data functions must be whitelisted</em>.</p>
-<p>Here is our previous example, fixed:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14544,10 +14569,9 @@ def my_function():
 <div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
-<span class="n">dds</span><span class="o">.</span><span class="n">accept_module</span><span class="p">(</span><span class="s2">"my_module"</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># fork branch</span>
 
-<span class="n">my_module</span><span class="o">.</span><span class="n">my_function</span><span class="p">()</span>
+<span class="n">my_data</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14558,7 +14582,7 @@ def my_function():
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>'my_function'</pre>
+<pre>'Alice'</pre>
 </div>
 </div>
 </div>
@@ -14566,8 +14590,7 @@ def my_function():
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>All sub-modules are automatically accepted. For example in our case, <code>my_module.sub_module</code> is now also accepted.</p>
-<p>Dependencies to other modules are <em>not</em> automatically accepted, and should be also added if they are important. Consider this example with two modules: one module containing the business logic, and one module containing some utilities that we do not want to track:</p>
+<p>Now, Bob is going to change the content of the branch and update the code.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14575,7 +14598,14 @@ def my_function():
 <div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module_utils</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># fork branch</span>
+
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/my_data"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">my_data</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"calculating my_data"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"Alice, Bob"</span>
+
+<span class="n">my_data</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14586,12 +14616,22 @@ def my_function():
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>variable = 1
-
-def get_util_variable(): return variable</pre>
+<pre>calculating my_data
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>'Alice, Bob'</pre>
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Let's look at the content: the store has two blobs, one for each of the data functions:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14599,7 +14639,7 @@ def get_util_variable(): return variable</pre>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module_important</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">ls</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_collab</span><span class="o">/</span><span class="n">internal</span><span class="o">/</span><span class="n">blobs</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">meta</span>
 </pre></div>
 </div>
 </div>
@@ -14610,17 +14650,17 @@ def get_util_variable(): return variable</pre>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>import dds
-from my_module_utils import get_util_variable
-
-@dds.data_function("/f")
-def f():
-    print("executing f")
-
-    return get_util_variable() * 2</pre>
+<pre>728433a6899b293d14157e4a321431a59a66f85109086851f58bcd53ba984c8b
+ecf06a7b7943cda9620d652393d2067887ce53c816ea7f0a08de94bee2fa0290
+</pre>
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>In the view of Alice using the <code>main</code> branch, the data points still to the 'Alice' dataset:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14628,10 +14668,7 @@ def f():
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">accept_module</span><span class="p">(</span><span class="s2">"my_module_important"</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">my_module_important</span>
-
-<span class="n">my_module_important</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_collab</span><span class="o">/</span><span class="n">data_main</span><span class="o">/</span><span class="n">my_data</span>
 </pre></div>
 </div>
 </div>
@@ -14642,14 +14679,7 @@ def f():
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>executing f
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>2</pre>
+<pre>Alice</pre>
 </div>
 </div>
 </div>
@@ -14657,7 +14687,7 @@ def f():
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p><code>my_module_utils</code> is not whitelisted. If we modify it, it is not going to retrigger a calculation</p>
+<p>And in the view of Bob, working in the <code>fork</code> branch, the data is updated:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14665,11 +14695,7 @@ def f():
 <div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">my_module_utils</span>
-<span class="n">my_module_utils</span><span class="o">.</span><span class="n">variable</span> <span class="o">=</span> <span class="mi">2</span>
-
-
-<span class="n">my_module_important</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_collab</span><span class="o">/</span><span class="n">data_fork</span><span class="o">/</span><span class="n">my_data</span>
 </pre></div>
 </div>
 </div>
@@ -14678,9 +14704,9 @@ def f():
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>2</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Alice, Bob</pre>
 </div>
 </div>
 </div>
@@ -14688,18 +14714,71 @@ def f():
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We can decide later to include <code>my_module_utils</code> as well, by calling <code>accept_module('my_module_utils')</code>.</p>
-<p>This is a tradeoff for the user:</p>
+<p>Now, we assume that the change of Bob has been merged back into the <code>main</code> branch. Now the code in the main branch is the one from the <code>fork</code> branch:</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># main branch:</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/my_data"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">my_data</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"calculating my_data"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"Alice, Bob"</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>When Alice imports the main branch and re-evaluates the code, she gets the updated version <em>without having to recalculate the content of the function</em>:</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># main branch</span>
+<span class="n">my_data</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>'Alice, Bob'</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Indeed, the content of the cache was already populated when <code>Bob</code> ran its branch. Alice working from the main branch does need to re-compute anything: the merged code from Bob is the same as the one he ran from the <code>fork</code> branch, hence the stored artifacts are already there.</p>
+<p>As we see, switching between branches of data is as easy as switching between code branches. When re-evaluating the content, <code>dds</code> checks that the objects are already in the shared store. A code branch switch is just a matter of updating file links to existing objects.</p>
+<p>How does this work with storage systems that do not support linking, such as the Databricks(R) File System (DBFS) or S3 for example? In this case, there are two possibilities:</p>
 <ul>
-<li>add more code to track more changes, which could be irrelevant to the result</li>
-<li>track less code and focus on the core business logic, at the expense of missing some important changes</li>
+<li>if the data is only to be used within <code>dds</code>, then the respective stores offer a way to just store links. Switching between branches is very fast, but other systems cannot read the content of the files without changes</li>
+<li>is the data is mant to be shared outside of <code>dds</code>, then the stores will copy the content of the blob to the final destination. Depending on the size and the number of objects to copy, this may be significant.</li>
 </ul>
-<p>As a recommendation, accept the packages that you are working on, and possibly some important dependencies that contain data functions themselves.</p>
-<p>To conclude this tutorial:</p>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>To conclude, <code>dds</code>'s philosophy of <em>data is code</em> makes it easy to share and update data in a collaborative environment:</p>
 <ul>
-<li><code>dds</code> can track code in module using the <code>accept_module</code> function</li>
-<li>all the data functions must be in whitelisted modules or sub-modules</li>
-<li>dependencies are not automatically tracked</li>
+<li>data is tracked in each branch</li>
+<li>switching between code branches to retrieve code and views of the corresponding data</li>
+<li>all the data can be pre-calculated before merging the code, making a code+data checkout always a fast operation for the target branch</li>
 </ul>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
@@ -14721,8 +14800,8 @@ def f():
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a class="btn btn-neutral float-right" href="../plotting/" title="Tutorial - plotting">Next <span class="icon icon-circle-arrow-right"></span></a>
-<a class="btn btn-neutral" href="../tutorial/" title="Tutorial"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+<a class="btn btn-neutral float-right" href="../test_sklearn/" title="Tutorial - scikit-learn">Next <span class="icon icon-circle-arrow-right"></span></a>
+<a class="btn btn-neutral" href="../plotting/" title="Tutorial - plotting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
 </div>
 <hr/>
 <div role="contentinfo">
@@ -14737,8 +14816,8 @@ def f():
 </div>
 <div aria-label="versions" class="rst-versions" role="note">
 <span class="rst-current-version" data-toggle="rst-current-version">
-<span><a href="../tutorial/" style="color: #fcfcfc;">« Previous</a></span>
-<span style="margin-left: 15px"><a href="../plotting/" style="color: #fcfcfc">Next »</a></span>
+<span><a href="../plotting/" style="color: #fcfcfc;">« Previous</a></span>
+<span style="margin-left: 15px"><a href="../test_sklearn/" style="color: #fcfcfc">Next »</a></span>
 </span>
 </div>
 <script>var base_url = '..';</script>

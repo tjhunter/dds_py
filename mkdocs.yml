@@ -22,4 +22,5 @@ nav:
     - Tutorial: tutorial.ipynb
     - Tutorial - modules: tut_modules.ipynb
     - Tutorial - plotting: plotting.ipynb
+    - Tutorial - collaboration: tut_collab.ipynb
     - Tutorial - scikit-learn: test_sklearn.ipynb
