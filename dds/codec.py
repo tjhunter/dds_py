@@ -2,19 +2,37 @@ import importlib.util
 import logging
 from typing import Optional, Dict, List, Union
 
-from .structures import KSException, CodecProtocol, ProtocolRef, SupportedType, FileCodecProtocol
+from .structures import (
+    KSException,
+    CodecProtocol,
+    ProtocolRef,
+    SupportedType,
+    FileCodecProtocol,
+)
 from .structures_utils import SupportedTypeUtils
 
 _logger = logging.getLogger(__name__)
 
 
 class CodecRegistry(object):
-    def __init__(self, codecs: List[CodecProtocol], file_codecs: List[FileCodecProtocol]):
+    """
+    Invariants:
+    - the codecs have precedence over the file codecs (they are more specialized)
+    """
+
+    def __init__(
+        self, codecs: List[CodecProtocol], file_codecs: List[FileCodecProtocol]
+    ):
         self.codecs = list(codecs)
-        self._handled_types: Dict[SupportedType, CodecProtocol] = {}
-        self._protocols: Dict[ProtocolRef, CodecProtocol] = {}
-        for c in codecs:
+        self.file_codecs = list(file_codecs)
+        self._handled_types: Dict[
+            SupportedType, Union[CodecProtocol, FileCodecProtocol]
+        ] = {}
+        self._protocols: Dict[ProtocolRef, Union[CodecProtocol, FileCodecProtocol]] = {}
+        for c in list(codecs):
             self.add_codec(c)
+        for fc in list(self.file_codecs):
+            self.add_file_codec(fc)
 
     def add_codec(self, codec: CodecProtocol) -> None:
         """ added codecs come on top """
@@ -23,10 +41,21 @@ class CodecRegistry(object):
             self._handled_types[t] = codec
         self._protocols[codec.ref()] = codec
 
+    def add_file_codec(self, codec: FileCodecProtocol) -> None:
+        """ added codecs come on top """
+        self.file_codecs.insert(0, codec)
+        for t in codec.handled_types():
+            if t not in self._handled_types:
+                self._handled_types[t] = codec
+        if codec.ref() in self._protocols:
+            _logger.warning(f"{codec.ref()} already in protocols, skipping {codec}")
+        else:
+            self._protocols[codec.ref()] = codec
+
     # TODO: add the location too.
     def get_codec(
         self, obj_type: Union[SupportedType, None], ref: Optional[ProtocolRef]
-    ) -> CodecProtocol:
+    ) -> Union[CodecProtocol, FileCodecProtocol]:
         # First the reference
         if ref:
             if ref not in self._protocols:
@@ -59,12 +88,15 @@ def _build_default_registry() -> CodecRegistry:
     else:
         _logger.debug(f"Cannot load pandas")
     # To prevent a circular import.
-    from .codecs.builtins import StringLocalCodec, PickleLocalCodec
+    from .codecs.builtins import (
+        StringLocalFileCodec,
+        PickleLocalFileCodec,
+        BytesFileCodec,
+    )
 
-    # Put the default codecs at the bottom of the list:
-    codecs.append(StringLocalCodec())
-    codecs.append(PickleLocalCodec())
-    return CodecRegistry(codecs)
+    return CodecRegistry(
+        codecs, [StringLocalFileCodec(), BytesFileCodec(), PickleLocalFileCodec()]
+    )
 
 
 _registry: Optional[CodecRegistry] = None

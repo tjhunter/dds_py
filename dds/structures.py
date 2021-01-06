@@ -91,6 +91,7 @@ class FileCodecProtocol(object):
 
     This file is expected to be read, written and deleted by the store.
     """
+
     def ref(self) -> ProtocolRef:
         pass
 
