@@ -1,7 +1,7 @@
-from pathlib import PurePath, Path
 from collections import OrderedDict
 from enum import Enum
 from functools import total_ordering
+from pathlib import PurePath
 from pathlib import PurePosixPath
 from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
 

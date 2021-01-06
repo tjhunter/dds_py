@@ -5,14 +5,13 @@ It relies on pandas having a parquet driver installed (which may or may not be t
 """
 
 import logging
-from typing import Any
 from pathlib import PurePath
+from typing import Any
 
 from ..structures import (
-    CodecProtocol,
     ProtocolRef,
-    GenericLocation,
-    SupportedType as ST, FileCodecProtocol
+    SupportedType as ST,
+    FileCodecProtocol,
 )
 
 _logger = logging.getLogger(__name__)
@@ -37,6 +36,7 @@ _logger = logging.getLogger(__name__)
 #
 #         return pandas.read_parquet(loc)
 
+
 class PandasFileCodec(FileCodecProtocol):
     def ref(self):
         return ProtocolRef("local.pandas")
@@ -46,6 +46,7 @@ class PandasFileCodec(FileCodecProtocol):
 
     def serialize_into(self, blob: Any, loc: PurePath):
         import pandas
+
         assert isinstance(blob, pandas.DataFrame)
         blob.to_parquet(str(loc))
         _logger.debug(f"Committed dataframe to parquet: {loc}")

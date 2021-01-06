@@ -1,15 +1,13 @@
 """
 The string protocol.
 """
-from pathlib import PurePath, Path
 import pickle
+from pathlib import PurePath
 from typing import Any, List
 
 from ..structures import (
-    CodecProtocol,
     FileCodecProtocol,
     ProtocolRef,
-    GenericLocation,
     CodecBackend,
     SupportedType,
 )
