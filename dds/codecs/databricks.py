@@ -220,8 +220,9 @@ class DBFSStore(Store):
             # First copy the file locally and then deserialize the local file
             with tempfile.TemporaryDirectory() as td:
                 lp = Path(td).joinpath("file")
-                _logger.debug(f"Temporary copy from DBFS: {p} -> {lp}")
-                self._dbutils.fs.cp(p, str(lp))
+                lp2 = f"file://{lp}"
+                _logger.debug(f"Temporary copy from DBFS: {p} -> {lp2}")
+                self._dbutils.fs.cp(p, str(lp2))
                 return codec.deserialize_from(lp)
         else:
             raise KSException(f"{type(codec)} codec")
