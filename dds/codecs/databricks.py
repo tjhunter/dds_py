@@ -191,12 +191,13 @@ class DBFSStore(Store):
         self._dbutils = dbutils
         self._commit_type = commit_type
         from .builtins import StringLocalFileCodec, PickleLocalFileCodec, BytesFileCodec
+        from .pandas import PandasFileCodec
 
         slfc = StringLocalFileCodec()
         plfc = BytesFileCodec()
         bfc = PickleLocalFileCodec()
 
-        self._registry = CodecRegistry([PySparkDatabricksCodec()], [slfc, plfc, bfc],)
+        self._registry = CodecRegistry([PySparkDatabricksCodec()], [slfc, plfc, bfc, PandasFileCodec()],)
         # Deprecation hack
         # To ensure that older data already written can still be read, add the following compatibility routines:
         for (old_codec_ref, new_codec) in [

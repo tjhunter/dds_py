@@ -78,16 +78,17 @@ class CodecRegistry(object):
 
 def _build_default_registry() -> CodecRegistry:
     codecs: List[CodecProtocol] = []
-    if importlib.util.find_spec("pandas") is not None:
-        # TODO: this could be done without hardcoding pandas, simply by loading at the
-        # name of the head module in the list of supported types.
-        from .codecs.pandas import PandasLocalCodec
-
-        _logger.info(f"Loading pandas codecs")
-        codecs.append(PandasLocalCodec())
-    else:
-        _logger.debug(f"Cannot load pandas")
+    # if importlib.util.find_spec("pandas") is not None:
+    #     # TODO: this could be done without hardcoding pandas, simply by loading at the
+    #     # name of the head module in the list of supported types.
+    #
+    #
+    #     _logger.info(f"Loading pandas codecs")
+    #     codecs.append(PandasLocalCodec())
+    # else:
+    #     _logger.debug(f"Cannot load pandas")
     # To prevent a circular import.
+    from .codecs.pandas import PandasFileCodec
     from .codecs.builtins import (
         StringLocalFileCodec,
         PickleLocalFileCodec,
@@ -95,7 +96,7 @@ def _build_default_registry() -> CodecRegistry:
     )
 
     return CodecRegistry(
-        codecs, [StringLocalFileCodec(), BytesFileCodec(), PickleLocalFileCodec()]
+        codecs, [StringLocalFileCodec(), BytesFileCodec(), PickleLocalFileCodec(), PandasFileCodec()]
     )
 
 
