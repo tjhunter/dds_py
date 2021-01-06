@@ -172,4 +172,9 @@ class FunctionIndirectInteractionUtils(object):
 class SupportedTypeUtils(object):
     @staticmethod
     def from_type(t: type) -> SupportedType:
-        return SupportedType(str(t.__name__))
+        if t is None:
+            return SupportedTypeUtils.from_type(type(None))
+        module = t.__module__
+        if module is None or module == str.__class__.__module__:
+            return SupportedType(t.__name__)
+        return SupportedType(module + "." + t.__name__)

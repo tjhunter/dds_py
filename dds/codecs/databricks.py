@@ -81,7 +81,7 @@ class PySparkDatabricksCodec(CodecProtocol):
         return ProtocolRef("dbfs.pyspark")
 
     def handled_types(self):
-        return [ST("pyspark.sql.DataFrame")]
+        return [ST("pyspark.sql.DataFrame"), ST("pyspark.sql.dataframe.DataFrame")]
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         from pyspark.sql import DataFrame  # type: ignore
@@ -210,6 +210,9 @@ class DBFSStore(Store):
         self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
     ) -> None:
         protocol = self._registry.get_codec(STU.from_type(type(blob)), codec)
+        _logger.debug(
+            f"store_blob: {key} {type(blob)} {codec} {STU.from_type(type(blob))} -> protocol: {protocol}"
+        )
         p = self._blob_path(key)
         protocol.serialize_into(blob, GenericLocation(str(p)))
         meta_p = self._blob_meta_path(key)

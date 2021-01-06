@@ -7,7 +7,7 @@
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="../img/favicon.ico" rel="shortcut icon"/>
-<title>Tutorial - scikit-learn - DDS documentation</title>
+<title>Tutorial - modules - DDS documentation</title>
 <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
 <link href="../css/theme.css" rel="stylesheet"/>
 <link href="../css/theme_extra.css" rel="stylesheet"/>
@@ -15,8 +15,8 @@
 <link href="../extra.css" rel="stylesheet"/>
 <script>
     // Current page data
-    var mkdocs_page_name = "Tutorial - scikit-learn";
-    var mkdocs_page_input_path = "test_sklearn.ipynb";
+    var mkdocs_page_name = "Tutorial - modules";
+    var mkdocs_page_input_path = "tut_modules.ipynb";
     var mkdocs_page_url = null;
   </script>
 <script defer="" src="../js/jquery-2.1.1.min.js"></script>
@@ -53,16 +53,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Tutorial - modules</a>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - modules</a>
+<ul class="current">
+</ul>
 </li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
 </li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - scikit-learn</a>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../test_sklearn/">Tutorial - scikit-learn</a>
 </li>
 </ul>
 </div>
@@ -78,7 +80,7 @@
 <div aria-label="breadcrumbs navigation" role="navigation">
 <ul class="wy-breadcrumbs">
 <li><a href="..">Docs</a> »</li>
-<li>Tutorial - scikit-learn</li>
+<li>Tutorial - modules</li>
 <li class="wy-breadcrumbs-aside">
 </li>
 </ul>
@@ -14470,90 +14472,19 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>This tutorial is an adaptation of the Machine Learning tutorial from Elite Data Science. The original tutorial is here:</p>
-<p><a href="https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn">https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn</a></p>
-<p>Let us start with a few imports</p>
+<h2 id="working-with-modules">Working with modules<a class="anchor-link" href="#Working-with-modules">¶</a></h2><p><code>dds</code> works by tracking changes in the source code. Because a lot of the code are irrelevant to be tracked (for example, the low-level python modules to open files), <code>dds</code> makes the decision that the <em>user needs to indicate which code should be tracked</em>. This whitelisting approach allows users to track only pieces of code that matter. For example, all the logging system may not be very relevant for the outcome of the business logic.</p>
+<p>This fact is not usually important in simple cases. When working with a single notebook, or when working with a single python file, then there is nothing to do: all the functions written in a standalone python script or notebook are automatically considered. How to work with more complicated code bases, which include modules and other packages with important business logic to track? This is the topic of this tutorial.</p>
+<p>Consider the following python module <code>my_module</code>, which has one data function:</p>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
- 
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">preprocessing</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">json</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We now add the import to the <code>dds</code> package. By default, the data will be stored in the temporary directory</p>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>The two internal directories (data and internal) are now there</p>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Let's start with a familiar problem of accessing data from the internet. This piece of code will download a dataset, but with the additional twist that the dataset will be cached onto the local machine.</p>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">path_model</span> <span class="o">=</span> <span class="s2">"/wine-quality/my_model"</span>
-<span class="n">path_model_stats</span> <span class="o">=</span> <span class="s2">"/wine-quality/my_model_stats.json"</span>
-
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/wine-quality/raw"</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">data</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in _load_data ***"</span><span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/zygmuntz/wine-quality/master/winequality/winequality-red.csv"</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">content</span> 
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf8'</span><span class="p">)),</span> <span class="n">sep</span><span class="o">=</span><span class="s2">";"</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">"/tmp/2.png"</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="n">Image</span><span class="p">(</span><span class="s2">"/tmp/2.png"</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -14562,13 +14493,46 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
-<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKEAAAA7CAYAAAATrOqTAAAABmJLR0QA/wD/AP+gvaeTAAAKdElEQVR4nO2df0xN/x/Hn9VRaals7uwiWjXDjYY1tTaMkd/KLkZhEiKMkR8zm5n5IyNjiJA1E324kt9GdfOrNLWiEip0i3FTbt2Sq/v6/sE93879obr3cj4f3o/tbJ3X+7zP+/V6vZ/3nPf7fe65ORARgcEQEUexHWAwmAgZosNEyBAdztigUqnw8OFDMXxh/AV4e3sjJCREaCQjzp8/TwDYxrZfssnlcmPJkcmV0ACbNDPszdy5c83a2ZiQITpMhAzRYSJkiA4TIUN0mAgZosNEyBAdJkKG6DARMkSHiZAhOkyEDNFhImSIDhMhQ3SYCBmiw0TIEB27izA+Ph7t7e1W1a2qqkJ0dDRUKpWdvRKPr1+/4u7du9iwYQOuX7/O239VrLbkXyzsKsJnz56hqKgITk5OVtUvLCxESkoKnj59ak+3ROXZs2dIT0/HgQMHUFdXx9t/Ray25l8s7CpChUKBiIgIq+vL5XJ8/PgRU6dOtaNX4jJq1CjExcWZ2C3FmpqaanVbtuZfLOwqwkuXLtmchD59+tjJm38PHPf9C+wODg4Cu3GsWVlZ2LZtm9Xt2CP/YmDx6/3dpbKyEq6urujXrx9ycnKQn58PAAgMDMS4ceOQnJyM1tZWAEBISAjGjh0LlUqF8+fPw83NDatWrYJer4dSqYS7uzuCgoIAADU1NVAoFFi7di3Kyspw+fJlDBw4EJGRkXB0/P9nqK6uDjdv3oRKpUJoaCgmTpzYJb+bm5tx+fJlPH/+HF5eXliwYAGUSiUWLFiAK1euoLKyEu7u7oiJiUFTUxNSU1Oh0+kglUoxf/58/jwvXrxAXl4eSkpKEBoa2qkYjGPNzs5GeHg4HBwccOzYMfTr1w9ubm6oqakBALi4uGDOnDlwcXHB48ePUVZWht69e2P27Nkm+QeAhoYGpKWlYfXq1bhx4wZKSkqwceNGcBxn0Vdr+81mLL3o1F0SEhIoISGBiIja29spICCAXF1d6du3b0REVF5eThzHUXh4uKBeTEwMpaWlUWlpKcnlcgJAR48eJSKizMxMkkgkBIASExNp6dKlNGPGDAJAe/bs4c+RlZVFy5cvp8LCQkpPTyd3d3davXp1pz5XVFRQcHAw5ebmkk6no3PnzlHv3r2pT58+/DEymYwGDBjA72s0GvLw8KCQkBDelpiYSOPHjye9Xk/V1dXk4+NDR44c4ctLS0sJAJ04cYLfN461qKiIQkNDSSKRUHZ2NhUVFZFWqyWZTEYAqLKyUuD7kCFDqKKiwmz+T58+TW5ubsRxHB06dIgCAwMJABUXF//UV2v6rTvI5XKzLzrZTYTBwcH08uVLfv/YsWMEgAoLC3lbeHg4DRo0iPR6PW+bMmUKH3BJSYmgY4iItm7dSgDozp07vG3UqFE0evRoIiJqamoiX19fam5u5suXLVtGAOjRo0cW/dXr9RQUFERbtmwR2KdOnSoQoVwuF4jQ0H5HEfr7+1NcXJwgzmnTpvH7xiK0FGt4eDh5e3sL2srMzCQAlJyczNvq6upMOtM4/5GRkQSAFAoFEX0XU1d8tabfuoolEdplTFhbW4uWlhb4+/vztoULF6JXr144c+YMb/P09MSbN2+QlZUFAMjPz8eYMWP42ZyLi4vJuXv27AkAGDJkCG8bNmwY3r59CwBIS0tDa2srNm/ejLi4OMTFxeHdu3fw8/PDq1evLPp8+/ZtFBQUYPz48QK7p6dnN6P/fhvbvXs3AKCsrAw1NTV4+fLlT+uYixUwHTfOmDEDQ4cOxf79+/k3IM+ePYvFixfzx5jLv+G2bLhdG/LXma/W9Jut2EWEGRkZJmMgd3d3REVFITU1FV+/fkVtbS20Wi38/Pxw6tQpAMDx48cRExPT7facnJz4DiktLYVUKsXhw4f57dq1a3j16hWioqKQn5+PoKAgwaZUKlFcXAwACAgIsDF6oH///nj8+DHWrVuH8vJy+Pn5Qa/XW3UuYxE6ODggPj4e5eXl/DrjnTt3BLNqc/k3jJc7jpu74uuv7DdL2GViolAokJiYaGKPjY3F0aNHoVAo8OTJE2zatAk5OTnYuXMnqqqqoNVqMWDAAJvadnJyQkVFBXQ6HXr06GFSPnDgQKxZs0Zg8/X1hVKpBPB9vc5WH3bs2AGlUolbt26hZ8+euHjxotXnMhYhAERGRmLHjh3Yt28ffHx8IJPJ+Bk3YDn/1vr6O/qtIzZfCevr61FbW4sRI0aYlI0YMQIhISHYv38/Xrx4gTFjxiA6Ohp6vR4RERFYsmSJrc0jMDAQWq0WSUlJAntjYyOOHDkCqVSKJUuWCDZvb2/4+fkBAHJzcwX1jJ82cByHL1++WGy/uroau3fvRlRUFD90sOUqaO5ph7OzM9avX4/s7GzEx8dj6dKlfNnP8m+tr7+j3zpiswgzMzMxc+ZMi+WxsbEoKCjgr0YSiQQRERHQaDQICwsTHNvW1gYAUKvVvE2j0QD4/vjLgFqtRltbG4gI8+fPh7e3NzZt2oS9e/eivLwc6enpWLFiBRYtWmTRr9mzZ6Nv3744efIkbt++DZ1OhwcPHvBLFAYmT54MtVqNlJQUaLVapKSkoL6+HlVVVWhoaEBzczOA72NTjUaDe/fuITc3ly9ramrC58+fAYA/1lKsUqkU79+/R1VVFSorK6HVavmylStXwtPTE2q1GjKZrNP8G+rW19fztq74aqA7/WYzxjOV7s6Op0+fTg8fPrRY3tLSQpMmTRLYsrOzBUssRER5eXn8skVAQABdvXqVcnJyyNfXlwBQTEwMvXv3jtLS0sjDw4MA0M6dO0mn01FZWRkNHjyY/70TmUwmmN1Z4v79+ySVSgkASSQS2rVrF82cOVMwO25qaqLg4GACQEOHDiWFQkFz5syhsLAwfsYaHR1NHMeRv78/JSUl0YULF8jZ2ZkmTJhAN27coLCwMAJAI0eOpOvXr5uN1ZAXjuPIy8uLDh48aOJvbGwsHT58uNP8nzhxgvr3708AaN68eZSfn8+X/czX+vr6bvdbd/hlSzQ3b94UTN3N0dLSYmJrbW3tchtd5fXr1/TmzZtu1Wlvb6fq6mo+hlmzZglEaODDhw/83+Z812g0gv0vX750yw8DjY2NJucyMGnSJGpoaBDYupJ/Y7rqq737zZIIbZ6YdOXSbBh/dMTV1dXWpk0YNGhQt+s4OjrCx8en0+MkEgn/tznfe/XqJdi3tATTGZaWiIqLi+Hr6wsvLy+B3ZpbY1d9/V39ZrfHdn8KarUa3759E9sNAMCTJ0+wefNmDB8+HDk5OcjIyBDbpV8C+1LrD9RqNQ4dOoS8vDw0NjYiISFBMBkSA71ej4KCApw+fRrbt2/v0hX7vwi7Ev7Ay8sLixYtEsyoza07/k6CgoLw6dMnODo6miw6/0kwEf6A4ziT8da/gY6L0n8qf+7Hi/GfgYmQITpMhAzRYSJkiA4TIUN0mAgZosNEyBAdJkKG6DARMkSHiZAhOkyEDNFhImSIjsWn4+np6b/TD8ZfgEqlMvuWnkURdvydFQbDXsjlchObAxH7x8YMcWFjQoboMBEyRIeJkCE6HIB/xHaC8XfzP1biO8TbEOAZAAAAAElFTkSuQmCC
-"/>
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>import dds
+
+
+@dds.data_function("/my_function")
+def my_function():
+    return "my_function"</pre>
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Just trying to run this function is going to give an error:</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">my_module</span>
+
+<span class="c1"># This statement will fail!</span>
+<span class="c1"># my_module.my_function()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Here is the error message that you would get:</p>
+<blockquote><p>Cannot load path &lt;my_module.my_function&gt;: this object cannot be retrieved, however the module 'my_module' exists. The typical cause of the issue is that the module my_module has not been whitelisted for use by DDS. Use the function 'dds.accept_module' to whitelist my_module or one of its submodules. dep_path: my_function module: &lt;module 'my_module' from './dds_py/doc_source/my_module.py'&gt;</p>
+</blockquote>
+<p>How do deal with this? The error message includes a hint to the usage of the <code>accept_module</code> function. This function instructs <code>dds</code> to consider a specific module or package for inclusion when inspecting the code. In particular, <em>all the data functions must be whitelisted</em>.</p>
+<p>Here is our previous example, fixed:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14576,7 +14540,10 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">data</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
+<span class="n">dds</span><span class="o">.</span><span class="n">accept_module</span><span class="p">(</span><span class="s2">"my_module"</span><span class="p">)</span>
+
+<span class="n">my_module</span><span class="o">.</span><span class="n">my_function</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14585,107 +14552,18 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>*** in _load_data ***
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>/Users/timhunter/miniconda3/envs/dds/lib/python3.8/site-packages/urllib3/connectionpool.py:1013: InsecureRequestWarning: Unverified HTTPS request is being made to host 'nl-userproxy-access.net.abnamro.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
-  warnings.warn(
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>fixed acidity</th>
-<th>volatile acidity</th>
-<th>citric acid</th>
-<th>residual sugar</th>
-<th>chlorides</th>
-<th>free sulfur dioxide</th>
-<th>total sulfur dioxide</th>
-<th>density</th>
-<th>pH</th>
-<th>sulphates</th>
-<th>alcohol</th>
-<th>quality</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>0</th>
-<td>7.4</td>
-<td>0.70</td>
-<td>0.00</td>
-<td>1.9</td>
-<td>0.076</td>
-<td>11.0</td>
-<td>34.0</td>
-<td>0.9978</td>
-<td>3.51</td>
-<td>0.56</td>
-<td>9.4</td>
-<td>5</td>
-</tr>
-<tr>
-<th>1</th>
-<td>7.8</td>
-<td>0.88</td>
-<td>0.00</td>
-<td>2.6</td>
-<td>0.098</td>
-<td>25.0</td>
-<td>67.0</td>
-<td>0.9968</td>
-<td>3.20</td>
-<td>0.68</td>
-<td>9.8</td>
-<td>5</td>
-</tr>
-<tr>
-<th>2</th>
-<td>7.8</td>
-<td>0.76</td>
-<td>0.04</td>
-<td>2.3</td>
-<td>0.092</td>
-<td>15.0</td>
-<td>54.0</td>
-<td>0.9970</td>
-<td>3.26</td>
-<td>0.65</td>
-<td>9.8</td>
-<td>5</td>
-</tr>
-</tbody>
-</table>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>'my_function'</pre>
 </div>
 </div>
 </div>
 </div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>All sub-modules are automatically accepted. For example in our case, <code>my_module.sub_module</code> is now also accepted.</p>
+<p>Dependencies to other modules are <em>not</em> automatically accepted, and should be also added if they are important. Consider this example with two modules: one module containing the business logic, and one module containing some utilities that we do not want to track:</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14693,42 +14571,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in build_model ***"</span><span class="p">)</span>
-    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">StandardScaler</span><span class="p">(),</span> 
-                             <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">))</span>
-    <span class="n">hyperparameters</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">'randomforestregressor__max_features'</span> <span class="p">:</span> <span class="p">[</span><span class="s1">'auto'</span><span class="p">,</span> <span class="s1">'sqrt'</span><span class="p">,</span> <span class="s1">'log2'</span><span class="p">],</span>
-                      <span class="s1">'randomforestregressor__max_depth'</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]}</span>
-
-    <span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">hyperparameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-    
-    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">clf</span>
- 
-    
-<span class="k">def</span> <span class="nf">model_stats</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in model_stats ***"</span><span class="p">)</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
-<span class="c1">#         "r2_score": r2_score(y_test, pred), # uncomment me, see what happens</span>
-        <span class="s2">"mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-    <span class="p">})</span>
-    
-    
-<span class="k">def</span> <span class="nf">pipeline</span><span class="p">():</span>
-    <span class="n">wine_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">()</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">wine_data</span><span class="o">.</span><span class="n">quality</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">wine_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">'quality'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> 
-                                                        <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> 
-                                                        <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> 
-                                                        <span class="n">stratify</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
-    <span class="n">clf</span> <span class="o">=</span> <span class="n">dds</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">path_model</span><span class="p">,</span> <span class="n">build_model</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
-    <span class="n">dds</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">path_model_stats</span><span class="p">,</span> <span class="n">model_stats</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** done ***"</span><span class="p">)</span>
-
-
-<span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module_utils</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -14739,10 +14582,9 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>*** in build_model ***
-*** in model_stats ***
-*** done ***
-</pre>
+<pre>variable = 1
+
+def get_util_variable(): return variable</pre>
 </div>
 </div>
 </div>
@@ -14753,8 +14595,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
-<span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">wine</span><span class="o">-</span><span class="n">quality</span><span class="o">/</span><span class="n">my_model_stats</span><span class="o">.</span><span class="n">json</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">cat</span> <span class="n">my_module_important</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -14765,7 +14606,14 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>{"mse": 0.3386108333333333}</pre>
+<pre>import dds
+from my_module_utils import get_util_variable
+
+@dds.data_function("/f")
+def f():
+    print("executing f")
+
+    return get_util_variable() * 2</pre>
 </div>
 </div>
 </div>
@@ -14776,15 +14624,10 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">model_stats</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in model_stats ***"</span><span class="p">)</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
-        <span class="s2">"r2_score"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span> <span class="c1"># now it was uncommented</span>
-        <span class="s2">"mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-    <span class="p">})</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">accept_module</span><span class="p">(</span><span class="s2">"my_module_important"</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">my_module_important</span>
 
-<span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
+<span class="n">my_module_important</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14795,12 +14638,22 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>*** in model_stats ***
-*** done ***
+<pre>executing f
 </pre>
 </div>
 </div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>2</pre>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>my_module_utils</code> is not whitelisted. If we modify it, it is not going to retrigger a calculation</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14808,8 +14661,11 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
-<span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">wine</span><span class="o">-</span><span class="n">quality</span><span class="o">/</span><span class="n">my_model_stats</span><span class="o">.</span><span class="n">json</span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">my_module_utils</span>
+<span class="n">my_module_utils</span><span class="o">.</span><span class="n">variable</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<span class="n">my_module_important</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -14818,9 +14674,38 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-Cell-outputWrapper">
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>{"r2_score": 0.47534676529926023, "mse": 0.3386108333333333}</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>2</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>We can decide later to include <code>my_module_utils</code> as well, by calling <code>accept_module('my_module_utils')</code>.</p>
+<p>This is a tradeoff for the user:</p>
+<ul>
+<li>add more code to track more changes, which could be irrelevant to the result</li>
+<li>track less code and focus on the core business logic, at the expense of missing some important changes</li>
+</ul>
+<p>As a recommendation, accept the packages that you are working on, and possibly some important dependencies that contain data functions themselves.</p>
+<p>To conclude this tutorial:</p>
+<ul>
+<li><code>dds</code> can track code in module using the <code>accept_module</code> function</li>
+<li>all the data functions must be in whitelisted modules or sub-modules</li>
+<li>dependencies are not automatically tracked</li>
+</ul>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -14832,7 +14717,8 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a class="btn btn-neutral" href="../plotting/" title="Tutorial - plotting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+<a class="btn btn-neutral float-right" href="../plotting/" title="Tutorial - plotting">Next <span class="icon icon-circle-arrow-right"></span></a>
+<a class="btn btn-neutral" href="../tutorial/" title="Tutorial"><span class="icon icon-circle-arrow-left"></span> Previous</a>
 </div>
 <hr/>
 <div role="contentinfo">
@@ -14847,7 +14733,8 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 <div aria-label="versions" class="rst-versions" role="note">
 <span class="rst-current-version" data-toggle="rst-current-version">
-<span><a href="../plotting/" style="color: #fcfcfc;">« Previous</a></span>
+<span><a href="../tutorial/" style="color: #fcfcfc;">« Previous</a></span>
+<span style="margin-left: 15px"><a href="../plotting/" style="color: #fcfcfc">Next »</a></span>
 </span>
 </div>
 <script>var base_url = '..';</script>
