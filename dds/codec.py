@@ -2,14 +2,14 @@ import importlib.util
 import logging
 from typing import Optional, Dict, List, Union
 
-from .structures import KSException, CodecProtocol, ProtocolRef, SupportedType
+from .structures import KSException, CodecProtocol, ProtocolRef, SupportedType, FileCodecProtocol
 from .structures_utils import SupportedTypeUtils
 
 _logger = logging.getLogger(__name__)
 
 
 class CodecRegistry(object):
-    def __init__(self, codecs: List[CodecProtocol]):
+    def __init__(self, codecs: List[CodecProtocol], file_codecs: List[FileCodecProtocol]):
         self.codecs = list(codecs)
         self._handled_types: Dict[SupportedType, CodecProtocol] = {}
         self._protocols: Dict[ProtocolRef, CodecProtocol] = {}
