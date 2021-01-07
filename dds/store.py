@@ -1,11 +1,20 @@
 import json
 import logging
 import os
-from typing import Any, Optional, List
+from pathlib import PurePath
+from typing import Any, Optional, List, Union
 from collections import OrderedDict
 
 from .codec import codec_registry
-from .structures import PyHash, DDSPath, KSException, GenericLocation, ProtocolRef
+from .structures import (
+    PyHash,
+    DDSPath,
+    KSException,
+    GenericLocation,
+    ProtocolRef,
+    FileCodecProtocol,
+    CodecProtocol,
+)
 from .structures_utils import SupportedTypeUtils as STU
 
 _logger = logging.getLogger(__name__)
@@ -77,14 +86,26 @@ class LocalFileStore(Store):
         with open(meta_p, "rb") as f:
             ref = ProtocolRef(json.load(f)["protocol"])
         codec = codec_registry().get_codec(None, ref)
-        return codec.deserialize_from(GenericLocation(p))
+        if isinstance(codec, CodecProtocol):
+            return codec.deserialize_from(GenericLocation(p))
+        elif isinstance(codec, FileCodecProtocol):
+            # Directly deserializing from the final path
+            return codec.deserialize_from(PurePath(p))
 
     def store_blob(
         self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
     ) -> None:
-        protocol = codec_registry().get_codec(STU.from_type(type(blob)), codec)
+        protocol: Union[CodecProtocol, FileCodecProtocol] = codec_registry().get_codec(
+            STU.from_type(type(blob)), codec
+        )
         p = os.path.join(self._root, "blobs", key)
-        protocol.serialize_into(blob, GenericLocation(p))
+        if isinstance(protocol, CodecProtocol):
+            protocol.serialize_into(blob, GenericLocation(p))
+        elif isinstance(protocol, FileCodecProtocol):
+            # This is the local file system, we can directly copy the file to its final destination
+            protocol.serialize_into(blob, PurePath(p))
+        else:
+            raise KSException(f"{type(protocol)} {protocol}")
         meta_p = os.path.join(self._root, "blobs", key + ".meta")
         with open(meta_p, "wb") as f:
             f.write(json.dumps({"protocol": protocol.ref()}).encode("utf-8"))

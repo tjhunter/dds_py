@@ -4,8 +4,6 @@ which has to be provided at runtime.
 """
 import json
 import logging
-import os
-import pickle
 import tempfile
 from collections import OrderedDict
 from enum import Enum
@@ -15,7 +13,7 @@ from typing import Any, Optional, List
 
 from ..codec import CodecRegistry
 from ..store import Store
-from ..structures import CodecProtocol, ProtocolRef
+from ..structures import CodecProtocol, ProtocolRef, FileCodecProtocol, KSException
 from ..structures import PyHash, DDSPath, GenericLocation, SupportedType as ST
 from ..structures_utils import SupportedTypeUtils as STU
 
@@ -100,83 +98,6 @@ class PySparkDatabricksCodec(CodecProtocol):
         return df
 
 
-class BytesDBFSCodec(CodecProtocol):
-    """
-    Handles byte arrays of arbitrary sizes (as long as they fit in memory).
-    """
-
-    def __init__(self, dbutils: Any):
-        self._dbutils = dbutils
-
-    def ref(self):
-        return ProtocolRef("dbfs.bytes")
-
-    def handled_types(self) -> List[ST]:
-        return [STU.from_type(bytes)]
-
-    def serialize_into(self, blob: bytes, loc: GenericLocation) -> None:
-        with tempfile.NamedTemporaryFile() as f:
-            _logger.debug(
-                f": starting copy of {len(blob)} bytes to {loc} (temp: {f.name})"
-            )
-            f.write(blob)
-            f.flush()
-            self._dbutils.fs.cp("file:///" + f.name, loc)
-            _logger.debug(f"copied {len(blob)} bytes to {loc}")
-
-    def deserialize_from(self, loc: GenericLocation) -> bytes:
-        _, name = tempfile.mkstemp()
-        _logger.debug(f"starting retrieval of {loc} (temp: {name})")
-        try:
-            self._dbutils.fs.cp(loc, "file://" + name)
-            with open(name, "rb") as f:
-                blob = f.read()
-                _logger.debug(f"copied {len(blob)} bytes from {loc}")
-                return blob
-        finally:
-            os.remove(name)
-
-
-class StringDBFSCodec(CodecProtocol):
-    """
-    Handles unicode strings.
-
-    TODO: handle larger strings than the dbutils buffer allows.
-    """
-
-    def __init__(self, dbutils: Any):
-        self._dbutils = dbutils
-
-    def ref(self) -> ProtocolRef:
-        return ProtocolRef("dbfs.string")
-
-    def handled_types(self) -> List[ST]:
-        return [STU.from_type(str)]
-
-    def serialize_into(self, blob: str, loc: GenericLocation) -> None:
-        self._dbutils.fs.put(loc, blob, overwrite=True)
-
-    def deserialize_from(self, loc: GenericLocation) -> str:
-        return self._dbutils.fs.head(loc)  # type: ignore
-
-
-class PickleDBFSCodec(CodecProtocol):
-    def __init__(self, dbutils: Any):
-        self._codec = BytesDBFSCodec(dbutils)
-
-    def ref(self) -> ProtocolRef:
-        return ProtocolRef("dbfs.pickle")
-
-    def handled_types(self) -> List[ST]:
-        return [STU.from_type(type(None)), ST("object")]
-
-    def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
-        self._codec.serialize_into(pickle.dumps(blob), loc)
-
-    def deserialize_from(self, loc: GenericLocation) -> Any:
-        return pickle.loads(self._codec.deserialize_from(loc))
-
-
 class DBFSStore(Store):
     def __init__(
         self, internal_dir: str, data_dir: str, dbutils: Any, commit_type: CommitType
@@ -188,23 +109,45 @@ class DBFSStore(Store):
         )
         self._dbutils = dbutils
         self._commit_type = commit_type
+        from .builtins import StringLocalFileCodec, PickleLocalFileCodec, BytesFileCodec
+        from .pandas import PandasFileCodec
+
+        slfc = StringLocalFileCodec()
+        plfc = BytesFileCodec()
+        bfc = PickleLocalFileCodec()
+
         self._registry = CodecRegistry(
-            [
-                PySparkDatabricksCodec(),
-                StringDBFSCodec(dbutils),
-                BytesDBFSCodec(dbutils),
-                PickleDBFSCodec(dbutils),
-            ]
+            [PySparkDatabricksCodec()], [slfc, plfc, bfc, PandasFileCodec()],
         )
+        # Deprecation hack
+        # To ensure that older data already written can still be read, add the following compatibility routines:
+        for (old_codec_ref, new_codec) in [
+            ("dbfs.pickle", plfc),
+            ("dbfs.string", slfc),
+            ("dbfs.bytes", bfc),
+        ]:
+            self._registry._protocols[ProtocolRef(old_codec_ref)] = new_codec
 
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
-        p = self._internal_dir.joinpath("blobs", key)
+        p = self._blob_path(key)
         meta = self._fetch_meta(key)
         if meta is None:
             return None
         ref = ProtocolRef(meta["protocol"])
         codec = self._registry.get_codec(None, ref)
-        return codec.deserialize_from(GenericLocation(str(p)))
+        if isinstance(codec, CodecProtocol):
+            return codec.deserialize_from(GenericLocation(str(p)))
+        elif isinstance(codec, FileCodecProtocol):
+            # File codec protocol:
+            # First copy the file locally and then deserialize the local file
+            with tempfile.TemporaryDirectory() as td:
+                lp = Path(td).joinpath("file")
+                lp2 = f"file://{lp}"
+                _logger.debug(f"Temporary copy from DBFS: {p} -> {lp2}")
+                self._dbutils.fs.cp(str(p), str(lp2))
+                return codec.deserialize_from(lp)
+        else:
+            raise KSException(f"{type(codec)} codec")
 
     def store_blob(
         self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
@@ -214,7 +157,18 @@ class DBFSStore(Store):
             f"store_blob: {key} {type(blob)} {codec} {STU.from_type(type(blob))} -> protocol: {protocol}"
         )
         p = self._blob_path(key)
-        protocol.serialize_into(blob, GenericLocation(str(p)))
+        if isinstance(protocol, CodecProtocol):
+            protocol.serialize_into(blob, GenericLocation(str(p)))
+        elif isinstance(protocol, FileCodecProtocol):
+            # First put the blob into a temporary file and then push the blob to DBFS
+            with tempfile.TemporaryDirectory() as td:
+                lp = Path(td).joinpath("file")
+                protocol.serialize_into(blob, lp)
+                lp2 = f"file://{lp}"
+                _logger.debug(f"Temporary copy from DBFS: {lp2} -> {p}")
+                self._dbutils.fs.cp(lp2, str(p))
+        else:
+            raise KSException(f"{type(protocol)} codec")
         meta_p = self._blob_meta_path(key)
         try:
             meta = json.dumps({"protocol": protocol.ref()})

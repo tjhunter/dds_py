@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from enum import Enum
 from functools import total_ordering
+from pathlib import PurePath
 from pathlib import PurePosixPath
 from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
 
@@ -80,6 +81,31 @@ class CodecProtocol(object):
         pass
 
     def deserialize_from(self, loc: GenericLocation) -> Any:
+        """ Simple in-memory deserialization """
+        pass
+
+
+class FileCodecProtocol(object):
+    """
+    Simpler interface that just knows how to read and write a single file from a local file system.
+
+    This file is expected to be read, written and deleted by the store.
+    """
+
+    def ref(self) -> ProtocolRef:
+        pass
+
+    def handled_types(self) -> List[SupportedType]:
+        """ The list of types that this codec can handle """
+        pass
+
+    def serialize_into(self, blob: Any, loc: PurePath) -> None:
+        """
+        Puts the blob into the specified path. The path is assumed to be eventually filled with a file.
+        """
+        pass
+
+    def deserialize_from(self, loc: PurePath) -> Any:
         """ Simple in-memory deserialization """
         pass
 
