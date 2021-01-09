@@ -268,6 +268,9 @@ class DBFSStore(Store):
             res[dds_p] = PyHash(redir_key)
         return res
 
+    def codec_registry(self) -> CodecRegistry:
+        return self._registry
+
     def _blob_path(self, key: PyHash) -> Path:
         return self._internal_dir.joinpath("blobs", key)
 
