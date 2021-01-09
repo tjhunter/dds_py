@@ -69,6 +69,10 @@
 <li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - scikit-learn</a>
 </li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Tutorial - custome types</a>
+</li>
+</ul>
 </div>
 </div>
 </nav>
@@ -92,13 +96,8 @@
 <div class="section">
 <div class="notebook-content">
 <style type="text/css">
-    pre { line-height: 125%; }
-td.linenos pre { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
-span.linenos { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
-td.linenos pre.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-.highlight .hll { background-color: var(--jp-cell-editor-active-background) }
-.highlight { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
+    .highlight .hll { background-color: var(--jp-cell-editor-active-background) }
+.highlight  { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
 .highlight .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
 .highlight .err { color: var(--jp-mirror-editor-error-color) } /* Error */
 .highlight .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
@@ -14568,7 +14567,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKEAAAA7CAYAAAATrOqTAAAABmJLR0QA/wD/AP+gvaeTAAAKdElEQVR4nO2df0xN/x/Hn9VRaals7uwiWjXDjYY1tTaMkd/KLkZhEiKMkR8zm5n5IyNjiJA1E324kt9GdfOrNLWiEip0i3FTbt2Sq/v6/sE93879obr3cj4f3o/tbJ3X+7zP+/V6vZ/3nPf7fe65ORARgcEQEUexHWAwmAgZosNEyBAdztigUqnw8OFDMXxh/AV4e3sjJCREaCQjzp8/TwDYxrZfssnlcmPJkcmV0ACbNDPszdy5c83a2ZiQITpMhAzRYSJkiA4TIUN0mAgZosNEyBAdJkKG6DARMkSHiZAhOkyEDNFhImSIDhMhQ3SYCBmiw0TIEB27izA+Ph7t7e1W1a2qqkJ0dDRUKpWdvRKPr1+/4u7du9iwYQOuX7/O239VrLbkXyzsKsJnz56hqKgITk5OVtUvLCxESkoKnj59ak+3ROXZs2dIT0/HgQMHUFdXx9t/Ray25l8s7CpChUKBiIgIq+vL5XJ8/PgRU6dOtaNX4jJq1CjExcWZ2C3FmpqaanVbtuZfLOwqwkuXLtmchD59+tjJm38PHPf9C+wODg4Cu3GsWVlZ2LZtm9Xt2CP/YmDx6/3dpbKyEq6urujXrx9ycnKQn58PAAgMDMS4ceOQnJyM1tZWAEBISAjGjh0LlUqF8+fPw83NDatWrYJer4dSqYS7uzuCgoIAADU1NVAoFFi7di3Kyspw+fJlDBw4EJGRkXB0/P9nqK6uDjdv3oRKpUJoaCgmTpzYJb+bm5tx+fJlPH/+HF5eXliwYAGUSiUWLFiAK1euoLKyEu7u7oiJiUFTUxNSU1Oh0+kglUoxf/58/jwvXrxAXl4eSkpKEBoa2qkYjGPNzs5GeHg4HBwccOzYMfTr1w9ubm6oqakBALi4uGDOnDlwcXHB48ePUVZWht69e2P27Nkm+QeAhoYGpKWlYfXq1bhx4wZKSkqwceNGcBxn0Vdr+81mLL3o1F0SEhIoISGBiIja29spICCAXF1d6du3b0REVF5eThzHUXh4uKBeTEwMpaWlUWlpKcnlcgJAR48eJSKizMxMkkgkBIASExNp6dKlNGPGDAJAe/bs4c+RlZVFy5cvp8LCQkpPTyd3d3davXp1pz5XVFRQcHAw5ebmkk6no3PnzlHv3r2pT58+/DEymYwGDBjA72s0GvLw8KCQkBDelpiYSOPHjye9Xk/V1dXk4+NDR44c4ctLS0sJAJ04cYLfN461qKiIQkNDSSKRUHZ2NhUVFZFWqyWZTEYAqLKyUuD7kCFDqKKiwmz+T58+TW5ubsRxHB06dIgCAwMJABUXF//UV2v6rTvI5XKzLzrZTYTBwcH08uVLfv/YsWMEgAoLC3lbeHg4DRo0iPR6PW+bMmUKH3BJSYmgY4iItm7dSgDozp07vG3UqFE0evRoIiJqamoiX19fam5u5suXLVtGAOjRo0cW/dXr9RQUFERbtmwR2KdOnSoQoVwuF4jQ0H5HEfr7+1NcXJwgzmnTpvH7xiK0FGt4eDh5e3sL2srMzCQAlJyczNvq6upMOtM4/5GRkQSAFAoFEX0XU1d8tabfuoolEdplTFhbW4uWlhb4+/vztoULF6JXr144c+YMb/P09MSbN2+QlZUFAMjPz8eYMWP42ZyLi4vJuXv27AkAGDJkCG8bNmwY3r59CwBIS0tDa2srNm/ejLi4OMTFxeHdu3fw8/PDq1evLPp8+/ZtFBQUYPz48QK7p6dnN6P/fhvbvXs3AKCsrAw1NTV4+fLlT+uYixUwHTfOmDEDQ4cOxf79+/k3IM+ePYvFixfzx5jLv+G2bLhdG/LXma/W9Jut2EWEGRkZJmMgd3d3REVFITU1FV+/fkVtbS20Wi38/Pxw6tQpAMDx48cRExPT7facnJz4DiktLYVUKsXhw4f57dq1a3j16hWioqKQn5+PoKAgwaZUKlFcXAwACAgIsDF6oH///nj8+DHWrVuH8vJy+Pn5Qa/XW3UuYxE6ODggPj4e5eXl/DrjnTt3BLNqc/k3jJc7jpu74uuv7DdL2GViolAokJiYaGKPjY3F0aNHoVAo8OTJE2zatAk5OTnYuXMnqqqqoNVqMWDAAJvadnJyQkVFBXQ6HXr06GFSPnDgQKxZs0Zg8/X1hVKpBPB9vc5WH3bs2AGlUolbt26hZ8+euHjxotXnMhYhAERGRmLHjh3Yt28ffHx8IJPJ+Bk3YDn/1vr6O/qtIzZfCevr61FbW4sRI0aYlI0YMQIhISHYv38/Xrx4gTFjxiA6Ohp6vR4RERFYsmSJrc0jMDAQWq0WSUlJAntjYyOOHDkCqVSKJUuWCDZvb2/4+fkBAHJzcwX1jJ82cByHL1++WGy/uroau3fvRlRUFD90sOUqaO5ph7OzM9avX4/s7GzEx8dj6dKlfNnP8m+tr7+j3zpiswgzMzMxc+ZMi+WxsbEoKCjgr0YSiQQRERHQaDQICwsTHNvW1gYAUKvVvE2j0QD4/vjLgFqtRltbG4gI8+fPh7e3NzZt2oS9e/eivLwc6enpWLFiBRYtWmTRr9mzZ6Nv3744efIkbt++DZ1OhwcPHvBLFAYmT54MtVqNlJQUaLVapKSkoL6+HlVVVWhoaEBzczOA72NTjUaDe/fuITc3ly9ramrC58+fAYA/1lKsUqkU79+/R1VVFSorK6HVavmylStXwtPTE2q1GjKZrNP8G+rW19fztq74aqA7/WYzxjOV7s6Op0+fTg8fPrRY3tLSQpMmTRLYsrOzBUssRER5eXn8skVAQABdvXqVcnJyyNfXlwBQTEwMvXv3jtLS0sjDw4MA0M6dO0mn01FZWRkNHjyY/70TmUwmmN1Z4v79+ySVSgkASSQS2rVrF82cOVMwO25qaqLg4GACQEOHDiWFQkFz5syhsLAwfsYaHR1NHMeRv78/JSUl0YULF8jZ2ZkmTJhAN27coLCwMAJAI0eOpOvXr5uN1ZAXjuPIy8uLDh48aOJvbGwsHT58uNP8nzhxgvr3708AaN68eZSfn8+X/czX+vr6bvdbd/hlSzQ3b94UTN3N0dLSYmJrbW3tchtd5fXr1/TmzZtu1Wlvb6fq6mo+hlmzZglEaODDhw/83+Z812g0gv0vX750yw8DjY2NJucyMGnSJGpoaBDYupJ/Y7rqq737zZIIbZ6YdOXSbBh/dMTV1dXWpk0YNGhQt+s4OjrCx8en0+MkEgn/tznfe/XqJdi3tATTGZaWiIqLi+Hr6wsvLy+B3ZpbY1d9/V39ZrfHdn8KarUa3759E9sNAMCTJ0+wefNmDB8+HDk5OcjIyBDbpV8C+1LrD9RqNQ4dOoS8vDw0NjYiISFBMBkSA71ej4KCApw+fRrbt2/v0hX7vwi7Ev7Ay8sLixYtEsyoza07/k6CgoLw6dMnODo6miw6/0kwEf6A4ziT8da/gY6L0n8qf+7Hi/GfgYmQITpMhAzRYSJkiA4TIUN0mAgZosNEyBAdJkKG6DARMkSHiZAhOkyEDNFhImSIjsWn4+np6b/TD8ZfgEqlMvuWnkURdvydFQbDXsjlchObAxH7x8YMcWFjQoboMBEyRIeJkCE6HIB/xHaC8XfzP1biO8TbEOAZAAAAAElFTkSuQmCC
+<img src="data:image/png;base64,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
 "/>
 </div>
 </div>
@@ -14598,7 +14597,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>/Users/timhunter/miniconda3/envs/dds/lib/python3.8/site-packages/urllib3/connectionpool.py:1013: InsecureRequestWarning: Unverified HTTPS request is being made to host 'nl-userproxy-access.net.abnamro.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+<pre>/home/tjhunter/work/software/miniconda/envs/dds/lib/python3.8/site-packages/urllib3/connectionpool.py:981: InsecureRequestWarning: Unverified HTTPS request is being made to host 'raw.githubusercontent.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
   warnings.warn(
 </pre>
 </div>
@@ -14769,7 +14768,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>{"mse": 0.3394641666666667}</pre>
+<pre>{"mse": 0.34287708333333333}</pre>
 </div>
 </div>
 </div>
@@ -14824,7 +14823,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>{"r2_score": 0.47402458641560186, "mse": 0.3394641666666667}</pre>
+<pre>{"r2_score": 0.46873651647612635, "mse": 0.34287708333333333}</pre>
 </div>
 </div>
 </div>
@@ -14836,6 +14835,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a class="btn btn-neutral float-right" href="../tut_custom_types/" title="Tutorial - custome types">Next <span class="icon icon-circle-arrow-right"></span></a>
 <a class="btn btn-neutral" href="../tut_collab/" title="Tutorial - collaboration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
 </div>
 <hr/>
@@ -14852,6 +14852,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div aria-label="versions" class="rst-versions" role="note">
 <span class="rst-current-version" data-toggle="rst-current-version">
 <span><a href="../tut_collab/" style="color: #fcfcfc;">« Previous</a></span>
+<span style="margin-left: 15px"><a href="../tut_custom_types/" style="color: #fcfcfc">Next »</a></span>
 </span>
 </div>
 <script>var base_url = '..';</script>
