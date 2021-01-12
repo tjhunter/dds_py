@@ -23,5 +23,5 @@ nav:
     - Tutorial - modules: tut_modules.ipynb
     - Tutorial - plotting: plotting.ipynb
     - Tutorial - collaboration: tut_collab.ipynb
-    - Tutorial - scikit-learn: test_sklearn.ipynb
     - Tutorial - custome types: tut_custom_types.ipynb
+    - Tutorial - scikit-learn: tut_sklearn.ipynb
