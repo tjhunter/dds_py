@@ -6,7 +6,7 @@ from pathlib import PurePath
 from typing import Any, Optional, List, Union
 from collections import OrderedDict
 
-from .codec import codec_registry
+from .codec import codec_registry, CodecRegistry
 from .structures import (
     PyHash,
     DDSPath,
@@ -49,6 +49,15 @@ class Store(object):
     def fetch_paths(self, paths: List[DDSPath]) -> "OrderedDict[DDSPath, PyHash]":
         """
         Fetches a set of paths from the store. It is expected that all the paths are returned.
+        """
+        pass
+
+    def codec_registry(self) -> CodecRegistry:
+        """
+        The registry of codecs associated to this instance of a store.
+
+        It is not necessaily unique
+        It may not be called for mutable operations during an evaluation. In that case, the behavior is not defined.
         """
         pass
 
@@ -162,6 +171,9 @@ class LocalFileStore(Store):
                 key = PyHash(os.path.split(rp)[-1])
                 res[path] = key
         return res
+
+    def codec_registry(self) -> CodecRegistry:
+        return codec_registry()
 
 
 def current_timestamp() -> int:
