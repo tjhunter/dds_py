@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from pathlib import PurePath
 from typing import Any, Optional, List, Union
 from collections import OrderedDict
@@ -117,7 +118,14 @@ class LocalFileStore(Store):
             raise KSException(f"{type(protocol)} {protocol}")
         meta_p = os.path.join(self._root, "blobs", key + ".meta")
         with open(meta_p, "wb") as f:
-            f.write(json.dumps({"protocol": protocol.ref()}).encode("utf-8"))
+            f.write(
+                json.dumps(
+                    {
+                        "protocol": protocol.ref(),
+                        "timestamp_millis": current_timestamp(),
+                    }
+                ).encode("utf-8")
+            )
         _logger.debug(f"Committed new blob in {key}")
 
     def has_blob(self, key: PyHash) -> bool:
@@ -166,3 +174,14 @@ class LocalFileStore(Store):
 
     def codec_registry(self) -> CodecRegistry:
         return codec_registry()
+
+
+def current_timestamp() -> int:
+    """ The current timestamp.
+
+    Note: this timestamp is not secure because it depends on a reliable source
+    of time on the client's machine. It is only used for limited precision
+    operations nuch as garbage collection.
+    """
+    # TODO: use time.time_ns() when dropping support for python 3.6
+    return int(round(time.time() * 1000))
