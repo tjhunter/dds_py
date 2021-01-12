@@ -22,9 +22,9 @@ def _add_tests():
         for m in pkgutil.iter_modules(dds_tests.__path__)
         if str(m.name).startswith("test_")
     ]
-    _logger.info("XXX" + str(test_mods))
+    _logger.info(str(test_mods))
     for tm in test_mods:
-        dds.whitelist_module(tm)
+        dds.accept_module(tm)
 
 
 _add_tests()

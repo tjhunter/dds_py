@@ -3,6 +3,8 @@ import pytest
 from .utils import cleandir, unreachable
 from . import utils as u
 
+_ = cleandir
+
 path_1 = "/path_1"
 
 

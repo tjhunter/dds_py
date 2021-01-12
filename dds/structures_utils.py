@@ -2,12 +2,23 @@
 Utilities related to structures
 """
 
+import logging
 import pathlib
 from collections import OrderedDict
 from typing import Callable, Any, Optional, List, Tuple, Set
 from typing import Union
 
-from .structures import DDSPath, KSException, FunctionInteractions, PyHash, LocalDepPath
+from .structures import (
+    DDSPath,
+    KSException,
+    FunctionInteractions,
+    PyHash,
+    LocalDepPath,
+    FunctionIndirectInteractions,
+    SupportedType,
+)
+
+_logger = logging.getLogger(__name__)
 
 
 class DDSPathUtils(object):
@@ -50,6 +61,13 @@ class FunctionInteractionsUtils(object):
             if isinstance(fi0, FunctionInteractions):
                 res += cls.all_store_paths(fi0).items()
         return OrderedDict(res)
+
+    @classmethod
+    def all_indirect_deps(cls, fis: FunctionInteractions) -> Set[DDSPath]:
+        res = set(fis.indirect_deps)
+        for fis_ in fis.parsed_body:
+            res.update(cls.all_indirect_deps(fis_))
+        return res
 
     @classmethod
     def pprint_tree(
@@ -102,6 +120,7 @@ class FunctionInteractionsUtils(object):
                     )
                     for ed in fi_.external_deps
                 ]
+                + [_PrintNode(value=f"Ind {ed}") for ed in fi_.indirect_deps]
                 + [
                     to_nodes(fi0)
                     for fi0 in fi_.parsed_body
@@ -127,3 +146,35 @@ class LocalDepPathUtils(object):
         if not ps or (len(ps) == 1 and ps[0] == "."):
             return True
         return False
+
+
+class FunctionIndirectInteractionUtils(object):
+    @staticmethod
+    def all_loads(fis: FunctionIndirectInteractions) -> Set[DDSPath]:
+        # Use the underlying type (python limitation)
+        res: Set[DDSPath] = {
+            DDSPath(p) for p in fis.indirect_deps if isinstance(p, str)
+        }
+        for fis0 in fis.indirect_deps:
+            if isinstance(fis0, FunctionIndirectInteractions):
+                res.update(FunctionIndirectInteractionUtils.all_loads(fis0))
+        return res
+
+    @staticmethod
+    def all_stores(fis: FunctionIndirectInteractions) -> Set[DDSPath]:
+        res: Set[DDSPath] = {fis.store_path} if fis.store_path is not None else set()
+        for fis0 in fis.indirect_deps:
+            if isinstance(fis0, FunctionIndirectInteractions):
+                res.update(list(FunctionIndirectInteractionUtils.all_stores(fis0)))
+        return res
+
+
+class SupportedTypeUtils(object):
+    @staticmethod
+    def from_type(t: type) -> SupportedType:
+        if t is None:
+            return SupportedTypeUtils.from_type(type(None))
+        module = t.__module__
+        if module is None or module == str.__class__.__module__:
+            return SupportedType(t.__name__)
+        return SupportedType(module + "." + t.__name__)

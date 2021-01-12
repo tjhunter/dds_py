@@ -4,15 +4,27 @@ The main API functions
 
 import logging
 import pathlib
+import time
 from collections import OrderedDict
 from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union, Set, List
-import time
 
+from ._eval_ctx import EvalMainContext
+from ._introspect_indirect import introspect_indirect
 from .fun_args import get_arg_ctx
-from .introspect import introspect
+from .introspect import introspect, _accepted_packages
 from .store import LocalFileStore, Store
-from .structures import DDSPath, KSException, EvalContext, PyHash, ProcessingStage
-from .structures_utils import DDSPathUtils, FunctionInteractionsUtils
+from .structures import (
+    DDSPath,
+    KSException,
+    EvalContext,
+    PyHash,
+    ProcessingStage,
+)
+from .structures_utils import (
+    DDSPathUtils,
+    FunctionInteractionsUtils,
+    FunctionIndirectInteractionUtils,
+)
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
@@ -44,6 +56,15 @@ def eval(
     dds_stages: Optional[List[Union[str, ProcessingStage]]],
 ) -> Optional[_Out]:
     return _eval(fun, None, args, kwargs, dds_export_graph, dds_extra_debug, dds_stages)
+
+
+def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
+    path_ = DDSPathUtils.create(path)
+    key = _store.fetch_paths([path_]).get(path_)
+    if key is None:
+        raise KSException(f"The store {_store} did not return path {path_}")
+    else:
+        return _store.fetch_blob(key)
 
 
 def set_store(
@@ -175,7 +196,7 @@ def _eval(
 
 
 def _time() -> float:
-    return time.clock_gettime(time.CLOCK_MONOTONIC)
+    return time.monotonic()
 
 
 def _add_delta(start_t: float, stage: ProcessingStage) -> None:
@@ -208,7 +229,34 @@ def _eval_new_ctx(
         _logger.debug(f"_eval_new_ctx: local_vars: {sorted(local_vars.keys())}")
         arg_ctx = get_arg_ctx(fun, args, kwargs)
         _logger.debug(f"arg_ctx: {arg_ctx}")
-        inters = introspect(fun, local_vars, arg_ctx)
+        eval_ctx = EvalMainContext(
+            fun.__module__,  # type: ignore
+            whitelisted_packages=_accepted_packages,
+            start_globals=local_vars,
+            resolved_references=OrderedDict(),
+        )
+        _logger.debug(f"_eval_new_ctx: introspect_indirect completed")
+        inters_indirect = introspect_indirect(fun, eval_ctx)
+        all_loads = FunctionIndirectInteractionUtils.all_loads(inters_indirect)
+        all_stores = FunctionIndirectInteractionUtils.all_stores(inters_indirect)
+        loads_to_check = sorted([p for p in all_loads if p not in all_stores])
+        # Check that there are no indirect references to resolve:
+        if loads_to_check:
+            _logger.debug(
+                f"_eval_new_ctx: need to resolve indirect references: {loads_to_check}"
+            )
+            resolved_indirect_refs = _store.fetch_paths(loads_to_check)
+            _logger.debug(
+                f"_eval_new_ctx: fetched indirect references: {resolved_indirect_refs}"
+            )
+        else:
+            resolved_indirect_refs = OrderedDict()
+
+        # Make a copy of the dictionary: the context will use it to track all the nodes, which means that
+        # at plotting stage, it will contain all the nodes, not just the indirect refs.
+        eval_ctx.resolved_references = OrderedDict(resolved_indirect_refs)
+
+        inters = introspect(fun, eval_ctx, arg_ctx)
         _logger.debug(f"_eval_new_ctx: introspect completed")
         # Also add the current path, if requested:
         if path is not None:
@@ -235,7 +283,7 @@ def _eval_new_ctx(
             # Attempt to run the export module:
             from ._plotting import draw_graph
 
-            draw_graph(inters, export_graph, present_blobs)
+            draw_graph(inters, export_graph, present_blobs, resolved_indirect_refs)
             _logger.debug(f"_eval_new_ctx: draw_graph_completed")
 
         _logger.debug(f"Stage {ProcessingStage.ANALYSIS} completed")

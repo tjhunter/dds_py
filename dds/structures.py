@@ -1,8 +1,9 @@
 from collections import OrderedDict
-from functools import total_ordering
-from pathlib import PurePosixPath
-from typing import Any, NewType, NamedTuple, Optional, Dict, List, Type, Tuple
 from enum import Enum
+from functools import total_ordering
+from pathlib import PurePath
+from pathlib import PurePosixPath
+from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
 
 
 class ProcessingStage(str, Enum):
@@ -62,12 +63,14 @@ GenericLocation = NewType("GenericLocation", str)
 
 CodecBackend = NewType("CodecBackend", str)
 
+SupportedType = NewType("SupportedType", str)
+
 
 class CodecProtocol(object):
     def ref(self) -> ProtocolRef:
         pass
 
-    def handled_types(self) -> List[Type[Any]]:
+    def handled_types(self) -> List[SupportedType]:
         """ The list of types that this codec can handle """
         pass
 
@@ -78,6 +81,31 @@ class CodecProtocol(object):
         pass
 
     def deserialize_from(self, loc: GenericLocation) -> Any:
+        """ Simple in-memory deserialization """
+        pass
+
+
+class FileCodecProtocol(object):
+    """
+    Simpler interface that just knows how to read and write a single file from a local file system.
+
+    This file is expected to be read, written and deleted by the store.
+    """
+
+    def ref(self) -> ProtocolRef:
+        pass
+
+    def handled_types(self) -> List[SupportedType]:
+        """ The list of types that this codec can handle """
+        pass
+
+    def serialize_into(self, blob: Any, loc: PurePath) -> None:
+        """
+        Puts the blob into the specified path. The path is assumed to be eventually filled with a file.
+        """
+        pass
+
+    def deserialize_from(self, loc: PurePath) -> Any:
         """ Simple in-memory deserialization """
         pass
 
@@ -107,20 +135,20 @@ class CanonicalPath(object):
     def get(self, i: int) -> str:
         return self._path[i]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._path)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         x = ".".join(self._path)
         return f"<{x}>"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return repr(self) == repr(other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not (repr(self) == repr(other))
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         return repr(self) < repr(other)
 
 
@@ -187,3 +215,21 @@ class FunctionInteractions(NamedTuple):
     store_path: Optional[DDSPath]
     # The path of the function
     fun_path: CanonicalPath
+    # The indirect dependencies from this function
+    indirect_deps: List[DDSPath]
+
+
+class FunctionIndirectInteractions(NamedTuple):
+    """
+    The representation of all the indirect calls.
+    This is done as a preprocessing step to find all the calls that need to be resolved before calling the main
+    introspection function that compute the FunctionInteractions.
+    """
+
+    fun_path: CanonicalPath
+    store_path: Optional[DDSPath]
+    # TODO: real type is Union[DDSPath, FunctionIndirectInteractions]
+    # The DDSPath object correspond to load() calls, the other calls correspond to sub function calls.
+    # They are kept in order of calling to validate the order of calls:
+    # indirect calls with that refer to a function also executed must happen after the function has executed
+    indirect_deps: List["Any"]

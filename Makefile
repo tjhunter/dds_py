@@ -24,6 +24,4 @@ release:
 
 
 doc:
-	PYTHONPATH=$(PWD) jupyter nbconvert --ClearOutputPreprocessor.enabled=True --ClearMetadataPreprocessor.enabled=True  --execute --clear-output doc_source/test_sklearn.ipynb
-	PYTHONPATH=$(PWD) jupyter nbconvert --ClearOutputPreprocessor.enabled=True --ClearMetadataPreprocessor.enabled=True  --execute --clear-output doc_source/plotting.ipynb
-	mkdocs build
+	PYTHONPATH=$(PWD) JUPYTER_CONFIG_DIR=$(PWD)/doc_source/jupyter mkdocs build

@@ -14,6 +14,7 @@ pyarrow>=0.10
 # Linter
 mypy
 flake8
+gitpython
 
 # Code formatter. Only support Python 3.6+
 black==19.10b0
@@ -22,13 +23,11 @@ black==19.10b0
 mkdocs
 mkdocs-jupyter
 mkdocstrings
+jupyter
 
 # Test
 pytest
 pytest-cov
 scikit-learn
 requests
-#openpyxl
-#xlrd
-#plotly>=4.8
 

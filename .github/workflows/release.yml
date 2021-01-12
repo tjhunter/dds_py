@@ -66,3 +66,9 @@ jobs:
           asset_name: dds_py-${{ steps.myref.outputs.branch }}-py3-none-any.whl
           asset_content_type: application/zip
 
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          verbose: true

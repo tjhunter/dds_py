@@ -5,33 +5,33 @@ It relies on pandas having a parquet driver installed (which may or may not be t
 """
 
 import logging
+from pathlib import PurePath
+from typing import Any
 
-# TODO: optimize the structure so that there is no need to load it until the
-# last moment, if possible.
-
-import pandas.core.frame
-
-from ..structures import CodecProtocol, ProtocolRef, GenericLocation
-from .builtins import Local
+from ..structures import (
+    ProtocolRef,
+    SupportedType as ST,
+    FileCodecProtocol,
+)
 
 _logger = logging.getLogger(__name__)
 
 
-class PandasLocalCodec(CodecProtocol):
+class PandasFileCodec(FileCodecProtocol):
     def ref(self):
-        return ProtocolRef("default.pandas_local")
+        return ProtocolRef("local.pandas")
 
-    def handled_backends(self):
-        return [Local]
-
-    # TODO: just use strings, it will be faster
     def handled_types(self):
-        return [pandas.DataFrame, pandas.core.frame.DataFrame]
+        return [ST("pandas.DataFrame"), ST("pandas.core.frame.DataFrame")]
 
-    def serialize_into(self, blob: pandas.DataFrame, loc: GenericLocation):
+    def serialize_into(self, blob: Any, loc: PurePath):
+        import pandas
+
         assert isinstance(blob, pandas.DataFrame)
-        blob.to_parquet(loc)
+        blob.to_parquet(str(loc))
         _logger.debug(f"Committed dataframe to parquet: {loc}")
 
-    def deserialize_from(self, loc: GenericLocation) -> pandas.DataFrame:
-        return pandas.read_parquet(loc)
+    def deserialize_from(self, loc: PurePath) -> "pandas.DataFrame":
+        import pandas
+
+        return pandas.read_parquet(str(loc))

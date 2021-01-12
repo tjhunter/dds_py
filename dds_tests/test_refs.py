@@ -6,6 +6,9 @@ import dds
 import pytest
 from .utils import cleandir, Counter
 from io import UnsupportedOperation
+import dds_tests.test_mod.os
+import dds_tests.test_mod as test_mod
+from typing import List
 
 _ = cleandir
 
@@ -151,12 +154,27 @@ def test_5():
 fun_6_x = 0.5
 
 
-@dds.dds_function("/p")
+@dds.data_function("/p")
 def fun_6_f():
     return fun_6_x * 2
 
 
 @pytest.mark.usefixtures("cleandir")
-def test_1():
+def test_6():
     """ Unauthorized objects do not trigger errors """
     assert dds.eval(fun_6_f) == 1.0
+
+
+def fun_7_f1(os: List[str]):
+    return os.pop()
+
+
+@dds.data_function("/p")
+def fun_7_f():
+    return fun_7_f1(["test"])
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_7():
+    """ Variables with names that shadow existing modules should not trigger errors during method access. """
+    assert dds.eval(fun_7_f) == "test"
