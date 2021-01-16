@@ -19,7 +19,7 @@ nav:
     - Home: index.md
     - Reference: dds-reference.md
     - FAQ: faq.md
-    - Tutorial: tutorial.ipynb
+    - User guide: tutorial.ipynb
     - Tutorial - modules: tut_modules.ipynb
     - Tutorial - plotting: plotting.ipynb
     - Tutorial - collaboration: tut_collab.ipynb

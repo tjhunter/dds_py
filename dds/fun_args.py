@@ -8,7 +8,6 @@ import logging
 from collections import OrderedDict
 from inspect import Parameter
 from pathlib import PurePosixPath
-import numpy as np  # type: ignore
 from typing import Tuple, Callable, Any, Dict, List, Optional, NewType
 
 from .structures import CanonicalPath
