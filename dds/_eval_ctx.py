@@ -8,7 +8,7 @@ from types import ModuleType
 from collections import OrderedDict
 from typing import Tuple, Any, Dict, Set, Optional, NewType
 
-from .fun_args import dds_hash as dds_hash
+from .fun_args import dds_hash
 from .structures import (
     PyHash,
     DDSPath,

@@ -18,7 +18,7 @@ from ._eval_ctx import EvalMainContext
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash as dds_hash, get_arg_list
+from .fun_args import dds_hash, get_arg_list
 from .introspect import (
     InspectFunction,
     ExternalVarsVisitor,
