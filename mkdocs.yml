@@ -19,9 +19,9 @@ nav:
     - Home: index.md
     - Reference: dds-reference.md
     - FAQ: faq.md
-    - Tutorial: tutorial.ipynb
+    - User guide: user_guide.ipynb
     - Tutorial - modules: tut_modules.ipynb
-    - Tutorial - plotting: plotting.ipynb
+    - Tutorial - plotting: tut_plotting.ipynb
     - Tutorial - collaboration: tut_collab.ipynb
     - Tutorial - custome types: tut_custom_types.ipynb
     - Tutorial - scikit-learn: tut_sklearn.ipynb
