@@ -7,7 +7,7 @@
 <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link href="../img/favicon.ico" rel="shortcut icon"/>
-<title>Tutorial - DDS documentation</title>
+<title>User guide - DDS documentation</title>
 <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
 <link href="../css/theme.css" rel="stylesheet"/>
 <link href="../css/theme_extra.css" rel="stylesheet"/>
@@ -15,8 +15,8 @@
 <link href="../extra.css" rel="stylesheet"/>
 <script>
     // Current page data
-    var mkdocs_page_name = "Tutorial";
-    var mkdocs_page_input_path = "tutorial.ipynb";
+    var mkdocs_page_name = "User guide";
+    var mkdocs_page_input_path = "user_guide.ipynb";
     var mkdocs_page_url = null;
   </script>
 <script defer="" src="../js/jquery-2.1.1.min.js"></script>
@@ -50,7 +50,7 @@
 </li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial</a>
+<li class="toctree-l1 current"><a class="reference internal current" href="./">User guide</a>
 <ul class="current">
 </ul>
 </li>
@@ -60,7 +60,7 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
+<li class="toctree-l1"><a class="reference internal" href="../tut_plotting/">Tutorial - plotting</a>
 </li>
 </ul>
 <ul>
@@ -68,11 +68,11 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="" href="../test_sklearn.ipynb">Tutorial - scikit-learn</a>
+<li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Tutorial - custome types</a>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Tutorial - custome types</a>
+<li class="toctree-l1"><a class="reference internal" href="../tut_sklearn/">Tutorial - scikit-learn</a>
 </li>
 </ul>
 </div>
@@ -88,7 +88,7 @@
 <div aria-label="breadcrumbs navigation" role="navigation">
 <ul class="wy-breadcrumbs">
 <li><a href="..">Docs</a> »</li>
-<li>Tutorial</li>
+<li>User guide</li>
 <li class="wy-breadcrumbs-aside">
 </li>
 </ul>
@@ -15088,6 +15088,34 @@ This function seems convenient, but it comes at some cost: because it refers onl
 <li><code>load</code> directly loads a piece of data from its path (without having to refer its generating data function)</li>
 </ul>
 <p>By building on these foundations, <code>dds</code> allows you to do many more things such as visualizing all the dependencies between data, speeding up Machine Learning pipelines, and parallelizing your code automatically. The other tutorials provide more information.</p>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">ls</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">internal</span><span class="o">/</span><span class="n">blobs</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">meta</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>03b90b2750b7b2fc1959ec068df4610e231a2b5725ea6f189846ee50dff6ebdc
+0e701a6548c227bee7c27f2ac6e04bff0e7facfd3e93b4f4317c55994420bda7
+9f6a010e46f75b07154ef9c413e1547b9a4f3e5e27a6913b871ff3b76497fff7
+a4a7492042d58fe1746b5c006ee5e2fb5f267d213698240016b855572b0272c3
+e5eb71c4dc7ee3ba89b66fd6e46f47a663f938ae78b9b854d863cd2094f4f87b
+fd58899678abe5b67dd3aed4855417652ed70a8b5aba0d449befb9f3e6ee9d4a
+</pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </body>
