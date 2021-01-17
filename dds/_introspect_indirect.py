@@ -33,6 +33,7 @@ from .structures import (
     LocalDepPath,
     FunctionIndirectInteractions,
 )
+from .structures_utils import CanonicalPathUtils as CPU
 
 _logger = logging.getLogger(__name__)
 
@@ -105,7 +106,9 @@ def _introspect_fun(
         src = inspect.getsource(f)
         h = dds_hash(src)
         # Have a stable name for the lambda function
-        fun_path = CanonicalPath(fun_path._path[:-1] + [fun_path._path[-1] + h])
+        fun_path = CanonicalPath(
+            fun_path._path.parent.joinpath(fun_path._path.stem + h)
+        )
         fiis_ = gctx.cached_indirect_interactions.get(fun_path)
         if fiis_ is not None:
             return fiis_
@@ -239,7 +242,7 @@ class InspectFunctionIndirect(object):
             )
 
         # Check if this is a call we should do something about.
-        if caller_fun_path == CanonicalPath(["dds", "keep"]):
+        if caller_fun_path == CPU.from_list(["dds", "keep"]):
             # Call to the keep function:
             # - bring the path
             # - bring the callee
@@ -276,7 +279,7 @@ class InspectFunctionIndirect(object):
             inner_intro = _introspect(called_fun, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
-        if caller_fun_path == CanonicalPath(["dds", "load"]):
+        if caller_fun_path == CPU.from_list(["dds", "load"]):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
                 raise KSException(f"Wrong number of args: expected 1, got {node.args}")
@@ -284,7 +287,7 @@ class InspectFunctionIndirect(object):
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
 
-        if caller_fun_path == CanonicalPath(["dds", "eval"]):
+        if caller_fun_path == CPU.from_list(["dds", "eval"]):
             raise NotImplementedError("eval")
 
         if caller_fun_path in call_stack:
