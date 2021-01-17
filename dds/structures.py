@@ -3,7 +3,7 @@ from enum import Enum
 from functools import total_ordering
 from pathlib import PurePath
 from pathlib import PurePosixPath
-from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
+from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple, Union
 
 
 class ProcessingStage(str, Enum):
@@ -117,29 +117,34 @@ class BlobMetaData(NamedTuple):
 
 @total_ordering
 class CanonicalPath(object):
-    def __init__(self, p: List[str]):
-        self._path = p
+    def __init__(self, p: Union[PurePosixPath]):
+        self._path: PurePosixPath
+        if isinstance(p, PurePosixPath):
+            self._path = p
+        else:
+            self._path = PurePosixPath("/".join(p))
+        assert self._path.is_absolute(), self._path
 
     def __hash__(self):
-        return hash(tuple(self._path))
+        return hash(self._path)
 
     def append(self, s: str) -> "CanonicalPath":
-        return CanonicalPath(self._path + [s])
+        return CanonicalPath(self._path.joinpath(s))
 
     def head(self) -> str:
-        return self._path[0]
+        return self._path.parts[0]
 
     def tail(self) -> "CanonicalPath":
-        return CanonicalPath(self._path[1:])
+        return CanonicalPath(PurePosixPath("/" + "/".join(self._path.parts[1:])))
 
     def get(self, i: int) -> str:
-        return self._path[i]
+        return self._path.parts[i]
 
     def __len__(self) -> int:
-        return len(self._path)
+        return len(self._path.parts)
 
     def __repr__(self) -> str:
-        x = ".".join(self._path)
+        x = "/".join(self._path.parts)
         return f"<{x}>"
 
     def __eq__(self, other: Any) -> bool:
