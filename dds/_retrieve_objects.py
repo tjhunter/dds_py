@@ -9,7 +9,6 @@ import typing
 from pathlib import PurePosixPath
 from types import ModuleType, FunctionType
 from typing import (
-    Tuple,
     Any,
     Union,
     Optional,
@@ -27,13 +26,13 @@ from .structures import (
     CanonicalPath,
     LocalDepPath,
 )
-from .structures_utils import LocalDepPathUtils
+from .structures_utils import LocalDepPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
 
 
 def _mod_path(m: ModuleType) -> CanonicalPath:
-    return CanonicalPath(m.__name__.split("."))
+    return CanonicalPathUtils.from_list(m.__name__.split("."))
 
 
 def function_path(f: Union[type, FunctionType]) -> CanonicalPath:
@@ -100,7 +99,7 @@ class ObjectRetrieval(object):
             if loaded_mod is None:
                 # Looking into the globals (only if the scope is currently __main__ or __global__)
                 mod_path = _mod_path(context_mod)
-                if mod_path.get(0) not in ("__main__", "__global__"):
+                if CanonicalPathUtils.head(mod_path) not in ("__main__", "__global__"):
                     # _logger.debug(
                     #     f"Could not load name %s and not in global context (%s), skipping ",
                     #     fname,
@@ -136,7 +135,7 @@ class ObjectRetrieval(object):
                     elif isinstance(obj, FunctionType):
                         obj_path = function_path(obj)
                     else:
-                        obj_path = CanonicalPath(
+                        obj_path = CanonicalPathUtils.from_list(
                             ["__global__"] + [str(x) for x in local_path.parts]
                         )
                     if not gctx.is_authorized_path(obj_path):
@@ -192,8 +191,7 @@ class ObjectRetrieval(object):
         cls, path: CanonicalPath, gctx: EvalMainContext
     ) -> Optional[Any]:
         # The head is always assumed to be a module for now
-        mod_name = path.head()
-        _logger.debug(f"retrieve_object_global {path} {mod_name}")
+        mod_name = CanonicalPathUtils.head(path)
         obj_key = (LocalDepPath(PurePosixPath("")), path)
         if obj_key in gctx.cached_objects:
             return gctx.cached_objects[obj_key]
@@ -203,8 +201,8 @@ class ObjectRetrieval(object):
             raise KSException(
                 f"Cannot process path {path}: module {mod_name} cannot be loaded"
             )
-        sub_path = path.tail()
-        dep_path = LocalDepPath(PurePosixPath(sub_path._path))
+        sub_path = CanonicalPathUtils.tail(path)
+        dep_path = LocalDepPath(sub_path._path)
         # _logger.debug(f"Calling retrieve_object on {dep_path}, {mod}")
         z = cls.retrieve_object(dep_path, mod, gctx)
         if z is None:
@@ -279,7 +277,7 @@ class ObjectRetrieval(object):
                     # )
                     return cls._retrieve_object_rec(local_path, mod_obj, gctx)
             obj_mod_path = _mod_path(context_mod)
-            obj_path = obj_mod_path.append(fname)
+            obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             if gctx.is_authorized_path(obj_path):
                 # TODO: simplify the authorized types
                 if (
@@ -325,7 +323,7 @@ class ObjectRetrieval(object):
         # (the rest of the path is method calls)
         if isinstance(obj, FunctionType):
             obj_mod_path = _mod_path(context_mod)
-            obj_path = obj_mod_path.append(fname)
+            obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             if gctx.is_authorized_path(obj_path):
                 return AuthorizedObject(obj, obj_path)
 
@@ -335,7 +333,7 @@ class ObjectRetrieval(object):
         if isinstance(obj, type):
             obj_mod_path = function_path(obj)
             # obj_mod_path = _mod_path(context_mod)
-            obj_path = obj_mod_path.append(fname)
+            obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             # _logger.debug(f"_retrieve_object_rec:(type) whitelisted_packages: {obj_path}->{gctx.is_authorized_path(obj_path)} {gctx.whitelisted_packages}")
             if gctx.is_authorized_path(obj_path):
                 return AuthorizedObject(obj, obj_path)

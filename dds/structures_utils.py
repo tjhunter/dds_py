@@ -5,6 +5,7 @@ Utilities related to structures
 import logging
 import pathlib
 from collections import OrderedDict
+from pathlib import PurePosixPath
 from typing import Callable, Any, Optional, List, Tuple, Set
 from typing import Union
 
@@ -16,6 +17,7 @@ from .structures import (
     LocalDepPath,
     FunctionIndirectInteractions,
     SupportedType,
+    CanonicalPath,
 )
 
 _logger = logging.getLogger(__name__)
@@ -178,3 +180,21 @@ class SupportedTypeUtils(object):
         if module is None or module == str.__class__.__module__:
             return SupportedType(t.__name__)
         return SupportedType(module + "." + t.__name__)
+
+
+class CanonicalPathUtils(object):
+    @staticmethod
+    def from_list(l: List[str]) -> CanonicalPath:
+        return CanonicalPath(PurePosixPath("/".join(l)))
+
+    @staticmethod
+    def head(p: CanonicalPath) -> str:
+        return p._path.parts[0]
+
+    @staticmethod
+    def tail(p: CanonicalPath) -> CanonicalPath:
+        return CanonicalPathUtils.from_list(list(p._path.parts[1:]))
+
+    @staticmethod
+    def append(p: CanonicalPath, o: str) -> CanonicalPath:
+        return CanonicalPath(p._path.joinpath(o))

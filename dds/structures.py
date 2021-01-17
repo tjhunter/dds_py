@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from collections import OrderedDict
 from enum import Enum
 from functools import total_ordering
@@ -113,48 +114,12 @@ class FileCodecProtocol(object):
 class BlobMetaData(NamedTuple):
     protocol: ProtocolRef
     # TODO: creation date?
+    # TODO: cration date has been added
 
 
-@total_ordering
-class CanonicalPath(object):
-    def __init__(self, p: Union[PurePosixPath]):
-        self._path: PurePosixPath
-        if isinstance(p, PurePosixPath):
-            self._path = p
-        else:
-            self._path = PurePosixPath("/".join(p))
-        assert self._path.is_absolute(), self._path
-
-    def __hash__(self):
-        return hash(self._path)
-
-    def append(self, s: str) -> "CanonicalPath":
-        return CanonicalPath(self._path.joinpath(s))
-
-    def head(self) -> str:
-        return self._path.parts[0]
-
-    def tail(self) -> "CanonicalPath":
-        return CanonicalPath(PurePosixPath("/" + "/".join(self._path.parts[1:])))
-
-    def get(self, i: int) -> str:
-        return self._path.parts[i]
-
-    def __len__(self) -> int:
-        return len(self._path.parts)
-
-    def __repr__(self) -> str:
-        x = "/".join(self._path.parts)
-        return f"<{x}>"
-
-    def __eq__(self, other: Any) -> bool:
-        return repr(self) == repr(other)
-
-    def __ne__(self, other: Any) -> bool:
-        return not (repr(self) == repr(other))
-
-    def __lt__(self, other: Any) -> bool:
-        return repr(self) < repr(other)
+@dataclass(frozen=True, order=True)
+class CanonicalPath:
+    _path: PurePosixPath
 
 
 # The path of a local dependency from the perspective of a function, as read from the AST

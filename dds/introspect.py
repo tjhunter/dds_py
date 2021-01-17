@@ -40,7 +40,7 @@ from .structures import (
     ExternalDep,
     LocalDepPath,
 )
-from .structures_utils import DDSPathUtils
+from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
 
@@ -582,9 +582,9 @@ class InspectFunction(object):
                 assert isinstance(z, AuthorizedObject)
                 caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
                 # _logger.debug(f"_path_annotation: caller_fun_path: %s", caller_fun_path)
-                if caller_fun_path == CanonicalPath(
+                if caller_fun_path == CanonicalPathUtils.from_list(
                     ["dds", "_annotations", "dds_function"]
-                ) or caller_fun_path == CanonicalPath(
+                ) or caller_fun_path == CanonicalPathUtils.from_list(
                     ["dds", "_annotations", "data_function"]
                 ):
                     if len(dec.args) != 1:
@@ -632,7 +632,7 @@ class InspectFunction(object):
             )
 
         # Check if this is a call we should do something about.
-        if caller_fun_path == CanonicalPath(["dds", "keep"]):
+        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "keep"]):
             # Call to the keep function:
             # - bring the path
             # - bring the callee
@@ -690,7 +690,7 @@ class InspectFunction(object):
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
-        if caller_fun_path == CanonicalPath(["dds", "load"]):
+        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
                 raise KSException(f"Wrong number of args: expected 1, got {node.args}")
@@ -698,7 +698,7 @@ class InspectFunction(object):
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
 
-        if caller_fun_path == CanonicalPath(["dds", "eval"]):
+        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
             raise NotImplementedError("eval")
 
         if caller_fun_path in call_stack:
