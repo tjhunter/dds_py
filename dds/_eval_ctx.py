@@ -65,6 +65,6 @@ class EvalMainContext(object):
 
     def is_authorized_path(self, cp: CanonicalPath) -> bool:
         for idx in range(len(self.whitelisted_packages)):
-            if ".".join(cp._path[:idx]) in self.whitelisted_packages:
+            if ".".join(cp._path.parts[:idx]) in self.whitelisted_packages:
                 return True
         return False
