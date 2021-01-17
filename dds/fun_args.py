@@ -8,60 +8,42 @@ import logging
 from collections import OrderedDict
 from inspect import Parameter
 from pathlib import PurePosixPath
-from typing import Tuple, Callable, Any, Dict, List, Optional, NewType
+from typing import (
+    Tuple,
+    Callable,
+    Any,
+    Dict,
+    List,
+    Optional,
+)
 
 from .structures import CanonicalPath
 from .structures import PyHash, FunctionArgContext
 
 _logger = logging.getLogger(__name__)
 
-HashKey = NewType("HashKey", str)
-
-
-def dds_hash_commut(i: List[Tuple[HashKey, PyHash]]) -> PyHash:
-    """
-    Takes a dictionary-like structure of keys and values and returns a hash of it with the
-    following commutatitivity property: the hash is stable under permutation of elements
-    in the key.
-    """
-
-    def digest(kv: Tuple[HashKey, PyHash]) -> str:
-        b = hashlib.sha256(kv[0].encode("utf-8"))
-        b.update(kv[1].encode("utf-8"))
-        return b.hexdigest()
-
-    assert i
-    res = digest(i[0])
-    for c in i[1:]:
-        _res = int(res, 16) ^ int(digest(c), 16)
-        res = "{:x}".format(_res)
-    return PyHash(res)
-
-
-def _algo_str(s: str) -> PyHash:
-    return _algo_bytes(s.encode("utf-8"))
-
-
-def _algo_bytes(b: bytes) -> PyHash:
-    return PyHash(hashlib.sha256(b).hexdigest())
-
 
 def dds_hash(x: Any) -> PyHash:
+    def algo_str(s: str) -> PyHash:
+        return algo_bytes(s.encode("utf-8"))
+
+    def algo_bytes(b: bytes) -> PyHash:
+        return PyHash(hashlib.sha256(b).hexdigest())
 
     if isinstance(x, str):
-        return _algo_str(x)
+        return algo_str(x)
     if isinstance(x, float):
-        return _algo_bytes(struct.pack("!d", x))
+        return algo_bytes(struct.pack("!d", x))
     if isinstance(x, int):
-        return _algo_bytes(struct.pack("!l", x))
+        return algo_bytes(struct.pack("!l", x))
     if isinstance(x, list):
-        return _algo_str("|".join([dds_hash(y) for y in x]))
+        return algo_str("|".join([dds_hash(y) for y in x]))
     if isinstance(x, CanonicalPath):
-        return _algo_str(repr(x))
+        return algo_str(repr(x))
     if isinstance(x, tuple):
         return dds_hash(list(x))
     if isinstance(x, PurePosixPath):
-        return _algo_str(str(x))
+        return algo_str(str(x))
     raise NotImplementedError(str(type(x)))
 
 

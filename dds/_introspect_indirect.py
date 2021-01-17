@@ -16,7 +16,6 @@ from typing import (
 
 from ._eval_ctx import (
     EvalMainContext,
-    Package,
     ExternalObject,
     AuthorizedObject,
     ObjectRetrievalType,

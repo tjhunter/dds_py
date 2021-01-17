@@ -29,7 +29,7 @@ from ._global_ctx import _global_context, PythonId
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash, get_arg_ctx_ast, dds_hash_commut, HashKey as HK
+from .fun_args import dds_hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
     FunctionArgContext,
@@ -256,11 +256,7 @@ class IntroVisitor(ast.NodeVisitor):
         function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
-        function_inters_sig = (
-            dds_hash_commut(_fis_to_siglist(self.inters))
-            if self.inters
-            else dds_hash([])
-        )
+        function_inters_sig = dds_hash([fi.fun_return_sig for fi in self.inters])
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunction.inspect_call(
             node,
@@ -474,10 +470,7 @@ class InspectFunction(object):
 
         body_sig = dds_hash(class_body_lines)
         # All the sub-dependencies are handled with method introspections
-
-        return_sig = dds_hash_commut(
-            [(HK("body_sig"), body_sig)] + _fis_to_siglist(method_fis)
-        )
+        return_sig = dds_hash([body_sig] + [i.fun_return_sig for i in method_fis])
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -516,10 +509,8 @@ class InspectFunction(object):
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         # _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
-        keys = [(HK(f"local_path_{ed.local_path}"), ed.sig) for ed in ext_deps] + [
-            (HK(f"arg_{idx}"), sig) for (idx, sig) in enumerate(arg_keys)
-        ]
-        input_sig = dds_hash_commut(keys) if keys else dds_hash([])
+        sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)  # type: ignore
+        input_sig = dds_hash(sig_list)
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
         )
@@ -536,11 +527,12 @@ class InspectFunction(object):
             ), f"Missing dep {dep} for {fun_path}: {call_stack} {gctx.resolved_references}"
             return key
 
-        indirect_deps_sigs = [(HK(f"dep_{dep}"), fetch(dep)) for dep in indirect_deps]
-        return_sig = dds_hash_commut(
-            [(HK("input_sig"), input_sig), (HK("body_sig"), body_sig),]
+        indirect_deps_sigs = [fetch(dep) for dep in indirect_deps]
+
+        return_sig = dds_hash(
+            [input_sig, body_sig]
+            + [i.fun_return_sig for i in calls_v.inters]
             + indirect_deps_sigs
-            + _fis_to_siglist(calls_v.inters)
         )
 
         # Look at the annotations to see if there is a reference to a data_function
@@ -669,12 +661,8 @@ class InspectFunction(object):
                 )
             if function_inter_hash is None:
                 raise KSException("not implemented: function_inter_hash")
-            context_sig = dds_hash_commut(
-                [
-                    (HK("function_body_hash"), function_body_hash),
-                    (HK("function_args_hash"), function_args_hash),
-                    (HK("function_inter_hash"), function_inter_hash),
-                ]
+            context_sig = dds_hash(
+                [function_body_hash, function_args_hash, function_inter_hash]
             )
             new_call_stack = call_stack + [call_fun_path]
             # TODO: deal with the arguments here
@@ -713,12 +701,8 @@ class InspectFunction(object):
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here
-        context_sig = dds_hash_commut(
-            [
-                (HK("function_body_hash"), function_body_hash),
-                (HK("function_args_hash"), function_args_hash),
-                (HK("function_inter_hash"), function_inter_hash),
-            ]
+        context_sig = dds_hash(
+            [function_body_hash, function_args_hash, function_inter_hash]
         )
         # For now, do not look carefully at the arguments, just parse the arguments of
         # the functions.
