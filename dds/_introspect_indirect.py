@@ -236,7 +236,7 @@ class InspectFunctionIndirect(object):
 
         # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod}\n %s", pformat(node))
         z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
-        # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
+        _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
         if z is None or isinstance(z, ExternalObject):
             # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return None

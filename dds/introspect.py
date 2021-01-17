@@ -325,31 +325,37 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         )
         if res is None or isinstance(res, ExternalObject):
             # Nothing to do, it is not interesting.
-            # _logger.debug("visit_Name: %s: skipping (unauthorized)", local_dep_path)
+            _logger.debug("visit_Name: %s: skipping (unauthorized)", local_dep_path)
             self._rejected_paths.add(local_dep_path)
             return
-        assert isinstance(res, AuthorizedObject)
-        (obj, path) = (res.object_val, res.resolved_path)
-        if isinstance(obj, FunctionType):
-            # Modules and callables are tracked separately
-            # _logger.debug(f"visit name %s: skipping (fun)", local_dep_path)
-            self._rejected_paths.add(local_dep_path)
-            return
-        if isinstance(obj, ModuleType):
-            # Modules and callables are tracked separately
-            # TODO: this is not accurate, as a variable could be called in a submodule
-            # _logger.debug(f"visit name %s: skipping (module)", local_dep_path)
-            self._rejected_paths.add(local_dep_path)
-            return
-        if inspect.isclass(obj):
-            # Classes are tracked separately
-            # _logger.debug(f"visit name %s: skipping (class)", local_dep_path)
-            self._rejected_paths.add(local_dep_path)
-            return
-        sig = self._gctx.get_hash(path, obj)
-        self.vars[local_dep_path] = ExternalDep(
-            local_path=local_dep_path, path=path, sig=sig
-        )
+        elif isinstance(res, ExternalObject):
+            # External object. Should be tracked at name level
+            self.vars[local_dep_path] = ExternalDep(
+                local_path=local_dep_path, path=res.resolved_path, sig=None
+            )
+        else:
+            assert isinstance(res, AuthorizedObject)
+            (obj, path) = (res.object_val, res.resolved_path)
+            if isinstance(obj, FunctionType):
+                # Modules and callables are tracked separately
+                # _logger.debug(f"visit name %s: skipping (fun)", local_dep_path)
+                self._rejected_paths.add(local_dep_path)
+                return
+            if isinstance(obj, ModuleType):
+                # Modules and callables are tracked separately
+                # TODO: this is not accurate, as a variable could be called in a submodule
+                # _logger.debug(f"visit name %s: skipping (module)", local_dep_path)
+                self._rejected_paths.add(local_dep_path)
+                return
+            if inspect.isclass(obj):
+                # Classes are tracked separately
+                # _logger.debug(f"visit name %s: skipping (class)", local_dep_path)
+                self._rejected_paths.add(local_dep_path)
+                return
+            sig = self._gctx.get_hash(path, obj)
+            self.vars[local_dep_path] = ExternalDep(
+                local_path=local_dep_path, path=path, sig=sig
+            )
 
 
 class LocalVarsVisitor(ast.NodeVisitor):
@@ -423,17 +429,17 @@ class InspectFunction(object):
         # _logger.debug(f"local vars: %s", lvars)
         return [LocalVar(s) for s in lvars]
 
-    @classmethod
-    def get_external_deps(
-        cls,
-        node: ast.FunctionDef,
-        mod: ModuleType,
-        gctx: EvalMainContext,
-        vars: Set[LocalVar],
-    ) -> List[ExternalDep]:
-        vdeps = ExternalVarsVisitor(mod, gctx, vars)
-        vdeps.visit(node)
-        return sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
+    # @classmethod
+    # def get_external_deps(
+    #     cls,
+    #     node: ast.FunctionDef,
+    #     mod: ModuleType,
+    #     gctx: EvalMainContext,
+    #     vars: Set[LocalVar],
+    # ) -> List[ExternalDep]:
+    #     vdeps = ExternalVarsVisitor(mod, gctx, vars)
+    #     vdeps.visit(node)
+    #     return sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
 
     @classmethod
     def inspect_class(
@@ -472,6 +478,7 @@ class InspectFunction(object):
             arg_input=arg_ctx,
             fun_body_sig=body_sig,
             fun_return_sig=return_sig,
+            # The dependencies are for now all in the function bodies
             external_deps=[],
             parsed_body=method_fis,
             store_path=None,  # No store path can be associated by default to a class
@@ -503,9 +510,17 @@ class InspectFunction(object):
         for n in body:
             vdeps.visit(n)
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
-        # _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
+        _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
-        sig_list: List[Any] = ([(ed.local_path, ed.sig) for ed in ext_deps] + arg_keys)  # type: ignore
+        # The variables that are hashable: authorized variables outside of the function
+        sig_variables: List[Tuple[LocalDepPath, PyHash]] = [
+            (ed.local_path, ed.sig) for ed in ext_deps if ed.sig is not None
+        ]
+        # External dependencies
+        ext_deps_vars: List[CanonicalPath] = sorted(
+            set([ed.path for ed in ext_deps if ed.sig is None])
+        )
+        sig_list: List[Any] = (sig_variables + ext_deps_vars + arg_keys)  # type: ignore
         input_sig = dds_hash(sig_list)
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
@@ -563,9 +578,9 @@ class InspectFunction(object):
                     local_path, mod, gctx
                 )
                 if z is None or isinstance(z, ExternalObject):
-                    # _logger.debug(
-                    #     f"_path_annotation: local_path: %s is rejected", local_path
-                    # )
+                    _logger.debug(
+                        f"_path_annotation: local_path: %s is rejected", local_path
+                    )
                     return None
                 assert isinstance(z, AuthorizedObject)
                 caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
@@ -608,9 +623,9 @@ class InspectFunction(object):
 
         # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod}\n %s", pformat(node))
         z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
-        # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
+        _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
         if z is None or isinstance(z, ExternalObject):
-            # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
+            _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return None
         assert isinstance(z, AuthorizedObject)
         caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
