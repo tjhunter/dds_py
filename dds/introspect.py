@@ -64,10 +64,6 @@ class Functions(str, Enum):
     Eval = "eval"
 
 
-def _fis_to_siglist(fis: List[FunctionInteractions]) -> List[Tuple[HK, PyHash]]:
-    return [(HK(f"fun_dep_{idx}"), i.fun_return_sig) for (idx, i) in enumerate(fis)]
-
-
 def _all_paths(fis: FunctionInteractions) -> Set[CanonicalPath]:
     res: Set[CanonicalPath] = {fis.fun_path}
     for fis0 in fis.parsed_body:
