@@ -129,6 +129,7 @@ class ObjectRetrieval(object):
                         #     f"{fname} is module {obj}, checking for {sub_path}"
                         # )
                         res = cls.retrieve_object(sub_path, obj, gctx)
+                        _logger.debug(f"res: {res}")
                         gctx.cached_objects[obj_key] = res
                         return res
                     if isinstance(obj, ModuleType):
@@ -211,7 +212,8 @@ class ObjectRetrieval(object):
         dep_path = LocalDepPath(sub_path._path)
         # _logger.debug(f"Calling retrieve_object on {dep_path}, {mod}")
         z = cls.retrieve_object(dep_path, mod, gctx)
-        if z is None:
+        _logger.debug(f"z: {z}")
+        if z is None or isinstance(z, ExternalObject):
             raise KSException(
                 f"Cannot load path {path}: this object cannot be retrieved, however "
                 f"the module '{mod_name}' exists. The typical cause of the issue is "
@@ -225,7 +227,7 @@ class ObjectRetrieval(object):
             gctx.cached_objects[obj_key] = AuthorizedObject(obj, path)
             return obj
         else:
-            return None
+            assert False
 
     @classmethod
     def _retrieve_object_rec(
@@ -282,10 +284,15 @@ class ObjectRetrieval(object):
                     # Note: it skips the definition of the newtype along the way, but this is considered a corner case.
                     return None
                 if mod_obj is not context_mod:
+                    # Reimporting from another module.
+                    # Get the true name of the function.
+                    # The function may have been renamed in the code and this name is not the one from
+                    # the original module -> check the original name of the function:
+                    local_path_mod = LocalDepPath(PurePosixPath(obj.__name__)).joinpath(LocalDepPathUtils.tail(local_path))
                     _logger.debug(
-                        f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {mod_obj}"
+                        f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {local_path_mod} ; {mod_obj}"
                     )
-                    return cls._retrieve_object_rec(local_path, mod_obj, gctx)
+                    return cls._retrieve_object_rec(local_path_mod, mod_obj, gctx)
             obj_mod_path = _mod_path(context_mod)
             obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             if gctx.is_authorized_path(obj_path):

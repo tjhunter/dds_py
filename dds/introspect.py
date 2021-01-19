@@ -323,6 +323,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         res: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
             local_dep_path, self._start_mod, self._gctx
         )
+        _logger.debug(f"visit_Name: {local_dep_path} {self._start_mod} -> {res}")
         if res is None or isinstance(res, ExternalObject):
             # Nothing to do, it is not interesting.
             _logger.debug("visit_Name: %s: skipping (unauthorized)", local_dep_path)
@@ -577,6 +578,7 @@ class InspectFunction(object):
                 z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
                     local_path, mod, gctx
                 )
+                _logger.debug(f"z: {z}")
                 if z is None or isinstance(z, ExternalObject):
                     _logger.debug(
                         f"_path_annotation: local_path: %s is rejected", local_path
@@ -655,6 +657,7 @@ class InspectFunction(object):
             called_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
                 called_local_path, mod, gctx
             )
+            _logger.debug(f"called_z: {called_z}")
             if not called_z or isinstance(called_z, ExternalObject):
                 # Not sure what to do yet in this case.
                 raise NotImplementedError(
@@ -751,6 +754,7 @@ class InspectFunction(object):
         store_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
             store_path_local_path, mod, gctx
         )
+        _logger.debug(f"store_z: {store_z}")
         if not store_z or isinstance(store_z, ExternalObject):
             # Not sure what to do yet in this case.
             raise NotImplementedError(f"Invalid store_z: {store_path_local_path} {mod}")

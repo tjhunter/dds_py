@@ -268,6 +268,7 @@ class InspectFunctionIndirect(object):
             called_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
                 called_local_path, mod, gctx
             )
+            _logger.debug(f"called_z: {called_z}")
             if not called_z or isinstance(called_z, ExternalObject):
                 # Not sure what to do yet in this case.
                 raise NotImplementedError(
