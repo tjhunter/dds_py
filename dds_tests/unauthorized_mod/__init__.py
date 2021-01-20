@@ -12,4 +12,3 @@ class ShadowClass2(object):
 
     def method1(self):
         return 1
-

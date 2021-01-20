@@ -432,18 +432,6 @@ class InspectFunction(object):
         # _logger.debug(f"local vars: %s", lvars)
         return [LocalVar(s) for s in lvars]
 
-    # @classmethod
-    # def get_external_deps(
-    #     cls,
-    #     node: ast.FunctionDef,
-    #     mod: ModuleType,
-    #     gctx: EvalMainContext,
-    #     vars: Set[LocalVar],
-    # ) -> List[ExternalDep]:
-    #     vdeps = ExternalVarsVisitor(mod, gctx, vars)
-    #     vdeps.visit(node)
-    #     return sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
-
     @classmethod
     def inspect_class(
         cls,

@@ -4,10 +4,10 @@ The main evaluation context.
 All the information stored in this class is only valid for a single run.
 """
 import logging
+from collections import OrderedDict
 from dataclasses import dataclass
 from types import ModuleType
-from collections import OrderedDict
-from typing import Tuple, Any, Dict, Set, Optional, NewType, Union
+from typing import Tuple, Any, Dict, Set, NewType, Union
 
 from .fun_args import dds_hash
 from .structures import (

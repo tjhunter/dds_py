@@ -133,7 +133,6 @@ class ObjectRetrieval(object):
                         #     f"{fname} is module {obj}, checking for {sub_path}"
                         # )
                         res = cls.retrieve_object(sub_path, obj, gctx)
-                        _logger.debug(f"res: {res}")
                         gctx.cached_objects[obj_key] = res
                         return res
                     if isinstance(obj, ModuleType):

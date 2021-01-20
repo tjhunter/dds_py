@@ -5,6 +5,7 @@ from dds_tests.unauthorized_mod.functions import function1, function2
 
 externa_fun = function1
 
+
 @dds.data_function("/p")
 def fun():
     return externa_fun()

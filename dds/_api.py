@@ -275,7 +275,7 @@ def _eval_new_ctx(
         else:
             present_blobs = None
 
-        _logger.info(f"Interaction tree:")
+        _logger.debug(f"Interaction tree:")
         FunctionInteractionsUtils.pprint_tree(
             inters, present_blobs, printer=lambda s: _logger.debug(s)
         )
