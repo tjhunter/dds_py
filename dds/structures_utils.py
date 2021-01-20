@@ -121,6 +121,12 @@ class FunctionInteractionsUtils(object):
                         value=f"Dep {ed.local_path} -> {ed.path}: {str(ed.sig)[:10]}"
                     )
                     for ed in fi_.external_deps
+                    if ed.sig is not None
+                ]
+                + [
+                    _PrintNode(value=f"Ext {ed.local_path} -> {ed.path}")
+                    for ed in fi_.external_deps
+                    if ed.sig is None
                 ]
                 + [_PrintNode(value=f"Ind {ed}") for ed in fi_.indirect_deps]
                 + [
@@ -196,5 +202,13 @@ class CanonicalPathUtils(object):
         return CanonicalPathUtils.from_list(list(p._path.parts[1:]))
 
     @staticmethod
-    def append(p: CanonicalPath, o: str) -> CanonicalPath:
-        return CanonicalPath(p._path.joinpath(o))
+    def append(p: CanonicalPath, o: Union[str, LocalDepPath]) -> CanonicalPath:
+        if isinstance(o, str):
+            return CanonicalPath(p._path.joinpath(o))
+        elif isinstance(o, PurePosixPath):  # LocalDepPath
+            s = str(o)
+            if s.startswith("/"):
+                s = s[1:]
+            return CanonicalPath(p._path.joinpath(s))
+        else:
+            raise KSException(f"{type(o)} {o}")
