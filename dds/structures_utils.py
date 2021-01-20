@@ -120,13 +120,13 @@ class FunctionInteractionsUtils(object):
                     _PrintNode(
                         value=f"Dep {ed.local_path} -> {ed.path}: {str(ed.sig)[:10]}"
                     )
-                    for ed in fi_.external_deps if ed.sig is not None
+                    for ed in fi_.external_deps
+                    if ed.sig is not None
                 ]
                 + [
-                    _PrintNode(
-                        value=f"Ext {ed.local_path} -> {ed.path}"
-                    )
-                    for ed in fi_.external_deps if ed.sig is None
+                    _PrintNode(value=f"Ext {ed.local_path} -> {ed.path}")
+                    for ed in fi_.external_deps
+                    if ed.sig is None
                 ]
                 + [_PrintNode(value=f"Ind {ed}") for ed in fi_.indirect_deps]
                 + [

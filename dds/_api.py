@@ -277,7 +277,7 @@ def _eval_new_ctx(
 
         _logger.info(f"Interaction tree:")
         FunctionInteractionsUtils.pprint_tree(
-            inters, present_blobs, printer=lambda s: _logger.info(s)
+            inters, present_blobs, printer=lambda s: _logger.debug(s)
         )
         if export_graph is not None:
             # Attempt to run the export module:
