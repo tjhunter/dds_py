@@ -4,9 +4,10 @@ The main evaluation context.
 All the information stored in this class is only valid for a single run.
 """
 import logging
-from types import ModuleType
 from collections import OrderedDict
-from typing import Tuple, Any, Dict, Set, Optional, NewType
+from dataclasses import dataclass
+from types import ModuleType
+from typing import Tuple, Any, Dict, Set, NewType, Union
 
 from .fun_args import dds_hash
 from .structures import (
@@ -23,6 +24,30 @@ _logger = logging.getLogger(__name__)
 
 
 Package = NewType("Package", str)
+
+
+@dataclass(frozen=True)
+class AuthorizedObject:
+    """
+    An authorized object. This object can be anything (either a function ar an object that
+    needs to be hashed).
+    """
+
+    object_val: Any
+    resolved_path: CanonicalPath
+
+
+@dataclass(frozen=True)
+class ExternalObject:
+    """
+    A function that is defined in an external module.
+    It is not full resolved to an object, as just the path itself is enough.
+    """
+
+    resolved_path: CanonicalPath
+
+
+ObjectRetrievalType = Union[None, AuthorizedObject, ExternalObject]
 
 
 class EvalMainContext(object):
@@ -49,7 +74,7 @@ class EvalMainContext(object):
             Tuple[CanonicalPath, FunctionArgContextHash], FunctionInteractions
         ] = dict()
         self.cached_objects: Dict[
-            Tuple[LocalDepPath, CanonicalPath], Optional[Tuple[Any, CanonicalPath]]
+            Tuple[LocalDepPath, CanonicalPath], ObjectRetrievalType
         ] = dict()
         self.cached_indirect_interactions: Dict[
             CanonicalPath, FunctionIndirectInteractions
@@ -65,6 +90,6 @@ class EvalMainContext(object):
 
     def is_authorized_path(self, cp: CanonicalPath) -> bool:
         for idx in range(len(self.whitelisted_packages)):
-            if ".".join(cp._path[:idx]) in self.whitelisted_packages:
+            if ".".join(cp._path.parts[:idx]) in self.whitelisted_packages:
                 return True
         return False

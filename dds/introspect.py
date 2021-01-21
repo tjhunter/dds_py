@@ -18,12 +18,19 @@ from typing import (
     Sequence,
 )
 
-from ._eval_ctx import EvalMainContext, Package
+from ._eval_ctx import (
+    EvalMainContext,
+    Package,
+    ExternalObject,
+    AuthorizedObject,
+    ObjectRetrievalType,
+)
 from ._global_ctx import _global_context, PythonId
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
 from .fun_args import dds_hash, get_arg_ctx_ast, dds_hash_commut, HashKey as HK
+from .fun_args import dds_hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
     FunctionArgContext,
@@ -34,7 +41,7 @@ from .structures import (
     ExternalDep,
     LocalDepPath,
 )
-from .structures_utils import DDSPathUtils
+from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
 
@@ -177,7 +184,9 @@ def _introspect_fun(
         src = inspect.getsource(f)
         h = dds_hash(src)
         # Have a stable name for the lambda function
-        fun_path = CanonicalPath(fun_path._path[:-1] + [fun_path._path[-1] + h])
+        fun_path = CanonicalPath(
+            fun_path._path.parent.joinpath(fun_path._path.stem + h)
+        )
         fis_key = (fun_path, arg_ctx_hash)
         fis_ = gctx.cached_fun_interactions.get(fis_key)
         if fis_ is not None:
@@ -289,7 +298,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         # All the dependencies that are encountered but do not lead to an external dep.
         self._rejected_paths: Set[LocalDepPath] = set()
 
-    def visit_Name(self, node: ast.Name) -> Any:
+    def visit_Name(self, node: ast.Name, debug: bool = False) -> Any:
         local_dep_path = LocalDepPath(PurePosixPath(node.id))
         # _logger.debug(
         #     "ExternalVarsVisitor:visit_Name: id: %s local_dep_path:%s",
@@ -320,35 +329,45 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         #         f"not found in module {self._start_mod}: \n{self._start_mod.__dict__.keys()} \nor in start_globals: {self._gctx.start_globals}"
         #     )
         #     return
-        res = ObjectRetrieval.retrieve_object(
+        res: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
             local_dep_path, self._start_mod, self._gctx
         )
+        if debug:
+            _logger.debug(f"visit_Name: {local_dep_path} {self._start_mod} -> {res}")
         if res is None:
             # Nothing to do, it is not interesting.
-            # _logger.debug("visit_Name: %s: skipping (unauthorized)", local_dep_path)
+            if debug:
+                _logger.debug("visit_Name: %s: skipping (unauthorized)", local_dep_path)
             self._rejected_paths.add(local_dep_path)
             return
-        (obj, path) = res
-        if isinstance(obj, FunctionType):
-            # Modules and callables are tracked separately
-            # _logger.debug(f"visit name %s: skipping (fun)", local_dep_path)
-            self._rejected_paths.add(local_dep_path)
-            return
-        if isinstance(obj, ModuleType):
-            # Modules and callables are tracked separately
-            # TODO: this is not accurate, as a variable could be called in a submodule
-            # _logger.debug(f"visit name %s: skipping (module)", local_dep_path)
-            self._rejected_paths.add(local_dep_path)
-            return
-        if inspect.isclass(obj):
-            # Classes are tracked separately
-            # _logger.debug(f"visit name %s: skipping (class)", local_dep_path)
-            self._rejected_paths.add(local_dep_path)
-            return
-        sig = self._gctx.get_hash(path, obj)
-        self.vars[local_dep_path] = ExternalDep(
-            local_path=local_dep_path, path=path, sig=sig
-        )
+        elif isinstance(res, ExternalObject):
+            # External object. Should be tracked at name level
+            self.vars[local_dep_path] = ExternalDep(
+                local_path=local_dep_path, path=res.resolved_path, sig=None
+            )
+        else:
+            assert isinstance(res, AuthorizedObject)
+            (obj, path) = (res.object_val, res.resolved_path)
+            if isinstance(obj, FunctionType):
+                # Modules and callables are tracked separately
+                # _logger.debug(f"visit name %s: skipping (fun)", local_dep_path)
+                self._rejected_paths.add(local_dep_path)
+                return
+            if isinstance(obj, ModuleType):
+                # Modules and callables are tracked separately
+                # TODO: this is not accurate, as a variable could be called in a submodule
+                # _logger.debug(f"visit name %s: skipping (module)", local_dep_path)
+                self._rejected_paths.add(local_dep_path)
+                return
+            if inspect.isclass(obj):
+                # Classes are tracked separately
+                # _logger.debug(f"visit name %s: skipping (class)", local_dep_path)
+                self._rejected_paths.add(local_dep_path)
+                return
+            sig = self._gctx.get_hash(path, obj)
+            self.vars[local_dep_path] = ExternalDep(
+                local_path=local_dep_path, path=path, sig=sig
+            )
 
 
 class LocalVarsVisitor(ast.NodeVisitor):
@@ -423,18 +442,6 @@ class InspectFunction(object):
         return [LocalVar(s) for s in lvars]
 
     @classmethod
-    def get_external_deps(
-        cls,
-        node: ast.FunctionDef,
-        mod: ModuleType,
-        gctx: EvalMainContext,
-        vars: Set[LocalVar],
-    ) -> List[ExternalDep]:
-        vdeps = ExternalVarsVisitor(mod, gctx, vars)
-        vdeps.visit(node)
-        return sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
-
-    @classmethod
     def inspect_class(
         cls,
         node: ast.ClassDef,
@@ -474,6 +481,7 @@ class InspectFunction(object):
             arg_input=arg_ctx,
             fun_body_sig=body_sig,
             fun_return_sig=return_sig,
+            # The dependencies are for now all in the function bodies
             external_deps=[],
             parsed_body=method_fis,
             store_path=None,  # No store path can be associated by default to a class
@@ -491,6 +499,7 @@ class InspectFunction(object):
         arg_ctx: FunctionArgContext,
         fun_path: CanonicalPath,
         call_stack: List[CanonicalPath],
+        debug: bool = False,
     ) -> FunctionInteractions:
         body: Sequence[ast.AST]
         if isinstance(node, ast.FunctionDef):
@@ -505,12 +514,24 @@ class InspectFunction(object):
         for n in body:
             vdeps.visit(n)
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
-        # _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
+        if debug:
+            _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
         arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
+
+        # The variables that are hashable: authorized variables outside of the function
+        sig_variables: List[Tuple[LocalDepPath, PyHash]] = [
+            (ed.local_path, ed.sig) for ed in ext_deps if ed.sig is not None
+        ]
+        # External dependencies
+        ext_deps_vars: List[CanonicalPath] = sorted(
+            set([ed.path for ed in ext_deps if ed.sig is None])
+        )
         keys = [(HK(f"local_path_{ed.local_path}"), ed.sig) for ed in ext_deps] + [
             (HK(f"arg_{idx}"), sig) for (idx, sig) in enumerate(arg_keys)
         ]
+        # TODO TODO 
         input_sig = dds_hash_commut(keys) if keys else dds_hash([])
+        # sig_list: List[Any] = (sig_variables + ext_deps_vars + arg_keys)  # type: ignore
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
         )
@@ -554,7 +575,11 @@ class InspectFunction(object):
 
     @classmethod
     def _path_annotation(
-        cls, node: ast.FunctionDef, mod: ModuleType, gctx: EvalMainContext
+        cls,
+        node: ast.FunctionDef,
+        mod: ModuleType,
+        gctx: EvalMainContext,
+        debug: bool = False,
     ) -> Optional[DDSPath]:
         for dec in node.decorator_list:
             if isinstance(dec, ast.Call):
@@ -562,17 +587,23 @@ class InspectFunction(object):
                     PurePosixPath("/".join(_function_name(dec.func)))
                 )
                 # _logger.debug(f"_path_annotation: local_path: %s", local_path)
-                z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
-                if z is None:
-                    # _logger.debug(
-                    #     f"_path_annotation: local_path: %s is rejected", local_path
-                    # )
+                z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
+                    local_path, mod, gctx
+                )
+                if debug:
+                    _logger.debug(f"z: {z}")
+                if z is None or isinstance(z, ExternalObject):
+                    if debug:
+                        _logger.debug(
+                            f"_path_annotation: local_path: %s is rejected", local_path
+                        )
                     return None
-                caller_fun, caller_fun_path = z
+                assert isinstance(z, AuthorizedObject)
+                caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
                 # _logger.debug(f"_path_annotation: caller_fun_path: %s", caller_fun_path)
-                if caller_fun_path == CanonicalPath(
+                if caller_fun_path == CanonicalPathUtils.from_list(
                     ["dds", "_annotations", "dds_function"]
-                ) or caller_fun_path == CanonicalPath(
+                ) or caller_fun_path == CanonicalPathUtils.from_list(
                     ["dds", "_annotations", "data_function"]
                 ):
                     if len(dec.args) != 1:
@@ -594,6 +625,7 @@ class InspectFunction(object):
         function_inter_hash: PyHash,
         var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
+        debug: bool = False,
     ) -> Union[FunctionInteractions, DDSPath, None]:
         # _logger.debug(f"Inspect call:\n %s", pformat(node))
 
@@ -607,19 +639,22 @@ class InspectFunction(object):
             return None
 
         # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod}\n %s", pformat(node))
-        z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
-        # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
-        if z is None:
-            # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
+        z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
+        if debug:
+            _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
+        if z is None or isinstance(z, ExternalObject):
+            if debug:
+                _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return None
-        caller_fun, caller_fun_path = z
+        assert isinstance(z, AuthorizedObject)
+        caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
         if not isinstance(caller_fun, FunctionType) and not inspect.isclass(caller_fun):
             raise NotImplementedError(
                 f"Expected FunctionType for {caller_fun_path}, got {type(caller_fun)}"
             )
 
         # Check if this is a call we should do something about.
-        if caller_fun_path == CanonicalPath(["dds", "keep"]):
+        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "keep"]):
             # Call to the keep function:
             # - bring the path
             # - bring the callee
@@ -636,13 +671,18 @@ class InspectFunction(object):
                     f"Cannot use nested callables of type {called_path_ast}"
                 )
             called_local_path = LocalDepPath(PurePosixPath(called_path_symbol))
-            called_z = ObjectRetrieval.retrieve_object(called_local_path, mod, gctx)
-            if not called_z:
+            called_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
+                called_local_path, mod, gctx
+            )
+            if debug:
+                _logger.debug(f"called_z: {called_z}")
+            if not called_z or isinstance(called_z, ExternalObject):
                 # Not sure what to do yet in this case.
                 raise NotImplementedError(
                     f"Invalid called_z: {called_local_path} {mod}"
                 )
-            called_fun, call_fun_path = called_z
+            assert isinstance(called_z, AuthorizedObject)
+            called_fun, call_fun_path = called_z.object_val, called_z.resolved_path
             if call_fun_path in call_stack:
                 raise KSException(
                     f"Detected circular function calls or (co-)recursive calls."
@@ -674,7 +714,7 @@ class InspectFunction(object):
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
-        if caller_fun_path == CanonicalPath(["dds", "load"]):
+        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
                 raise KSException(f"Wrong number of args: expected 1, got {node.args}")
@@ -682,7 +722,7 @@ class InspectFunction(object):
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
 
-        if caller_fun_path == CanonicalPath(["dds", "eval"]):
+        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
             raise NotImplementedError("eval")
 
         if caller_fun_path in call_stack:
@@ -737,11 +777,13 @@ class InspectFunction(object):
         # )
         store_path_local_path = LocalDepPath(PurePosixPath(store_path_symbol))
         # Retrieve the store path value and the called function
-        store_z = ObjectRetrieval.retrieve_object(store_path_local_path, mod, gctx)
-        if not store_z:
+        store_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
+            store_path_local_path, mod, gctx
+        )
+        if not store_z or isinstance(store_z, ExternalObject):
             # Not sure what to do yet in this case.
             raise NotImplementedError(f"Invalid store_z: {store_path_local_path} {mod}")
-        store_path, _ = store_z
+        store_path = store_z.object_val
         return DDSPathUtils.create(store_path)
 
 

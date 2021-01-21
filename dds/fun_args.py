@@ -80,11 +80,11 @@ def get_arg_ctx(
     if len(kwargs) > 0:
         raise NotImplementedError(f"kwargs")
     arg_sig = inspect.signature(f)
-    _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
+    # _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
     args_hashes = []
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
-        _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
+        # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
         if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
             raise NotImplementedError(f"{p.kind} {f} {arg_sig}")
         elif p.default != Parameter.empty and idx >= len(args):
@@ -109,11 +109,11 @@ def get_arg_ctx_ast(
     Gets the arg context based on the AST.
     """
     arg_sig = inspect.signature(f)
-    _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
+    # _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
     args_hashes: List[Tuple[str, Optional[PyHash]]] = []
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
-        _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
+        # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
         h: Optional[PyHash]
         if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
             raise NotImplementedError(f"{p.kind} {f} {arg_sig}")

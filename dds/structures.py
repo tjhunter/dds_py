@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 from collections import OrderedDict
 from enum import Enum
 from functools import total_ordering
 from pathlib import PurePath
 from pathlib import PurePosixPath
-from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
+from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple, Union
 
 
 class ProcessingStage(str, Enum):
@@ -113,43 +114,15 @@ class FileCodecProtocol(object):
 class BlobMetaData(NamedTuple):
     protocol: ProtocolRef
     # TODO: creation date?
+    # TODO: cration date has been added
 
 
-@total_ordering
-class CanonicalPath(object):
-    def __init__(self, p: List[str]):
-        self._path = p
+@dataclass(frozen=True, order=True)
+class CanonicalPath:
+    _path: PurePosixPath
 
-    def __hash__(self):
-        return hash(tuple(self._path))
-
-    def append(self, s: str) -> "CanonicalPath":
-        return CanonicalPath(self._path + [s])
-
-    def head(self) -> str:
-        return self._path[0]
-
-    def tail(self) -> "CanonicalPath":
-        return CanonicalPath(self._path[1:])
-
-    def get(self, i: int) -> str:
-        return self._path[i]
-
-    def __len__(self) -> int:
-        return len(self._path)
-
-    def __repr__(self) -> str:
-        x = ".".join(self._path)
-        return f"<{x}>"
-
-    def __eq__(self, other: Any) -> bool:
-        return repr(self) == repr(other)
-
-    def __ne__(self, other: Any) -> bool:
-        return not (repr(self) == repr(other))
-
-    def __lt__(self, other: Any) -> bool:
-        return repr(self) < repr(other)
+    def __repr__(self):
+        return f"<{self._path}>"
 
 
 # The path of a local dependency from the perspective of a function, as read from the AST
@@ -167,7 +140,9 @@ class ExternalDep(NamedTuple):
     # The path of the object
     path: CanonicalPath
     # The signature of the object
-    sig: PyHash
+    # The object only has a signature if it is an authorized object.
+    # External objects do not have a signature.
+    sig: Optional[PyHash]
 
 
 FunctionArgContextHash = NewType(
@@ -206,7 +181,9 @@ class FunctionInteractions(NamedTuple):
     # The signature of the return of the function (including the evaluated args)
     fun_return_sig: PyHash
     # The external dependencies
-    # TODO: merge it with parsed_body
+    # As a simplification, this is the list of all the dependencies from the body of the
+    # function.
+    # Unlike parsed_body, there is no incremental treatment.
     external_deps: List[ExternalDep]
     # In order, all the content from the parsed body of the function.
     # TODO: real type is FunctionInteractions but mypy does not support yet recursive types
