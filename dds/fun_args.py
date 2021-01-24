@@ -11,19 +11,23 @@ from pathlib import PurePosixPath
 from typing import Tuple, Callable, Any, Dict, List, Optional, NewType
 
 from .structures import CanonicalPath
-from .structures import PyHash, FunctionArgContext
+from .structures import PyHash, FunctionArgContext, ArgName
 
 _logger = logging.getLogger(__name__)
 
 HashKey = NewType("HashKey", str)
 
 
-def dds_hash_commut(i: List[Tuple[HashKey, PyHash]]) -> PyHash:
+def dds_hash_commut(i: List[Tuple[HashKey, PyHash]]) -> Optional[PyHash]:
     """
     Takes a dictionary-like structure of keys and values and returns a hash of it with the
     following commutatitivity property: the hash is stable under permutation of elements
     in the key.
+
+    Returns None if the input is empty
     """
+    if not i:
+        return None
 
     def digest(kv: Tuple[HashKey, PyHash]) -> str:
         b = hashlib.sha256(kv[0].encode("utf-8"))
@@ -97,20 +101,20 @@ def get_arg_ctx(
             raise NotImplementedError(f"{len(args)} {arg_sig}")
         else:
             h = dds_hash(args[idx])
-        args_hashes.append((n, h))
+        args_hashes.append((ArgName(n), h))
     return FunctionArgContext(OrderedDict(args_hashes), None)
 
 
 def get_arg_ctx_ast(
     f: Callable,  # type: ignore
     args: List[ast.AST],
-) -> "OrderedDict[str, Optional[PyHash]]":
+) -> "OrderedDict[ArgName, Optional[PyHash]]":
     """
     Gets the arg context based on the AST.
     """
     arg_sig = inspect.signature(f)
     # _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
-    args_hashes: List[Tuple[str, Optional[PyHash]]] = []
+    args_hashes: List[Tuple[ArgName, Optional[PyHash]]] = []
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
         # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
@@ -138,5 +142,5 @@ def get_arg_ctx_ast(
             else:
                 # Cannot deal with it for the time being
                 h = None
-        args_hashes.append((n, h))
+        args_hashes.append((ArgName(n), h))
     return OrderedDict(args_hashes)

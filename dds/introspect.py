@@ -40,10 +40,12 @@ from .structures import (
     CanonicalPath,
     ExternalDep,
     LocalDepPath,
+    ArgName,
 )
 from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
+_hash_key_body_sig = HK("body_sig")
 
 
 # The name of a local function var
@@ -66,6 +68,12 @@ class Functions(str, Enum):
 
 
 def _fis_to_siglist(fis: List[FunctionInteractions]) -> List[Tuple[HK, PyHash]]:
+    # Including an index in the case of the function interactions.
+    # There may be multiple function calls to the same function, and the current
+    # hashing algorithm does not allow duplicates of the same elements (they get xor'd out).
+    # The penalty to pay for indexing is that adding or removing function calls may
+    # introduce a reindexing and hence a recomputation of a few hashes.
+    # Since this is limited to a single function, this is not considered to have a large impact.
     return [(HK(f"fun_dep_{idx}"), i.fun_return_sig) for (idx, i) in enumerate(fis)]
 
 
@@ -254,13 +262,14 @@ class IntroVisitor(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)} {pformat(node)}")
+        # This is a bit brute-force (not working for multi-line function calls)
+        # but it should be good enough in practice for most cases.
+        # TODO: refine it based of the nested parse tree?
         function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
-        function_inters_sig = (
-            dds_hash_commut(_fis_to_siglist(self.inters))
-            if self.inters
-            else dds_hash([])
+        function_inters_sig: Optional[PyHash] = (
+            dds_hash_commut(_fis_to_siglist(self.inters)) if self.inters else None
         )
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunction.inspect_call(
@@ -474,8 +483,9 @@ class InspectFunction(object):
         # All the sub-dependencies are handled with method introspections
 
         return_sig = dds_hash_commut(
-            [(HK("body_sig"), body_sig)] + _fis_to_siglist(method_fis)
+            [(_hash_key_body_sig, body_sig)] + _fis_to_siglist(method_fis)
         )
+        assert return_sig is not None
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -538,8 +548,7 @@ class InspectFunction(object):
             ]
             + [(HK(f"arg_{arg_name}"), sig) for (arg_name, sig) in arg_keys]
         )
-        input_sig = dds_hash_commut(keys) if keys else dds_hash([])
-        # sig_list: List[Any] = (sig_variables + ext_deps_vars + arg_keys)  # type: ignore
+        input_sig = dds_hash_commut(keys) or dds_hash([])
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
         )
@@ -547,7 +556,7 @@ class InspectFunction(object):
             calls_v.visit(n)
         body_sig = dds_hash(function_body_lines)
         # Remove duplicates but keep the order in the list of paths:
-        indirect_deps = _no_dups(calls_v.load_paths)
+        indirect_dep = _no_dups(calls_v.load_paths)
 
         def fetch(dep: DDSPath) -> PyHash:
             key = gctx.resolved_references.get(dep)
@@ -556,12 +565,14 @@ class InspectFunction(object):
             ), f"Missing dep {dep} for {fun_path}: {call_stack} {gctx.resolved_references}"
             return key
 
-        indirect_deps_sigs = [(HK(f"dep_{dep}"), fetch(dep)) for dep in indirect_deps]
-        return_sig = dds_hash_commut(
-            [(HK("input_sig"), input_sig), (HK("body_sig"), body_sig),]
-            + indirect_deps_sigs
-            + _fis_to_siglist(calls_v.inters)
-        )
+        indirect_deps_sigs = dict([(dep, fetch(dep)) for dep in indirect_dep])
+
+        # indirect_deps_sigs = [(HK(f"dep_{dep}"), fetch(dep)) for dep in indirect_dep]
+        # return_sig = dds_hash_commut(
+        #     [(HK("input_sig"), input_sig), (HK("body_sig"), body_sig),]
+        #     + indirect_deps_sigs
+        #     + _fis_to_siglist(calls_v.inters)
+        # )
 
         # Look at the annotations to see if there is a reference to a data_function
         if isinstance(node, ast.FunctionDef):
@@ -569,6 +580,15 @@ class InspectFunction(object):
         else:
             store_path = None
         # _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
+        return_sig = build_return_sig(
+            body_sig=body_sig,
+            arg_ctx=arg_ctx,
+            indirect_deps=indirect_deps_sigs,
+            sub_fis=calls_v.inters,
+            ext_deps=ext_deps_vars,
+            ext_vars=sig_variables_distinct,
+        )
+        assert return_sig is not None
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -578,7 +598,7 @@ class InspectFunction(object):
             parsed_body=calls_v.inters,
             store_path=store_path,
             fun_path=fun_path,
-            indirect_deps=indirect_deps,
+            indirect_deps=indirect_dep,
         )
 
     @classmethod
@@ -630,7 +650,7 @@ class InspectFunction(object):
         mod: ModuleType,
         function_body_hash: PyHash,
         function_args_hash: PyHash,
-        function_inter_hash: PyHash,
+        function_inter_hash: Optional[PyHash],
         var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
         debug: bool = False,
@@ -699,14 +719,16 @@ class InspectFunction(object):
                     f"Function: {call_fun_path}"
                     f"Call stack: {' '.join([str(p) for p in call_stack])}"
                 )
-            if function_inter_hash is None:
-                raise KSException("not implemented: function_inter_hash")
             context_sig = dds_hash_commut(
                 [
-                    (HK("function_body_hash"), function_body_hash),
+                    (_hash_key_body_sig, function_body_hash),
                     (HK("function_args_hash"), function_args_hash),
-                    (HK("function_inter_hash"), function_inter_hash),
                 ]
+                + (
+                    [(HK("function_inter_hash"), function_inter_hash)]
+                    if function_inter_hash is not None
+                    else []
+                )
             )
             new_call_stack = call_stack + [call_fun_path]
             # TODO: deal with the arguments here
@@ -749,8 +771,12 @@ class InspectFunction(object):
             [
                 (HK("function_body_hash"), function_body_hash),
                 (HK("function_args_hash"), function_args_hash),
-                (HK("function_inter_hash"), function_inter_hash),
             ]
+            + (
+                [(HK("function_inter_hash"), function_inter_hash)]
+                if function_inter_hash is not None
+                else []
+            )
         )
         # For now, do not look carefully at the arguments, just parse the arguments of
         # the functions.
@@ -810,6 +836,80 @@ _accepted_packages: Set[Package] = {
     Package("__main__"),
     Package("__global__"),
 }
+
+
+def build_input_sig(
+    arg_ctx: FunctionArgContext,
+    indirect_deps: Dict[DDSPath, PyHash],
+    ext_deps: Dict[LocalDepPath, CanonicalPath],
+    ext_vars: Dict[LocalDepPath, PyHash],
+) -> PyHash:
+    return build_return_sig(
+        body_sig=None,
+        arg_ctx=arg_ctx,
+        indirect_deps=indirect_deps,
+        sub_fis=[],
+        ext_deps=ext_deps,
+        ext_vars=ext_vars,
+    ) or dds_hash([])
+
+
+def build_return_sig(
+    body_sig: Optional[PyHash],
+    arg_ctx: FunctionArgContext,
+    indirect_deps: Dict[DDSPath, PyHash],
+    sub_fis: List[FunctionInteractions],
+    ext_deps: Dict[LocalDepPath, CanonicalPath],
+    ext_vars: Dict[LocalDepPath, PyHash],
+) -> Optional[PyHash]:
+    """
+    Builds a key from the content of a function.
+
+    This function builds an cryptographically secure hash of the content of
+    a function by combining the following elements of the function:
+    - body_sig -> the body signature (hashing the text of the body)
+    - the map of the indirect dependencies:
+        dep_{path} -> hash
+    - the list of all sub-function calls
+    - the input signature of the
+    - the external dependencies:
+        map of symbol name -> fully qualified path in the module hierarchy
+    - the external variables:
+        map of symbol name -> hash of the content of the function
+    - the arguments of the function:
+        map of arg_name -> signature of the input
+
+    These elements are combined using the commutative hash function.
+    """
+    body: List[Tuple[HK, PyHash]] = [] if body_sig is None else [
+        (_hash_key_body_sig, body_sig)
+    ]
+    arg: List[Tuple[HK, PyHash]]
+    if any(sig is None for sig in arg_ctx.named_args.values()):
+        assert arg_ctx.inner_call_key is not None, f"{arg_ctx} {body_sig}"
+        arg = [(HK("arg_context"), arg_ctx.inner_call_key)]
+    else:
+        arg = [
+            (HK(f"arg_{name}"), cast(PyHash, sig))
+            for (name, sig) in arg_ctx.named_args.items()
+        ]
+    all_pairs: List[Tuple[HK, PyHash]] = (
+        body
+        + arg
+        + [(HK(f"dep_{dep}"), sig_) for (dep, sig_) in indirect_deps.items()]
+        + _fis_to_siglist(sub_fis)
+        + [
+            (HK(f"ext_dep_{local_path}"), dds_hash(sig))
+            for (local_path, sig) in ext_deps.items()
+        ]
+        + [
+            (HK(f"ext_variable_{local_path}"), sig)
+            for (local_path, sig) in ext_vars.items()
+        ]
+    )
+    if not all_pairs:
+        return None
+    return dds_hash_commut(all_pairs)
 
 
 def accept_module(module: Union[str, ModuleType]) -> None:

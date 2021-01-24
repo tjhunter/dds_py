@@ -156,14 +156,13 @@ FunctionArgContextHash = NewType(
 
 class FunctionArgContext(NamedTuple):
     # The keys of the arguments that are known at call time
-    named_args: "OrderedDict[str, Optional[PyHash]]"
+    named_args: "OrderedDict[ArgName, Optional[PyHash]]"
     # The key of the environment when calling the function
     inner_call_key: Optional[PyHash]
 
     @staticmethod
     def relevant_keys(fac: "FunctionArgContext") -> List[Tuple[ArgName, PyHash]]:
-        # TODO: this just sends back a list of hashes. This is not great if the names change?
-        keys = [(ArgName(s), key) for (s, key) in fac.named_args.items()]
+        keys = [(s, key) for (s, key) in fac.named_args.items()]
         if any([key is None for (_, key) in keys]):
             # Missing some keys in the named arguments -> rely on the inner call key for the hash
             # TODO: this should not be a bug because of the root context, but it would be good to check.
@@ -177,7 +176,9 @@ class FunctionArgContext(NamedTuple):
 
     @classmethod
     def as_hashable(cls, arg_ctx: "FunctionArgContext") -> FunctionArgContextHash:
-        x: Tuple[Tuple[str, Optional[PyHash]], ...] = tuple(arg_ctx.named_args.items())
+        x: Tuple[Tuple[ArgName, Optional[PyHash]], ...] = tuple(
+            arg_ctx.named_args.items()
+        )
         return FunctionArgContextHash((arg_ctx.inner_call_key, x))
 
 
