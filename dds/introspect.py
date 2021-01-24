@@ -522,14 +522,22 @@ class InspectFunction(object):
         sig_variables: List[Tuple[LocalDepPath, PyHash]] = [
             (ed.local_path, ed.sig) for ed in ext_deps if ed.sig is not None
         ]
+        sig_variables_distinct: Dict[LocalDepPath, PyHash] = dict(sig_variables)
         # External dependencies
-        ext_deps_vars: List[CanonicalPath] = sorted(
-            set([ed.path for ed in ext_deps if ed.sig is None])
+        ext_deps_vars: Dict[LocalDepPath, CanonicalPath] = dict(
+            [(ed.local_path, ed.path) for ed in ext_deps if ed.sig is None]
         )
-        keys = [(HK(f"local_path_{ed.local_path}"), ed.sig) for ed in ext_deps] + [
-            (HK(f"arg_{idx}"), sig) for (idx, sig) in enumerate(arg_keys)
-        ]
-        # TODO TODO 
+        keys: List[Tuple[HK, PyHash]] = (
+            [
+                (HK(f"ext_dep_{local_path}"), dds_hash(sig))
+                for (local_path, sig) in ext_deps_vars.items()
+            ]
+            + [
+                (HK(f"ext_variable_{local_path}"), sig)
+                for (local_path, sig) in sig_variables_distinct.items()
+            ]
+            + [(HK(f"arg_{arg_name}"), sig) for (arg_name, sig) in arg_keys]
+        )
         input_sig = dds_hash_commut(keys) if keys else dds_hash([])
         # sig_list: List[Any] = (sig_variables + ext_deps_vars + arg_keys)  # type: ignore
         calls_v = IntroVisitor(
