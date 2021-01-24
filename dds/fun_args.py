@@ -3,8 +3,8 @@
 import ast
 import hashlib
 import inspect
-import struct
 import logging
+import struct
 from collections import OrderedDict
 from inspect import Parameter
 from pathlib import PurePosixPath

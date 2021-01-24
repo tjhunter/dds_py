@@ -29,8 +29,7 @@ from ._global_ctx import _global_context, PythonId
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash, get_arg_ctx_ast, dds_hash_commut, HashKey as HK
-from .fun_args import dds_hash, get_arg_ctx_ast
+from .fun_args import dds_hash_commut, HashKey as HK, dds_hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
     FunctionArgContext,
@@ -40,7 +39,6 @@ from .structures import (
     CanonicalPath,
     ExternalDep,
     LocalDepPath,
-    ArgName,
 )
 from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
