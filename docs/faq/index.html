@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>FAQ - DDS documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../extra.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "FAQ";
+    var mkdocs_page_input_path = "faq.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> DDS documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../dds-reference/">Reference</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">FAQ</a>
+    <ul class="current">
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Tutorial - modules</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_plotting/">Tutorial - plotting</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Tutorial - collaboration</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Tutorial - custome types</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_sklearn/">Tutorial - scikit-learn</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">DDS documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>FAQ</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="frequently-asked-questions">Frequently asked questions</h1>
+<p><strong>What can’t you do with pure docker that you would need DDS for? 
+e.g. Docker does a lot of caching of layers</strong></p>
+<p>Docker fills a gap that slightly overlaps with DDS:</p>
+<ul>
+<li>Docker allows you to embed arbitrary content (software, models, data, ...) into a single bundle</li>
+<li>It requires a specific language (the Dockerfile instructions)</li>
+<li>Its caching system does not understand the semantics of your code: if you just move code, it will rebuild the layer. In fact, Docker has multiple caching systems that try to address this issue in different ways.</li>
+<li>It requires a specific runtime (the docker system) to run</li>
+</ul>
+<p>By contrast, DDS understands very well your python code, and only your python code:</p>
+<ul>
+<li>you can run it in any python environment</li>
+<li>it will understand your code: if you copy/paste functions in files, 
+it will understand that the code is still the same and will not trigger recomputations</li>
+</ul>
+<p>In practice, both systems are complementary:</p>
+<ul>
+<li>you build all your data artifacts (models, cleaned data) with dds</li>
+<li>you embed them in a final docker container that you publish as a service, with MLFlow for example</li>
+</ul>
+<p><strong>Can DDS run in the background automatically like Delta IO?</strong></p>
+<p>Not currently, but this is a potential point on the roadmap. DDS already benefits from 
+Delta IO if available, and solves a different problem:
+ - DDS helps for batch transforms written in Python
+ - Delta IO can be used for streaming and batch, using Python, Java
+ - DDS automatically infers all the data dependencies from the code
+ - Delta IO needs an explicit computation graph provided by the user</p>
+<p><strong>Best practices: at which point in code should put it in?</strong></p>
+<p>The rule of thumb is the following: any idempotent calculation that you end up waiting 
+for and that takes more than 0.3 seconds to compute can benefit from DDS.</p>
+<p>In practice, this includes:</p>
+<ul>
+<li>fetching data from the internet and returning a <code>pandas</code> dataframe</li>
+<li>using the <code>display()</code> function to show statistics on large tables</li>
+<li>running ML models</li>
+</ul>
+<p>With DDS, the general user experience is that any notebook can be made to run 
+in less than 10 seconds. This is very powerful to communicate results 
+that potentially depend on long-running calculations.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../user_guide/" class="btn btn-neutral float-right" title="User guide">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../dds-reference/" class="btn btn-neutral" title="Reference"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../dds-reference/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../user_guide/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
