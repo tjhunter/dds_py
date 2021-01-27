@@ -129,6 +129,9 @@ class CanonicalPath:
 # It is always a relative path without root.
 LocalDepPath = NewType("LocalDepPath", PurePosixPath)
 
+# The name of an argument of a function
+ArgName = NewType("ArgName", str)
+
 
 class ExternalDep(NamedTuple):
     """
@@ -153,24 +156,29 @@ FunctionArgContextHash = NewType(
 
 class FunctionArgContext(NamedTuple):
     # The keys of the arguments that are known at call time
-    named_args: "OrderedDict[str, Optional[PyHash]]"
+    named_args: "OrderedDict[ArgName, Optional[PyHash]]"
     # The key of the environment when calling the function
     inner_call_key: Optional[PyHash]
 
     @staticmethod
-    def relevant_keys(fac: "FunctionArgContext") -> List[PyHash]:
-        # TODO: this just sends back a list of hashes. This is not great if the names change?
-        keys = [key for (_, key) in fac.named_args.items()]
-        if any([key is None for key in keys]):
+    def relevant_keys(fac: "FunctionArgContext") -> List[Tuple[ArgName, PyHash]]:
+        keys = [(s, key) for (s, key) in fac.named_args.items()]
+        if any([key is None for (_, key) in keys]):
             # Missing some keys in the named arguments -> rely on the inner call key for the hash
             # TODO: this should not be a bug because of the root context, but it would be good to check.
-            return [] if fac.inner_call_key is None else [fac.inner_call_key]
+            return (
+                []
+                if fac.inner_call_key is None
+                else [(ArgName("__context__"), fac.inner_call_key)]
+            )
         else:
             return keys  # type: ignore
 
     @classmethod
     def as_hashable(cls, arg_ctx: "FunctionArgContext") -> FunctionArgContextHash:
-        x: Tuple[Tuple[str, Optional[PyHash]], ...] = tuple(arg_ctx.named_args.items())
+        x: Tuple[Tuple[ArgName, Optional[PyHash]], ...] = tuple(
+            arg_ctx.named_args.items()
+        )
         return FunctionArgContextHash((arg_ctx.inner_call_key, x))
 
 

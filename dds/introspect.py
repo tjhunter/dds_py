@@ -29,7 +29,7 @@ from ._global_ctx import _global_context, PythonId
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash, get_arg_ctx_ast
+from .fun_args import dds_hash_commut, HashKey as HK, dds_hash, get_arg_ctx_ast
 from .structures import (
     PyHash,
     FunctionArgContext,
@@ -43,6 +43,10 @@ from .structures import (
 from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
+_hash_key_body_sig = HK("body_sig")
+_hash_key_fun_body = HK("function_body_hash")
+_hash_key_fun_input = HK("function_input_hash")
+_hash_key_fun_inter = HK("function_inter_hash")
 
 
 # The name of a local function var
@@ -62,6 +66,16 @@ class Functions(str, Enum):
     Load = "load"
     Keep = "keep"
     Eval = "eval"
+
+
+def _fis_to_siglist(fis: List[FunctionInteractions]) -> List[Tuple[HK, PyHash]]:
+    # Including an index in the case of the function interactions.
+    # There may be multiple function calls to the same function, and the current
+    # hashing algorithm does not allow duplicates of the same elements (they get xor'd out).
+    # The penalty to pay for indexing is that adding or removing function calls may
+    # introduce a reindexing and hence a recomputation of a few hashes.
+    # Since this is limited to a single function, this is not considered to have a large impact.
+    return [(HK(f"fun_dep_{idx}"), i.fun_return_sig) for (idx, i) in enumerate(fis)]
 
 
 def _all_paths(fis: FunctionInteractions) -> Set[CanonicalPath]:
@@ -233,7 +247,7 @@ class IntroVisitor(ast.NodeVisitor):
         start_mod: ModuleType,
         gctx: EvalMainContext,
         function_body_lines: List[str],
-        function_args_hash: PyHash,
+        function_input_sig: PyHash,
         function_var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
     ):
@@ -242,24 +256,29 @@ class IntroVisitor(ast.NodeVisitor):
         self._gctx = gctx
         self._function_var_names = set(function_var_names)
         self._body_lines = function_body_lines
-        self._args_hash = function_args_hash
+        self._input_sig = function_input_sig
         self._call_stack = call_stack
         self.inters: List[FunctionInteractions] = []
         self.load_paths: List[DDSPath] = []
 
     def visit_Call(self, node: ast.Call) -> Any:
         # _logger.debug(f"visit: {node} {dir(node)} {pformat(node)}")
+        # This is a bit brute-force (not working for multi-line function calls)
+        # but it should be good enough in practice for most cases.
+        # TODO: refine it based of the nested parse tree?
         function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
-        function_inters_sig = dds_hash([fi.fun_return_sig for fi in self.inters])
+        function_inters_sig: Optional[PyHash] = (
+            dds_hash_commut(_fis_to_siglist(self.inters))
+        )
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunction.inspect_call(
             node,
             self._gctx,
             self._start_mod,
             function_body_hash,
-            self._args_hash,
+            self._input_sig,
             function_inters_sig,
             self._function_var_names,
             self._call_stack,
@@ -463,7 +482,11 @@ class InspectFunction(object):
 
         body_sig = dds_hash(class_body_lines)
         # All the sub-dependencies are handled with method introspections
-        return_sig = dds_hash([body_sig] + [i.fun_return_sig for i in method_fis])
+
+        return_sig = dds_hash_commut(
+            [(_hash_key_body_sig, body_sig)] + _fis_to_siglist(method_fis)
+        )
+        assert return_sig is not None
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -504,17 +527,28 @@ class InspectFunction(object):
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         if debug:
             _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
-        arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
+
         # The variables that are hashable: authorized variables outside of the function
         sig_variables: List[Tuple[LocalDepPath, PyHash]] = [
             (ed.local_path, ed.sig) for ed in ext_deps if ed.sig is not None
         ]
+        sig_variables_distinct: Dict[LocalDepPath, PyHash] = dict(sig_variables)
         # External dependencies
-        ext_deps_vars: List[CanonicalPath] = sorted(
-            set([ed.path for ed in ext_deps if ed.sig is None])
+        ext_deps_vars: Dict[LocalDepPath, CanonicalPath] = dict(
+            [(ed.local_path, ed.path) for ed in ext_deps if ed.sig is None]
         )
-        sig_list: List[Any] = (sig_variables + ext_deps_vars + arg_keys)  # type: ignore
-        input_sig = dds_hash(sig_list)
+        input_sig = _build_return_sig(
+            # The body signature will depend on the exact location of the function calls
+            body_sig=None,
+            arg_ctx=arg_ctx,
+            # TODO: does it also need the indirect deps here?
+            indirect_deps={},
+            # Sub function interactions are processed one at
+            # a time inside the function.
+            sub_fis=[],
+            ext_deps=ext_deps_vars,
+            ext_vars=sig_variables_distinct,
+        ) or dds_hash([])
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
         )
@@ -522,7 +556,7 @@ class InspectFunction(object):
             calls_v.visit(n)
         body_sig = dds_hash(function_body_lines)
         # Remove duplicates but keep the order in the list of paths:
-        indirect_deps = _no_dups(calls_v.load_paths)
+        indirect_dep = _no_dups(calls_v.load_paths)
 
         def fetch(dep: DDSPath) -> PyHash:
             key = gctx.resolved_references.get(dep)
@@ -531,13 +565,7 @@ class InspectFunction(object):
             ), f"Missing dep {dep} for {fun_path}: {call_stack} {gctx.resolved_references}"
             return key
 
-        indirect_deps_sigs = [fetch(dep) for dep in indirect_deps]
-
-        return_sig = dds_hash(
-            [input_sig, body_sig]
-            + [i.fun_return_sig for i in calls_v.inters]
-            + indirect_deps_sigs
-        )
+        indirect_deps_sigs = dict([(dep, fetch(dep)) for dep in indirect_dep])
 
         # Look at the annotations to see if there is a reference to a data_function
         if isinstance(node, ast.FunctionDef):
@@ -545,6 +573,15 @@ class InspectFunction(object):
         else:
             store_path = None
         # _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
+        return_sig = _build_return_sig(
+            body_sig=body_sig,
+            arg_ctx=arg_ctx,
+            indirect_deps=indirect_deps_sigs,
+            sub_fis=calls_v.inters,
+            ext_deps=ext_deps_vars,
+            ext_vars=sig_variables_distinct,
+        )
+        assert return_sig is not None
 
         return FunctionInteractions(
             arg_input=arg_ctx,
@@ -554,7 +591,7 @@ class InspectFunction(object):
             parsed_body=calls_v.inters,
             store_path=store_path,
             fun_path=fun_path,
-            indirect_deps=indirect_deps,
+            indirect_deps=indirect_dep,
         )
 
     @classmethod
@@ -605,8 +642,8 @@ class InspectFunction(object):
         gctx: EvalMainContext,
         mod: ModuleType,
         function_body_hash: PyHash,
-        function_args_hash: PyHash,
-        function_inter_hash: PyHash,
+        function_input_sig: PyHash,
+        function_inter_hash: Optional[PyHash],
         var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
         debug: bool = False,
@@ -638,6 +675,43 @@ class InspectFunction(object):
             )
 
         # Check if this is a call we should do something about.
+
+        if caller_fun_path in call_stack:
+            # Recursive calls are not supported currently.
+            raise KSException(
+                f"Detected circular function calls or (co-)recursive calls."
+                f"This is currently not supported. Change your code to split the "
+                f"recursive section into a separate function. "
+                f"Function: {caller_fun_path}"
+                f"Call stack: {' '.join([str(p) for p in call_stack])}"
+            )
+
+        elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
+            # Evaluation call: get the argument and returns the function interaction for this call.
+            if len(node.args) != 1:
+                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
+            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
+            _logger.debug(f"inspect_call:eval: store_path: {store_path}")
+            return store_path
+
+        elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
+            raise NotImplementedError("eval")
+
+        # 2 cases left: normal call or kept call (normal call wrapped in ddd.keep())
+
+        # The context signature that will be needed for these calls.
+        context_sig = dds_hash_commut(
+            [
+                (_hash_key_body_sig, function_body_hash),
+                (_hash_key_fun_input, function_input_sig),
+            ]
+            + (
+                [(_hash_key_fun_inter, function_inter_hash)]
+                if function_inter_hash is not None
+                else []
+            )
+        )
+
         if caller_fun_path == CanonicalPathUtils.from_list(["dds", "keep"]):
             # Call to the keep function:
             # - bring the path
@@ -675,11 +749,6 @@ class InspectFunction(object):
                     f"Function: {call_fun_path}"
                     f"Call stack: {' '.join([str(p) for p in call_stack])}"
                 )
-            if function_inter_hash is None:
-                raise KSException("not implemented: function_inter_hash")
-            context_sig = dds_hash(
-                [function_body_hash, function_args_hash, function_inter_hash]
-            )
             new_call_stack = call_stack + [call_fun_path]
             # TODO: deal with the arguments here
             if node.keywords:
@@ -694,32 +763,9 @@ class InspectFunction(object):
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
-        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
-            # Evaluation call: get the argument and returns the function interaction for this call.
-            if len(node.args) != 1:
-                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
-            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
-            _logger.debug(f"inspect_call:eval: store_path: {store_path}")
-            return store_path
-
-        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
-            raise NotImplementedError("eval")
-
-        if caller_fun_path in call_stack:
-            raise KSException(
-                f"Detected circular function calls or (co-)recursive calls."
-                f"This is currently not supported. Change your code to split the "
-                f"recursive section into a separate function. "
-                f"Function: {caller_fun_path}"
-                f"Call stack: {' '.join([str(p) for p in call_stack])}"
-            )
 
         # Normal function call.
         # Just introspect the function call.
-        # TODO: deal with the arguments here
-        context_sig = dds_hash(
-            [function_body_hash, function_args_hash, function_inter_hash]
-        )
         # For now, do not look carefully at the arguments, just parse the arguments of
         # the functions.
         # TODO: add more arguments if we can parse constant arguments
@@ -764,6 +810,9 @@ class InspectFunction(object):
 
 
 def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
+    """
+    Removes duplicate while keeping the order.
+    """
     s = set()
     res = []
     for p in paths:
@@ -771,6 +820,64 @@ def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
             s.add(p)
             res.append(p)
     return res
+
+
+def _build_return_sig(
+    body_sig: Optional[PyHash],
+    arg_ctx: FunctionArgContext,
+    indirect_deps: Dict[DDSPath, PyHash],
+    sub_fis: List[FunctionInteractions],
+    ext_deps: Dict[LocalDepPath, CanonicalPath],
+    ext_vars: Dict[LocalDepPath, PyHash],
+) -> Optional[PyHash]:
+    """
+    Builds a key from the content of a function.
+
+    This function builds an cryptographically secure hash of the content of
+    a function by combining the following elements of the function:
+    - body_sig -> the body signature (hashing the text of the body)
+    - the map of the indirect dependencies:
+        dep_{path} -> hash
+    - the list of all sub-function calls
+    - the input signature of the
+    - the external dependencies:
+        map of symbol name -> fully qualified path in the module hierarchy
+    - the external variables:
+        map of symbol name -> hash of the content of the function
+    - the arguments of the function:
+        map of arg_name -> signature of the input
+
+    These elements are combined using the commutative hash function.
+    """
+    body: List[Tuple[HK, PyHash]] = [] if body_sig is None else [
+        (_hash_key_body_sig, body_sig)
+    ]
+    arg: List[Tuple[HK, PyHash]]
+    if any(sig is None for sig in arg_ctx.named_args.values()):
+        assert arg_ctx.inner_call_key is not None, f"{arg_ctx} {body_sig}"
+        arg = [(HK("arg_context"), arg_ctx.inner_call_key)]
+    else:
+        arg = [
+            (HK(f"arg_{name}"), cast(PyHash, sig))
+            for (name, sig) in arg_ctx.named_args.items()
+        ]
+    all_pairs: List[Tuple[HK, PyHash]] = (
+        body
+        + arg
+        + [(HK(f"dep_{dep}"), sig_) for (dep, sig_) in indirect_deps.items()]
+        + _fis_to_siglist(sub_fis)
+        + [
+            (HK(f"ext_dep_{local_path}"), dds_hash(sig))
+            for (local_path, sig) in ext_deps.items()
+        ]
+        + [
+            (HK(f"ext_variable_{local_path}"), sig)
+            for (local_path, sig) in ext_vars.items()
+        ]
+    )
+    if not all_pairs:
+        return None
+    return dds_hash_commut(all_pairs)
 
 
 _accepted_packages: Set[Package] = {

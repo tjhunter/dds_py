@@ -3,47 +3,69 @@
 import ast
 import hashlib
 import inspect
-import struct
 import logging
+import struct
 from collections import OrderedDict
 from inspect import Parameter
 from pathlib import PurePosixPath
-from typing import (
-    Tuple,
-    Callable,
-    Any,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Tuple, Callable, Any, Dict, List, Optional, NewType
 
 from .structures import CanonicalPath
-from .structures import PyHash, FunctionArgContext
+from .structures import PyHash, FunctionArgContext, ArgName
 
 _logger = logging.getLogger(__name__)
 
+HashKey = NewType("HashKey", str)
+
+
+def dds_hash_commut(i: List[Tuple[HashKey, PyHash]]) -> Optional[PyHash]:
+    """
+    Takes a dictionary-like structure of keys and values and returns a hash of it with the
+    following commutatitivity property: the hash is stable under permutation of elements
+    in the key.
+
+    Returns None if the input is empty
+    """
+    if not i:
+        return None
+
+    def digest(kv: Tuple[HashKey, PyHash]) -> str:
+        b = hashlib.sha256(kv[0].encode("utf-8"))
+        b.update(kv[1].encode("utf-8"))
+        return b.hexdigest()
+
+    assert i
+    res = digest(i[0])
+    for c in i[1:]:
+        _res = int(res, 16) ^ int(digest(c), 16)
+        res = "{:x}".format(_res)
+    return PyHash(res)
+
+
+def _algo_str(s: str) -> PyHash:
+    return _algo_bytes(s.encode("utf-8"))
+
+
+def _algo_bytes(b: bytes) -> PyHash:
+    return PyHash(hashlib.sha256(b).hexdigest())
+
 
 def dds_hash(x: Any) -> PyHash:
-    def algo_str(s: str) -> PyHash:
-        return algo_bytes(s.encode("utf-8"))
-
-    def algo_bytes(b: bytes) -> PyHash:
-        return PyHash(hashlib.sha256(b).hexdigest())
 
     if isinstance(x, str):
-        return algo_str(x)
+        return _algo_str(x)
     if isinstance(x, float):
-        return algo_bytes(struct.pack("!d", x))
+        return _algo_bytes(struct.pack("!d", x))
     if isinstance(x, int):
-        return algo_bytes(struct.pack("!l", x))
+        return _algo_bytes(struct.pack("!l", x))
     if isinstance(x, list):
-        return algo_str("|".join([dds_hash(y) for y in x]))
+        return _algo_str("|".join([dds_hash(y) for y in x]))
     if isinstance(x, CanonicalPath):
-        return algo_str(repr(x))
+        return _algo_str(repr(x))
     if isinstance(x, tuple):
         return dds_hash(list(x))
     if isinstance(x, PurePosixPath):
-        return algo_str(str(x))
+        return _algo_str(str(x))
     raise NotImplementedError(str(type(x)))
 
 
@@ -79,20 +101,20 @@ def get_arg_ctx(
             raise NotImplementedError(f"{len(args)} {arg_sig}")
         else:
             h = dds_hash(args[idx])
-        args_hashes.append((n, h))
+        args_hashes.append((ArgName(n), h))
     return FunctionArgContext(OrderedDict(args_hashes), None)
 
 
 def get_arg_ctx_ast(
     f: Callable,  # type: ignore
     args: List[ast.AST],
-) -> "OrderedDict[str, Optional[PyHash]]":
+) -> "OrderedDict[ArgName, Optional[PyHash]]":
     """
     Gets the arg context based on the AST.
     """
     arg_sig = inspect.signature(f)
     # _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
-    args_hashes: List[Tuple[str, Optional[PyHash]]] = []
+    args_hashes: List[Tuple[ArgName, Optional[PyHash]]] = []
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
         # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
@@ -120,5 +142,5 @@ def get_arg_ctx_ast(
             else:
                 # Cannot deal with it for the time being
                 h = None
-        args_hashes.append((n, h))
+        args_hashes.append((ArgName(n), h))
     return OrderedDict(args_hashes)
