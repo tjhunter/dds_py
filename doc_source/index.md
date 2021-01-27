@@ -12,9 +12,7 @@ data pipelines.
 
 ## Requirements
 
-`dds` is officially supported for Python versions 3.6 to 3.8. It is also
-working on Python 3.9 but not officially supported for that version, due
-to library incompatibilities for major applications (parquet decoding).
+`dds` is officially supported for Python versions 3.6 to 3.9. 
 
 `dds` has one requirement:
 
