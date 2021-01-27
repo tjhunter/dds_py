@@ -698,7 +698,22 @@ class InspectFunction(object):
         elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
             raise NotImplementedError("eval")
 
-        elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "keep"]):
+        # 2 cases left: normal call or kept call (normal call wrapped in ddd.keep())
+
+        # The context signature that will be needed for these calls.
+        context_sig = dds_hash_commut(
+            [
+                (_hash_key_body_sig, function_body_hash),
+                (_hash_key_fun_args, function_args_hash),
+            ]
+            + (
+                [(_hash_key_fun_inter, function_inter_hash)]
+                if function_inter_hash is not None
+                else []
+            )
+        )
+
+        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "keep"]):
             # Call to the keep function:
             # - bring the path
             # - bring the callee
@@ -735,17 +750,6 @@ class InspectFunction(object):
                     f"Function: {call_fun_path}"
                     f"Call stack: {' '.join([str(p) for p in call_stack])}"
                 )
-            context_sig = dds_hash_commut(
-                [
-                    (_hash_key_body_sig, function_body_hash),
-                    (_hash_key_fun_args, function_args_hash),
-                ]
-                + (
-                    [(_hash_key_fun_inter, function_inter_hash)]
-                    if function_inter_hash is not None
-                    else []
-                )
-            )
             new_call_stack = call_stack + [call_fun_path]
             # TODO: deal with the arguments here
             if node.keywords:
@@ -763,18 +767,6 @@ class InspectFunction(object):
 
         # Normal function call.
         # Just introspect the function call.
-        # TODO: deal with the arguments here
-        context_sig = dds_hash_commut(
-            [
-                (_hash_key_fun_body, function_body_hash),
-                (_hash_key_fun_args, function_args_hash),
-            ]
-            + (
-                [(_hash_key_fun_inter, function_inter_hash)]
-                if function_inter_hash is not None
-                else []
-            )
-        )
         # For now, do not look carefully at the arguments, just parse the arguments of
         # the functions.
         # TODO: add more arguments if we can parse constant arguments
