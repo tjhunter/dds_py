@@ -5,6 +5,7 @@ Utilities related to structures
 import logging
 import pathlib
 from collections import OrderedDict
+from pathlib import PurePosixPath
 from typing import Callable, Any, Optional, List, Tuple, Set
 from typing import Union
 
@@ -16,6 +17,7 @@ from .structures import (
     LocalDepPath,
     FunctionIndirectInteractions,
     SupportedType,
+    CanonicalPath,
 )
 
 _logger = logging.getLogger(__name__)
@@ -119,6 +121,12 @@ class FunctionInteractionsUtils(object):
                         value=f"Dep {ed.local_path} -> {ed.path}: {str(ed.sig)[:10]}"
                     )
                     for ed in fi_.external_deps
+                    if ed.sig is not None
+                ]
+                + [
+                    _PrintNode(value=f"Ext {ed.local_path} -> {ed.path}")
+                    for ed in fi_.external_deps
+                    if ed.sig is None
                 ]
                 + [_PrintNode(value=f"Ind {ed}") for ed in fi_.indirect_deps]
                 + [
@@ -178,3 +186,29 @@ class SupportedTypeUtils(object):
         if module is None or module == str.__class__.__module__:
             return SupportedType(t.__name__)
         return SupportedType(module + "." + t.__name__)
+
+
+class CanonicalPathUtils(object):
+    @staticmethod
+    def from_list(l: List[str]) -> CanonicalPath:
+        return CanonicalPath(PurePosixPath("/".join(l)))
+
+    @staticmethod
+    def head(p: CanonicalPath) -> str:
+        return p._path.parts[0]
+
+    @staticmethod
+    def tail(p: CanonicalPath) -> CanonicalPath:
+        return CanonicalPathUtils.from_list(list(p._path.parts[1:]))
+
+    @staticmethod
+    def append(p: CanonicalPath, o: Union[str, LocalDepPath]) -> CanonicalPath:
+        if isinstance(o, str):
+            return CanonicalPath(p._path.joinpath(o))
+        elif isinstance(o, PurePosixPath):  # LocalDepPath
+            s = str(o)
+            if s.startswith("/"):
+                s = s[1:]
+            return CanonicalPath(p._path.joinpath(s))
+        else:
+            raise KSException(f"{type(o)} {o}")

@@ -14,11 +14,16 @@ from typing import (
     Sequence,
 )
 
-from ._eval_ctx import EvalMainContext
+from ._eval_ctx import (
+    EvalMainContext,
+    ExternalObject,
+    AuthorizedObject,
+    ObjectRetrievalType,
+)
 from ._lambda_funs import is_lambda, inspect_lambda_condition
 from ._print_ast import pformat
 from ._retrieve_objects import ObjectRetrieval, function_path
-from .fun_args import dds_hash as dds_hash, get_arg_list
+from .fun_args import dds_hash, get_arg_list
 from .introspect import (
     InspectFunction,
     ExternalVarsVisitor,
@@ -33,6 +38,7 @@ from .structures import (
     LocalDepPath,
     FunctionIndirectInteractions,
 )
+from .structures_utils import CanonicalPathUtils as CPU
 
 _logger = logging.getLogger(__name__)
 
@@ -105,7 +111,9 @@ def _introspect_fun(
         src = inspect.getsource(f)
         h = dds_hash(src)
         # Have a stable name for the lambda function
-        fun_path = CanonicalPath(fun_path._path[:-1] + [fun_path._path[-1] + h])
+        fun_path = CanonicalPath(
+            fun_path._path.parent.joinpath(fun_path._path.stem + h)
+        )
         fiis_ = gctx.cached_indirect_interactions.get(fun_path)
         if fiis_ is not None:
             return fiis_
@@ -227,19 +235,20 @@ class InspectFunctionIndirect(object):
             return None
 
         # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod}\n %s", pformat(node))
-        z = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
+        z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
         # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
-        if z is None:
+        if z is None or isinstance(z, ExternalObject):
             # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return None
-        caller_fun, caller_fun_path = z
+        assert isinstance(z, AuthorizedObject)
+        caller_fun, caller_fun_path = z.object_val, z.resolved_path
         if not isinstance(caller_fun, FunctionType) and not inspect.isclass(caller_fun):
             raise NotImplementedError(
                 f"Expected FunctionType for {caller_fun_path}, got {type(caller_fun)}"
             )
 
         # Check if this is a call we should do something about.
-        if caller_fun_path == CanonicalPath(["dds", "keep"]):
+        if caller_fun_path == CPU.from_list(["dds", "keep"]):
             # Call to the keep function:
             # - bring the path
             # - bring the callee
@@ -256,13 +265,16 @@ class InspectFunctionIndirect(object):
                     f"Cannot use nested callables of type {called_path_ast}"
                 )
             called_local_path = LocalDepPath(PurePosixPath(called_path_symbol))
-            called_z = ObjectRetrieval.retrieve_object(called_local_path, mod, gctx)
-            if not called_z:
+            called_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
+                called_local_path, mod, gctx
+            )
+            if not called_z or isinstance(called_z, ExternalObject):
                 # Not sure what to do yet in this case.
                 raise NotImplementedError(
                     f"Invalid called_z: {called_local_path} {mod}"
                 )
-            called_fun, call_fun_path = called_z
+            assert isinstance(called_z, AuthorizedObject)
+            called_fun, call_fun_path = called_z.object_val, called_z.resolved_path
             if call_fun_path in call_stack:
                 raise KSException(
                     f"Detected circular function calls or (co-)recursive calls."
@@ -276,7 +288,7 @@ class InspectFunctionIndirect(object):
             inner_intro = _introspect(called_fun, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
-        if caller_fun_path == CanonicalPath(["dds", "load"]):
+        if caller_fun_path == CPU.from_list(["dds", "load"]):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
                 raise KSException(f"Wrong number of args: expected 1, got {node.args}")
@@ -284,7 +296,7 @@ class InspectFunctionIndirect(object):
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
 
-        if caller_fun_path == CanonicalPath(["dds", "eval"]):
+        if caller_fun_path == CPU.from_list(["dds", "eval"]):
             raise NotImplementedError("eval")
 
         if caller_fun_path in call_stack:

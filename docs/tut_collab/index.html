@@ -46,11 +46,11 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
+<li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
 </li>
 </ul>
 <ul>
@@ -58,7 +58,7 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../plotting/">Tutorial - plotting</a>
+<li class="toctree-l1"><a class="reference internal" href="../tut_plotting/">Tutorial - plotting</a>
 </li>
 </ul>
 <ul class="current">
@@ -68,7 +68,15 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../test_sklearn/">Tutorial - scikit-learn</a>
+<li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Tutorial - custome types</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tut_sklearn/">Tutorial - scikit-learn</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/">Changelog</a>
 </li>
 </ul>
 </div>
@@ -94,13 +102,8 @@
 <div class="section">
 <div class="notebook-content">
 <style type="text/css">
-    pre { line-height: 125%; }
-td.linenos pre { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
-span.linenos { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
-td.linenos pre.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-.highlight .hll { background-color: var(--jp-cell-editor-active-background) }
-.highlight { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
+    .highlight .hll { background-color: var(--jp-cell-editor-active-background) }
+.highlight  { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
 .highlight .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
 .highlight .err { color: var(--jp-mirror-editor-error-color) } /* Error */
 .highlight .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
@@ -14476,7 +14479,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="using-dds-to-collaborated-between-data-branches">Using dds to collaborated between data branches<a class="anchor-link" href="#Using-dds-to-collaborated-between-data-branches">¶</a></h1><p><code>dds</code> can be used within a team to collaborate on data, just like one would collaborate on source code. This tutorial shows how two people, Alice and Bob, can work on the same code base and checkout each other's versions of their data.</p>
+<h1 id="using-dds-to-collaborate-between-data-branches">Using dds to collaborate between data branches<a class="anchor-link" href="#Using-dds-to-collaborate-between-data-branches">¶</a></h1><p><code>dds</code> can be used within a team to collaborate on data, just like one would collaborate on source code. This tutorial shows how two people, Alice and Bob, can work on the same code base and checkout each other's versions of their data.</p>
 <p>Let us start with a data function written in the <code>main</code>branch.</p>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
@@ -14650,8 +14653,8 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>728433a6899b293d14157e4a321431a59a66f85109086851f58bcd53ba984c8b
-ecf06a7b7943cda9620d652393d2067887ce53c816ea7f0a08de94bee2fa0290
+<pre>16f03a582d2223d294ce9976f7ae4299ad305fbc4a522984ce3c109561ff7851
+458a6965f10642f0e9ad3e6e2f9ddad1f437324ca38fda34ab4c3b1e399af7d3
 </pre>
 </div>
 </div>
@@ -14781,14 +14784,26 @@ ecf06a7b7943cda9620d652393d2067887ce53c816ea7f0a08de94bee2fa0290
 <li>all the data can be pre-calculated before merging the code, making a code+data checkout always a fast operation for the target branch</li>
 </ul>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span>
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">ls</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_collab</span><span class="o">/</span><span class="n">internal</span><span class="o">/</span><span class="n">blobs</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">meta</span>
 </pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>16f03a582d2223d294ce9976f7ae4299ad305fbc4a522984ce3c109561ff7851
+458a6965f10642f0e9ad3e6e2f9ddad1f437324ca38fda34ab4c3b1e399af7d3
+</pre>
 </div>
 </div>
 </div>
@@ -14800,8 +14815,8 @@ ecf06a7b7943cda9620d652393d2067887ce53c816ea7f0a08de94bee2fa0290
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a class="btn btn-neutral float-right" href="../test_sklearn/" title="Tutorial - scikit-learn">Next <span class="icon icon-circle-arrow-right"></span></a>
-<a class="btn btn-neutral" href="../plotting/" title="Tutorial - plotting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+<a class="btn btn-neutral float-right" href="../tut_custom_types/" title="Tutorial - custome types">Next <span class="icon icon-circle-arrow-right"></span></a>
+<a class="btn btn-neutral" href="../tut_plotting/" title="Tutorial - plotting"><span class="icon icon-circle-arrow-left"></span> Previous</a>
 </div>
 <hr/>
 <div role="contentinfo">
@@ -14816,8 +14831,8 @@ ecf06a7b7943cda9620d652393d2067887ce53c816ea7f0a08de94bee2fa0290
 </div>
 <div aria-label="versions" class="rst-versions" role="note">
 <span class="rst-current-version" data-toggle="rst-current-version">
-<span><a href="../plotting/" style="color: #fcfcfc;">« Previous</a></span>
-<span style="margin-left: 15px"><a href="../test_sklearn/" style="color: #fcfcfc">Next »</a></span>
+<span><a href="../tut_plotting/" style="color: #fcfcfc;">« Previous</a></span>
+<span style="margin-left: 15px"><a href="../tut_custom_types/" style="color: #fcfcfc">Next »</a></span>
 </span>
 </div>
 <script>var base_url = '..';</script>

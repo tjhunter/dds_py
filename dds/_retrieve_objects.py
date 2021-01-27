@@ -9,38 +9,44 @@ import typing
 from pathlib import PurePosixPath
 from types import ModuleType, FunctionType
 from typing import (
-    Tuple,
     Any,
     Union,
     Optional,
     Type,
 )
 
-from ._eval_ctx import EvalMainContext
+from ._eval_ctx import (
+    EvalMainContext,
+    ObjectRetrievalType,
+    ExternalObject,
+    AuthorizedObject,
+)
 from .structures import (
     KSException,
     CanonicalPath,
     LocalDepPath,
 )
-from .structures_utils import LocalDepPathUtils
+from .structures_utils import LocalDepPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
 
 
 def _mod_path(m: ModuleType) -> CanonicalPath:
-    return CanonicalPath(m.__name__.split("."))
+    return CanonicalPathUtils.from_list(m.__name__.split("."))
 
 
 def function_path(f: Union[type, FunctionType]) -> CanonicalPath:
     mod = inspect.getmodule(f)
     if mod is None:
         raise KSException(f"Function {f} has no module")
-    return CanonicalPath(_mod_path(mod)._path + [f.__name__])
+    return CanonicalPath(_mod_path(mod)._path.joinpath(f.__name__))
 
 
 def _is_authorized_type(tpe: Type[Any], gctx: EvalMainContext) -> bool:
     """
     True if the type is defined within the whitelisted hierarchy
+
+    Note: the hierarchy is currently only concerned with modules, not with any sub-object.
     """
     if tpe is None:
         return True
@@ -66,8 +72,12 @@ def _is_authorized_type(tpe: Type[Any], gctx: EvalMainContext) -> bool:
 class ObjectRetrieval(object):
     @classmethod
     def retrieve_object(
-        cls, local_path: LocalDepPath, context_mod: ModuleType, gctx: EvalMainContext
-    ) -> Optional[Tuple[Any, CanonicalPath]]:
+        cls,
+        local_path: LocalDepPath,
+        context_mod: ModuleType,
+        gctx: EvalMainContext,
+        debug: bool = False,
+    ) -> ObjectRetrievalType:
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
         mod_path = _mod_path(context_mod)
@@ -86,6 +96,7 @@ class ObjectRetrieval(object):
             # _logger.debug(
             #     f"Could not find {fname} in {context_mod}, attempting a direct load"
             # )
+            # TODO: is this worth supporting?
             loaded_mod: Optional[ModuleType]
             try:
                 loaded_mod = importlib.import_module(fname)
@@ -94,7 +105,7 @@ class ObjectRetrieval(object):
             if loaded_mod is None:
                 # Looking into the globals (only if the scope is currently __main__ or __global__)
                 mod_path = _mod_path(context_mod)
-                if mod_path.get(0) not in ("__main__", "__global__"):
+                if CanonicalPathUtils.head(mod_path) not in ("__main__", "__global__"):
                     # _logger.debug(
                     #     f"Could not load name %s and not in global context (%s), skipping ",
                     #     fname,
@@ -130,7 +141,7 @@ class ObjectRetrieval(object):
                     elif isinstance(obj, FunctionType):
                         obj_path = function_path(obj)
                     else:
-                        obj_path = CanonicalPath(
+                        obj_path = CanonicalPathUtils.from_list(
                             ["__global__"] + [str(x) for x in local_path.parts]
                         )
                     if not gctx.is_authorized_path(obj_path):
@@ -138,9 +149,12 @@ class ObjectRetrieval(object):
                         #     f"Object[start_globals] {fname} of type {type(obj)} is not authorized (path),"
                         #     f" dropping path {obj_path}"
                         # )
-                        gctx.cached_objects[obj_key] = None
-                        return None
+                        res = ExternalObject(obj_path)
+                        gctx.cached_objects[obj_key] = res
+                        return res
 
+                    # TODO: why do we need another function check?
+                    # TODO: why strings / paths here?
                     if _is_authorized_type(type(obj), gctx) or isinstance(
                         obj,
                         (
@@ -154,15 +168,16 @@ class ObjectRetrieval(object):
                         # _logger.debug(
                         #     f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
                         # )
-                        res = obj, obj_path
+                        res = AuthorizedObject(obj, obj_path)
                         gctx.cached_objects[obj_key] = res
                         return res
                     else:
                         # _logger.debug(
                         #     f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (type), dropping path {obj_path}"
                         # )
-                        gctx.cached_objects[obj_key] = None
-                        return None
+                        res = ExternalObject(obj_path)
+                        gctx.cached_objects[obj_key] = res
+                        return res
                 else:
                     # _logger.debug(f"{fname} not found in start_globals")
                     gctx.cached_objects[obj_key] = None
@@ -172,9 +187,10 @@ class ObjectRetrieval(object):
             return res
         else:
             res = cls._retrieve_object_rec(local_path, context_mod, gctx)
-            # _logger.debug(
-            #     f"retrieve_object: _retrieve_object_rec: local_path:{local_path} context_mod:{context_mod} res:{res}"
-            # )
+            if debug:
+                _logger.debug(
+                    f"retrieve_object: _retrieve_object_rec: local_path:{local_path} context_mod:{context_mod} res:{res}"
+                )
             gctx.cached_objects[obj_key] = res
             return res
 
@@ -182,8 +198,11 @@ class ObjectRetrieval(object):
     def retrieve_object_global(
         cls, path: CanonicalPath, gctx: EvalMainContext
     ) -> Optional[Any]:
+        """
+        Retrieves an object given its global path.
+        """
         # The head is always assumed to be a module for now
-        mod_name = path.head()
+        mod_name = CanonicalPathUtils.head(path)
         obj_key = (LocalDepPath(PurePosixPath("")), path)
         if obj_key in gctx.cached_objects:
             return gctx.cached_objects[obj_key]
@@ -193,11 +212,11 @@ class ObjectRetrieval(object):
             raise KSException(
                 f"Cannot process path {path}: module {mod_name} cannot be loaded"
             )
-        sub_path = path.tail()
-        dep_path = LocalDepPath(PurePosixPath("/".join(sub_path._path)))
+        sub_path = CanonicalPathUtils.tail(path)
+        dep_path = LocalDepPath(sub_path._path)
         # _logger.debug(f"Calling retrieve_object on {dep_path}, {mod}")
         z = cls.retrieve_object(dep_path, mod, gctx)
-        if z is None:
+        if z is None or isinstance(z, ExternalObject):
             raise KSException(
                 f"Cannot load path {path}: this object cannot be retrieved, however "
                 f"the module '{mod_name}' exists. The typical cause of the issue is "
@@ -206,29 +225,40 @@ class ObjectRetrieval(object):
                 f"submodules."
                 f" dep_path: {dep_path} module: {mod}"
             )
-        obj, _ = z
-        gctx.cached_objects[obj_key] = (obj, path)
-        return obj
+        elif isinstance(z, AuthorizedObject):
+            obj = z.object_val
+            gctx.cached_objects[obj_key] = AuthorizedObject(obj, path)
+            return obj
+        else:
+            assert False
 
     @classmethod
     def _retrieve_object_rec(
-        cls, local_path: LocalDepPath, context_mod: ModuleType, gctx: EvalMainContext
-    ) -> Optional[Tuple[Any, CanonicalPath]]:
-        # _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")
+        cls,
+        local_path: LocalDepPath,
+        context_mod: ModuleType,
+        gctx: EvalMainContext,
+        debug: bool = False,
+    ) -> ObjectRetrievalType:
+        if debug:
+            _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")
         if not local_path.parts:
             # The final position. It is the given module, if authorized.
             obj_mod_path = _mod_path(context_mod)
             if not gctx.is_authorized_path(obj_mod_path):
-                # _logger.debug(
-                #     f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod} is not authorized"
-                # )
-                return None
+                if debug:
+                    _logger.debug(
+                        f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod} is not authorized"
+                    )
+                return ExternalObject(
+                    CanonicalPathUtils.append(obj_mod_path, local_path)
+                )
             else:
                 # _logger.debug(
                 #     f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod}: authorized"
                 # )
                 pass
-            return context_mod, obj_mod_path
+            return AuthorizedObject(context_mod, obj_mod_path)
         # At least one more path to explore
         fname = local_path.parts[0]
         tail_path = LocalDepPathUtils.tail(local_path)
@@ -239,7 +269,10 @@ class ObjectRetrieval(object):
                 f"  {local_path} {context_mod.__dict__}"
             )
         obj = context_mod.__dict__[fname]
-        # _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod} {type(obj)} {obj}")
+        if debug:
+            _logger.debug(
+                f"_retrieve_object_rec: {local_path} {context_mod} {type(obj)} {obj}"
+            )
 
         if LocalDepPathUtils.empty(tail_path):
             # Final path.
@@ -261,12 +294,20 @@ class ObjectRetrieval(object):
                     # Note: it skips the definition of the newtype along the way, but this is considered a corner case.
                     return None
                 if mod_obj is not context_mod:
-                    # _logger.debug(
-                    #     f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {mod_obj}"
-                    # )
-                    return cls._retrieve_object_rec(local_path, mod_obj, gctx)
+                    # Reimporting from another module.
+                    # Get the true name of the function.
+                    # The function may have been renamed in the code and this name is not the one from
+                    # the original module -> check the original name of the function:
+                    local_path_mod = LocalDepPath(PurePosixPath(obj.__name__)).joinpath(
+                        LocalDepPathUtils.tail(local_path)
+                    )
+                    if debug:
+                        _logger.debug(
+                            f"_retrieve_object_rec: {context_mod} is not definition module, redirecting to {local_path_mod} ; {mod_obj}"
+                        )
+                    return cls._retrieve_object_rec(local_path_mod, mod_obj, gctx)
             obj_mod_path = _mod_path(context_mod)
-            obj_path = obj_mod_path.append(fname)
+            obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             if gctx.is_authorized_path(obj_path):
                 # TODO: simplify the authorized types
                 if (
@@ -282,24 +323,28 @@ class ObjectRetrieval(object):
                     )
                     or inspect.isclass(obj)
                 ):
-                    # _logger.debug(
-                    #     f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
-                    # )
-                    return obj, obj_path
+                    if debug:
+                        _logger.debug(
+                            f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
+                        )
+                    return AuthorizedObject(obj, obj_path)
                 else:
-                    # _logger.debug(
-                    #     f"_retrieve_object_rec: Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
-                    # )
-                    pass
+                    if debug:
+                        _logger.debug(
+                            f"_retrieve_object_rec: Object {fname} of type {type(obj)} is not authorized (type), dropping path {obj_path}"
+                        )
+                    return ExternalObject(obj_path)
             else:
-                # _logger.debug(
-                #     f"_retrieve_object_rec: Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
-                # )
-                return None
+                if debug:
+                    _logger.debug(
+                        f"_retrieve_object_rec: Object {fname} of type {type(obj)} and path {obj_path} is not authorized (path)"
+                    )
+                return ExternalObject(obj_path)
 
-        # _logger.debug(
-        #     f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)} {isinstance(obj, ModuleType)} {isinstance(obj, type)}"
-        # )
+        if debug:
+            _logger.debug(
+                f"_retrieve_object_rec: non-terminal fname={fname} obj: {type(obj)} tail_path: {tail_path} {isinstance(obj, FunctionType)} {isinstance(obj, ModuleType)} {isinstance(obj, type)}"
+            )
         # More to explore
         # If it is a module, continue recursion
         if isinstance(obj, ModuleType):
@@ -312,9 +357,11 @@ class ObjectRetrieval(object):
         # (the rest of the path is method calls)
         if isinstance(obj, FunctionType):
             obj_mod_path = _mod_path(context_mod)
-            obj_path = obj_mod_path.append(fname)
+            obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             if gctx.is_authorized_path(obj_path):
-                return obj, obj_path
+                return AuthorizedObject(obj, obj_path)
+            else:
+                return ExternalObject(obj_path)
 
         # We still have a path but we have reached a class.
         # In this case, determine if the class is allowed. If this is the case, stop here.
@@ -322,10 +369,12 @@ class ObjectRetrieval(object):
         if isinstance(obj, type):
             obj_mod_path = function_path(obj)
             # obj_mod_path = _mod_path(context_mod)
-            obj_path = obj_mod_path.append(fname)
+            obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             # _logger.debug(f"_retrieve_object_rec:(type) whitelisted_packages: {obj_path}->{gctx.is_authorized_path(obj_path)} {gctx.whitelisted_packages}")
             if gctx.is_authorized_path(obj_path):
-                return obj, obj_path
+                return AuthorizedObject(obj, obj_path)
+            else:
+                return ExternalObject(obj_path)
 
         # The rest is not authorized for now.
         # msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"

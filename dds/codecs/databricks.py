@@ -12,7 +12,7 @@ from types import FunctionType
 from typing import Any, Optional, List
 
 from ..codec import CodecRegistry
-from ..store import Store
+from ..store import Store, current_timestamp
 from ..structures import CodecProtocol, ProtocolRef, FileCodecProtocol, KSException
 from ..structures import PyHash, DDSPath, GenericLocation, SupportedType as ST
 from ..structures_utils import SupportedTypeUtils as STU
@@ -171,7 +171,9 @@ class DBFSStore(Store):
             raise KSException(f"{type(protocol)} codec")
         meta_p = self._blob_meta_path(key)
         try:
-            meta = json.dumps({"protocol": protocol.ref()})
+            meta = json.dumps(
+                {"protocol": protocol.ref(), "timestamp_millis": current_timestamp()}
+            )
             self._put(meta_p, meta)
         except Exception as e:
             _logger.warning(
@@ -267,6 +269,9 @@ class DBFSStore(Store):
             redir_key = json.loads(meta)["redirection_key"]
             res[dds_p] = PyHash(redir_key)
         return res
+
+    def codec_registry(self) -> CodecRegistry:
+        return self._registry
 
     def _blob_path(self, key: PyHash) -> Path:
         return self._internal_dir.joinpath("blobs", key)
