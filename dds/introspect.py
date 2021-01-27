@@ -44,6 +44,9 @@ from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
 _hash_key_body_sig = HK("body_sig")
+_hash_key_fun_body = HK("function_body_hash")
+_hash_key_fun_args = HK("function_args_hash")
+_hash_key_fun_inter = HK("function_inter_hash")
 
 
 # The name of a local function var
@@ -565,20 +568,13 @@ class InspectFunction(object):
 
         indirect_deps_sigs = dict([(dep, fetch(dep)) for dep in indirect_dep])
 
-        # indirect_deps_sigs = [(HK(f"dep_{dep}"), fetch(dep)) for dep in indirect_dep]
-        # return_sig = dds_hash_commut(
-        #     [(HK("input_sig"), input_sig), (HK("body_sig"), body_sig),]
-        #     + indirect_deps_sigs
-        #     + _fis_to_siglist(calls_v.inters)
-        # )
-
         # Look at the annotations to see if there is a reference to a data_function
         if isinstance(node, ast.FunctionDef):
             store_path = cls._path_annotation(node, mod, gctx)
         else:
             store_path = None
         # _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
-        return_sig = build_return_sig(
+        return_sig = _build_return_sig(
             body_sig=body_sig,
             arg_ctx=arg_ctx,
             indirect_deps=indirect_deps_sigs,
@@ -680,7 +676,29 @@ class InspectFunction(object):
             )
 
         # Check if this is a call we should do something about.
-        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "keep"]):
+
+        if caller_fun_path in call_stack:
+            # Recursive calls are not supported currently.
+            raise KSException(
+                f"Detected circular function calls or (co-)recursive calls."
+                f"This is currently not supported. Change your code to split the "
+                f"recursive section into a separate function. "
+                f"Function: {caller_fun_path}"
+                f"Call stack: {' '.join([str(p) for p in call_stack])}"
+            )
+
+        elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
+            # Evaluation call: get the argument and returns the function interaction for this call.
+            if len(node.args) != 1:
+                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
+            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
+            _logger.debug(f"inspect_call:eval: store_path: {store_path}")
+            return store_path
+
+        elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
+            raise NotImplementedError("eval")
+
+        elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "keep"]):
             # Call to the keep function:
             # - bring the path
             # - bring the callee
@@ -720,10 +738,10 @@ class InspectFunction(object):
             context_sig = dds_hash_commut(
                 [
                     (_hash_key_body_sig, function_body_hash),
-                    (HK("function_args_hash"), function_args_hash),
+                    (_hash_key_fun_args, function_args_hash),
                 ]
                 + (
-                    [(HK("function_inter_hash"), function_inter_hash)]
+                    [(_hash_key_fun_inter, function_inter_hash)]
                     if function_inter_hash is not None
                     else []
                 )
@@ -742,36 +760,17 @@ class InspectFunction(object):
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
             inner_intro = inner_intro._replace(store_path=store_path)
             return inner_intro
-        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
-            # Evaluation call: get the argument and returns the function interaction for this call.
-            if len(node.args) != 1:
-                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
-            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
-            _logger.debug(f"inspect_call:eval: store_path: {store_path}")
-            return store_path
-
-        if caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
-            raise NotImplementedError("eval")
-
-        if caller_fun_path in call_stack:
-            raise KSException(
-                f"Detected circular function calls or (co-)recursive calls."
-                f"This is currently not supported. Change your code to split the "
-                f"recursive section into a separate function. "
-                f"Function: {caller_fun_path}"
-                f"Call stack: {' '.join([str(p) for p in call_stack])}"
-            )
 
         # Normal function call.
         # Just introspect the function call.
         # TODO: deal with the arguments here
         context_sig = dds_hash_commut(
             [
-                (HK("function_body_hash"), function_body_hash),
-                (HK("function_args_hash"), function_args_hash),
+                (_hash_key_fun_body, function_body_hash),
+                (_hash_key_fun_args, function_args_hash),
             ]
             + (
-                [(HK("function_inter_hash"), function_inter_hash)]
+                [(_hash_key_fun_inter, function_inter_hash)]
                 if function_inter_hash is not None
                 else []
             )
@@ -820,6 +819,9 @@ class InspectFunction(object):
 
 
 def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
+    """
+    Removes duplicate while keeping the order.
+    """
     s = set()
     res = []
     for p in paths:
@@ -829,20 +831,13 @@ def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
     return res
 
 
-_accepted_packages: Set[Package] = {
-    Package("dds"),
-    Package("__main__"),
-    Package("__global__"),
-}
-
-
-def build_input_sig(
+def _build_input_sig(
     arg_ctx: FunctionArgContext,
     indirect_deps: Dict[DDSPath, PyHash],
     ext_deps: Dict[LocalDepPath, CanonicalPath],
     ext_vars: Dict[LocalDepPath, PyHash],
 ) -> PyHash:
-    return build_return_sig(
+    return _build_return_sig(
         body_sig=None,
         arg_ctx=arg_ctx,
         indirect_deps=indirect_deps,
@@ -852,7 +847,7 @@ def build_input_sig(
     ) or dds_hash([])
 
 
-def build_return_sig(
+def _build_return_sig(
     body_sig: Optional[PyHash],
     arg_ctx: FunctionArgContext,
     indirect_deps: Dict[DDSPath, PyHash],
@@ -908,6 +903,13 @@ def build_return_sig(
     if not all_pairs:
         return None
     return dds_hash_commut(all_pairs)
+
+
+_accepted_packages: Set[Package] = {
+    Package("dds"),
+    Package("__main__"),
+    Package("__global__"),
+}
 
 
 def accept_module(module: Union[str, ModuleType]) -> None:

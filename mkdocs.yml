@@ -18,10 +18,11 @@ theme:
 nav:
     - Home: index.md
     - Reference: dds-reference.md
-    - FAQ: faq.md
     - User guide: user_guide.ipynb
+    - FAQ: faq.md
     - Tutorial - modules: tut_modules.ipynb
     - Tutorial - plotting: tut_plotting.ipynb
     - Tutorial - collaboration: tut_collab.ipynb
     - Tutorial - custome types: tut_custom_types.ipynb
     - Tutorial - scikit-learn: tut_sklearn.ipynb
+    - Changelog: changelog.md
