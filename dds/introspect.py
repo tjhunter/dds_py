@@ -45,7 +45,7 @@ from .structures_utils import DDSPathUtils, CanonicalPathUtils
 _logger = logging.getLogger(__name__)
 _hash_key_body_sig = HK("body_sig")
 _hash_key_fun_body = HK("function_body_hash")
-_hash_key_fun_args = HK("function_args_hash")
+_hash_key_fun_input = HK("function_input_hash")
 _hash_key_fun_inter = HK("function_inter_hash")
 
 
@@ -642,7 +642,7 @@ class InspectFunction(object):
         gctx: EvalMainContext,
         mod: ModuleType,
         function_body_hash: PyHash,
-        function_args_hash: PyHash,
+        function_input_sig: PyHash,
         function_inter_hash: Optional[PyHash],
         var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
@@ -703,7 +703,7 @@ class InspectFunction(object):
         context_sig = dds_hash_commut(
             [
                 (_hash_key_body_sig, function_body_hash),
-                (_hash_key_fun_args, function_args_hash),
+                (_hash_key_fun_input, function_input_sig),
             ]
             + (
                 [(_hash_key_fun_inter, function_inter_hash)]
