@@ -247,7 +247,7 @@ class IntroVisitor(ast.NodeVisitor):
         start_mod: ModuleType,
         gctx: EvalMainContext,
         function_body_lines: List[str],
-        function_args_hash: PyHash,
+        function_input_sig: PyHash,
         function_var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
     ):
@@ -256,7 +256,7 @@ class IntroVisitor(ast.NodeVisitor):
         self._gctx = gctx
         self._function_var_names = set(function_var_names)
         self._body_lines = function_body_lines
-        self._args_hash = function_args_hash
+        self._input_sig = function_input_sig
         self._call_stack = call_stack
         self.inters: List[FunctionInteractions] = []
         self.load_paths: List[DDSPath] = []
@@ -270,7 +270,7 @@ class IntroVisitor(ast.NodeVisitor):
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
         function_inters_sig: Optional[PyHash] = (
-            dds_hash_commut(_fis_to_siglist(self.inters)) if self.inters else None
+            dds_hash_commut(_fis_to_siglist(self.inters))
         )
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunction.inspect_call(
@@ -278,7 +278,7 @@ class IntroVisitor(ast.NodeVisitor):
             self._gctx,
             self._start_mod,
             function_body_hash,
-            self._args_hash,
+            self._input_sig,
             function_inters_sig,
             self._function_var_names,
             self._call_stack,
@@ -527,7 +527,6 @@ class InspectFunction(object):
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         if debug:
             _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
-        arg_keys = FunctionArgContext.relevant_keys(arg_ctx)
 
         # The variables that are hashable: authorized variables outside of the function
         sig_variables: List[Tuple[LocalDepPath, PyHash]] = [
@@ -538,18 +537,18 @@ class InspectFunction(object):
         ext_deps_vars: Dict[LocalDepPath, CanonicalPath] = dict(
             [(ed.local_path, ed.path) for ed in ext_deps if ed.sig is None]
         )
-        keys: List[Tuple[HK, PyHash]] = (
-            [
-                (HK(f"ext_dep_{local_path}"), dds_hash(sig))
-                for (local_path, sig) in ext_deps_vars.items()
-            ]
-            + [
-                (HK(f"ext_variable_{local_path}"), sig)
-                for (local_path, sig) in sig_variables_distinct.items()
-            ]
-            + [(HK(f"arg_{arg_name}"), sig) for (arg_name, sig) in arg_keys]
-        )
-        input_sig = dds_hash_commut(keys) or dds_hash([])
+        input_sig = _build_return_sig(
+            # The body signature will depend on the exact location of the function calls
+            body_sig=None,
+            arg_ctx=arg_ctx,
+            # TODO: does it also need the indirect deps here?
+            indirect_deps={},
+            # Sub function interactions are processed one at
+            # a time inside the function.
+            sub_fis=[],
+            ext_deps=ext_deps_vars,
+            ext_vars=sig_variables_distinct,
+        ) or dds_hash([])
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack
         )
@@ -821,22 +820,6 @@ def _no_dups(paths: List[DDSPath]) -> List[DDSPath]:
             s.add(p)
             res.append(p)
     return res
-
-
-def _build_input_sig(
-    arg_ctx: FunctionArgContext,
-    indirect_deps: Dict[DDSPath, PyHash],
-    ext_deps: Dict[LocalDepPath, CanonicalPath],
-    ext_vars: Dict[LocalDepPath, PyHash],
-) -> PyHash:
-    return _build_return_sig(
-        body_sig=None,
-        arg_ctx=arg_ctx,
-        indirect_deps=indirect_deps,
-        sub_fis=[],
-        ext_deps=ext_deps,
-        ext_vars=ext_vars,
-    ) or dds_hash([])
 
 
 def _build_return_sig(
