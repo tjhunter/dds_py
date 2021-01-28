@@ -18,7 +18,7 @@ This package is published on PyPI:
 pip install dds_py
 ```
 
-This package is known to work on python 3.6, 3.7, 3.8. No other versions are officially supported. Python 3.4 and 3.5 might work but they are not supported.
+This package is known to work on python 3.6, 3.7, 3.8, 3.9. No other versions are officially supported. Python 3.4 and 3.5 might work but they are not supported.
 
 __Plotting dependencies__ If you want to plot the graph of data dependencies, you must install separately the `pydotplus` package, which requires `graphviz` on your system to work properly. Consult the documentation of the `pydotplus` package for more details. The `pydotplus` package is only required with the `dds_export_graph` option.
 
