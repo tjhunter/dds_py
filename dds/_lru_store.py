@@ -45,12 +45,18 @@ class LRUCacheStore(Store):
         def my_cache(key: PyHash) -> Optional[Any]:
             _logger.debug(f"Fetching key {key}")
             res = self._store.fetch_blob(key)
-            _logger.debug(f"Fetching key {key} completed")
+            _logger.debug(f"Fetching key {key} completed: {type(res)}")
             return res
 
         self._fetch_function = my_cache
 
+    def has_blob(self, key: PyHash) -> bool:
+        # TODO: consider if this should also be cached.
+        # TODO: use a custom cache instead of lru_cache to sync both content and key
+        return self._store.has_blob(key)
+
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
+        _logger.debug(f"fetch_blob key {key}")
         return self._fetch_function(key)
 
     def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
@@ -62,13 +68,17 @@ class LRUCacheStore(Store):
         For example, Spark dataframes are converted to datasets, as opposed to just
         lazy query plans.
         """
+        _logger.debug(f"store_blob key {key}")
         self._store.store_blob(key, blob, codec)
 
     def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
+        _logger.debug(f"sync_paths {paths}")
         self._store.sync_paths(paths)
 
     def fetch_paths(self, paths: List[DDSPath]) -> "OrderedDict[DDSPath, PyHash]":
-        return self._store.fetch_paths(paths)
+        res = self._store.fetch_paths(paths)
+        _logger.debug(f"fetch_paths {paths} -> {res}")
+        return res
 
     def codec_registry(self) -> CodecRegistry:
         return self._store.codec_registry()
