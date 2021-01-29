@@ -149,9 +149,7 @@ class DBFSStore(Store):
         else:
             raise KSException(f"{type(codec)} codec")
 
-    def store_blob(
-        self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
-    ) -> None:
+    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
         protocol = self._registry.get_codec(STU.from_type(type(blob)), codec)
         _logger.debug(
             f"store_blob: {key} {type(blob)} {codec} {STU.from_type(type(blob))} -> protocol: {protocol}"

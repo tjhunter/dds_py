@@ -35,7 +35,7 @@ def cleandir():
     tdir = Path(tempfile.mkdtemp(prefix="dds"))
     internal_dir = tdir.joinpath("internal_dir")
     data_dir = tdir.joinpath("data_dir")
-    dds.set_store("local", internal_dir=str(internal_dir), data_dir=str(data_dir))
+    dds.set_store("local", internal_dir=str(internal_dir), data_dir=str(data_dir), cache_objects=100)
     _logger.debug(f"data dir: {tdir}")
     yield
     shutil.rmtree(str(tdir), ignore_errors=True)

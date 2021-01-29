@@ -2,6 +2,7 @@
 The main API functions
 """
 
+import sys
 import logging
 import pathlib
 import time
@@ -12,6 +13,7 @@ from ._eval_ctx import EvalMainContext
 from ._introspect_indirect import introspect_indirect
 from .fun_args import get_arg_ctx
 from .introspect import introspect, _accepted_packages
+from ._lru_store import LRUCacheStore, default_cache_size
 from .store import LocalFileStore, Store
 from .structures import (
     DDSPath,
@@ -69,10 +71,11 @@ def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
 
 def set_store(
     store: Union[str, Store],
-    internal_dir: Optional[str] = None,
-    data_dir: Optional[str] = None,
-    dbutils: Optional[Any] = None,
-    commit_type: Optional[str] = None,
+    internal_dir: Optional[str],
+    data_dir: Optional[str],
+    dbutils: Optional[Any],
+    commit_type: Optional[str],
+    cache_objects: Union[bool, int, None],
 ) -> None:
     """
     Sets the store for the execution of the program.
@@ -81,6 +84,10 @@ def set_store(
     """
     global _store
     if isinstance(store, Store):
+        if cache_objects is not None:
+            raise KSException(
+                f"Cannot provide a caching option and a store object of type 'Store' at the same time"
+            )
         # Directly setting the store
         _store = store
         return
@@ -90,7 +97,6 @@ def set_store(
         if not data_dir:
             data_dir = "/tmp/data"
         _store = LocalFileStore(internal_dir, data_dir)
-        return
     elif store == "dbfs":
         if data_dir is None:
             raise KSException("Missing data_dir argument")
@@ -110,6 +116,23 @@ def set_store(
         _store = DBFSStore(internal_dir, data_dir, dbutils, commit_type_)
     else:
         raise KSException(f"Unknown store {store}")
+
+    if cache_objects is not None:
+        num_objects: Optional[int] = None
+
+        if not isinstance(cache_objects, (int, bool)):
+            raise KSException(
+                f"cached_object should be int or bool, received type {type(cache_objects)}"
+            )
+        if isinstance(cache_objects, bool) and cache_objects:
+            num_objects = default_cache_size
+        elif isinstance(cache_objects, int):
+            if cache_objects < 0:
+                num_objects = sys.maxsize
+            elif cache_objects > 0:
+                num_objects = cache_objects
+        if num_objects is not None:
+            _store = LRUCacheStore(_store, num_elem=num_objects)
     _logger.debug(f"Setting the store to {_store}")
 
 
@@ -190,7 +213,7 @@ def _eval(
         if key is not None:
             _logger.info(f"_eval:Storing blob into key {key}")
             t = _time()
-            _store.store_blob(key, res)
+            _store.store_blob(key, res, codec=None)
             _add_delta(t, ProcessingStage.STORE_COMMIT)
         return res
 
@@ -322,7 +345,7 @@ def _eval_new_ctx(
                 # TODO: add a phase for storing the blobs
                 _logger.info(f"_eval:Storing blob into key {obj_key}")
                 t = _time()
-                _store.store_blob(obj_key, res)
+                _store.store_blob(obj_key, res, codec=None)
                 _add_delta(t, ProcessingStage.STORE_COMMIT)
 
         if ProcessingStage.PATH_COMMIT in stages:
