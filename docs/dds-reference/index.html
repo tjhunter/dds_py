@@ -626,7 +626,7 @@ only be evaluated once.</p>
 <h2 class="doc doc-heading" id="dds.__init__.set_store">
 
         <code class="highlight language-python">
-set_store<span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbutils</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commit_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>        </code>
+set_store<span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbutils</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commit_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>        </code>
 
 
       </h2>
@@ -725,6 +725,28 @@ the final place. In the case of large tables, this may incur extra storage costs
 </td>
 <td><code>None</code></td>
 </tr>
+<tr>
+<td><code>cache_objects</code></td>
+<td><code>Union[NoneType, bool, int]</code></td>
+<td>
+<p>(optional, true/false or a positive integer, 0 means no caching, negative number means everything
+ cached). Sets a caching level of the objects (not the paths).
+ With the cache enabled, if an object has already been fetched from the store, it may be kept in memory
+ and reserved later.</p>
+<p>Caching the objects has no effect on coherence and may be safely used with the local store, or with
+  distributed stores such as DBFS. However, if large objects are returned, they may lead to the main process
+  running out of memory.</p>
+<p>This option has no effect on updating paths. Paths are always checked against the store (even if it means
+ reaching out to a remote server). This is done in order to prevent coherence issues in case paths are
+ updated on a remote server.</p>
+<p>A positive integer argument indicate that no more than so many objects are being retained by the current
+ python process in memory.</p>
+<p>The exact details of the caching strategy are left as an implementation detail and should not be relied upon.
+ The cache is currently implemented as a LRU cache on the most recent fetched objects.</p>
+<p>This option is not compatible with providing a <code>Store</code> object as an argument.</p>
+</td>
+<td><code>None</code></td>
+</tr>
 </tbody>
 </table>
 <p>:return: nothing</p>
@@ -737,6 +759,7 @@ the final place. In the case of large tables, this may incur extra storage costs
     <span class="n">data_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">dbutils</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">commit_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cache_objects</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">"""</span>
 <span class="sd">    Sets a new store or replaces the existing store.</span>
@@ -790,9 +813,30 @@ the final place. In the case of large tables, this may incur extra storage costs
 <span class="sd">            NOTE: costs: in order for DDS to work, the data must be at least in the internal store, and also copied to</span>
 <span class="sd">            the final place. In the case of large tables, this may incur extra storage costs.</span>
 
+<span class="sd">      cache_objects: (optional, true/false or a positive integer, 0 means no caching, negative number means everything</span>
+<span class="sd">         cached). Sets a caching level of the objects (not the paths).</span>
+<span class="sd">         With the cache enabled, if an object has already been fetched from the store, it may be kept in memory</span>
+<span class="sd">         and reserved later.</span>
+
+<span class="sd">         Caching the objects has no effect on coherence and may be safely used with the local store, or with</span>
+<span class="sd">          distributed stores such as DBFS. However, if large objects are returned, they may lead to the main process</span>
+<span class="sd">          running out of memory.</span>
+
+<span class="sd">         This option has no effect on updating paths. Paths are always checked against the store (even if it means</span>
+<span class="sd">         reaching out to a remote server). This is done in order to prevent coherence issues in case paths are</span>
+<span class="sd">         updated on a remote server.</span>
+
+<span class="sd">         A positive integer argument indicate that no more than so many objects are being retained by the current</span>
+<span class="sd">         python process in memory.</span>
+
+<span class="sd">         The exact details of the caching strategy are left as an implementation detail and should not be relied upon.</span>
+<span class="sd">         The cache is currently implemented as a LRU cache on the most recent fetched objects.</span>
+
+<span class="sd">         This option is not compatible with providing a `Store` object as an argument.</span>
+
 <span class="sd">    :return: nothing</span>
 <span class="sd">    """</span>
-    <span class="n">_set_store</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">dbutils</span><span class="p">,</span> <span class="n">commit_type</span><span class="p">)</span>
+    <span class="n">_set_store</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">dbutils</span><span class="p">,</span> <span class="n">commit_type</span><span class="p">,</span> <span class="n">cache_objects</span><span class="p">)</span>
 </code></pre>
 </div>
 </details>
