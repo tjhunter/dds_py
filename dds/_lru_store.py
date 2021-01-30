@@ -24,6 +24,12 @@ class Entry:
 
 
 class LRUCache(object):
+    """
+    Very simple LRU cache implementation.
+
+    The reason for not using the default 'lru_cache' implementation of python is that
+    the latter does not allow probing into the cache.
+    """
 
     # initialising capacity
     def __init__(self, capacity: int):
