@@ -33,9 +33,7 @@ class Store(object):
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
         pass
 
-    def store_blob(
-        self, key: PyHash, blob: Any, codec: Optional[ProtocolRef] = None
-    ) -> None:
+    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
         """ idempotent
         """
         pass

@@ -227,6 +227,7 @@ def set_store(
     data_dir: Optional[str] = None,
     dbutils: Optional[Any] = None,
     commit_type: Optional[str] = None,
+    cache_objects: Union[None, bool, int] = None,
 ) -> None:
     """
     Sets a new store or replaces the existing store.
@@ -280,9 +281,30 @@ def set_store(
             NOTE: costs: in order for DDS to work, the data must be at least in the internal store, and also copied to
             the final place. In the case of large tables, this may incur extra storage costs.
 
+      cache_objects: (optional, true/false or a positive integer, 0 means no caching, negative number means everything
+         cached). Sets a caching level of the objects (not the paths).
+         With the cache enabled, if an object has already been fetched from the store, it may be kept in memory
+         and reserved later.
+
+         Caching the objects has no effect on coherence and may be safely used with the local store, or with
+          distributed stores such as DBFS. However, if large objects are returned, they may lead to the main process
+          running out of memory.
+
+         This option has no effect on updating paths. Paths are always checked against the store (even if it means
+         reaching out to a remote server). This is done in order to prevent coherence issues in case paths are
+         updated on a remote server.
+
+         A positive integer argument indicate that no more than so many objects are being retained by the current
+         python process in memory.
+
+         The exact details of the caching strategy are left as an implementation detail and should not be relied upon.
+         The cache is currently implemented as a LRU cache on the most recent fetched objects.
+
+         This option is not compatible with providing a `Store` object as an argument.
+
     :return: nothing
     """
-    _set_store(store, internal_dir, data_dir, dbutils, commit_type)
+    _set_store(store, internal_dir, data_dir, dbutils, commit_type, cache_objects)
 
 
 def accept_module(module: Union[str, ModuleType]) -> None:

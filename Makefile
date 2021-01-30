@@ -1,7 +1,7 @@
 .PHONY: build pytest dbc
 
 pytest:
-	pytest -o log_cli=true -o log_cli_level=debug
+	pytest -o log_cli=true -o log_cli_level=debug dds_tests
 
 build:
 	rm -rf ./dist/*.whl
