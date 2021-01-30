@@ -1,27 +1,47 @@
-from .store import Store
-
-from functools import lru_cache
-
-from pathlib import PurePath
-from typing import Any, Optional, List, Union
+import logging
 from collections import OrderedDict
+from dataclasses import dataclass
+from typing import Any, Optional, List
 
-from .codec import codec_registry, CodecRegistry
+from .codec import CodecRegistry
+from .store import Store
 from .structures import (
     PyHash,
     DDSPath,
-    KSException,
-    GenericLocation,
     ProtocolRef,
-    FileCodecProtocol,
-    CodecProtocol,
 )
-from .structures_utils import SupportedTypeUtils as STU
-import logging
 
 _logger = logging.getLogger(__name__)
 
+# The default cache is conservatively small to prevent seemingly memory leaks.
 default_cache_size = 10
+
+
+# To ensure that we can store None in the cache
+@dataclass(frozen=True)
+class Entry:
+    obj: Any
+
+
+class LRUCache(object):
+
+    # initialising capacity
+    def __init__(self, capacity: int):
+        self._cache: OrderedDict[PyHash, Entry] = OrderedDict()
+        self._capacity = capacity
+
+    def get(self, key: PyHash) -> Optional[Entry]:
+        if key not in self._cache:
+            return None
+        else:
+            self._cache.move_to_end(key)
+            return self._cache[key]
+
+    def put(self, key: PyHash, value: Any) -> None:
+        self._cache[key] = Entry(value)
+        self._cache.move_to_end(key)
+        while len(self._cache) > self._capacity:
+            self._cache.popitem(last=False)
 
 
 class LRUCacheStore(Store):
@@ -40,24 +60,22 @@ class LRUCacheStore(Store):
     def __init__(self, store: Store, num_elem: int):
         self._store: Store = store
         self._num_elem = num_elem
-
-        @lru_cache(maxsize=num_elem)
-        def my_cache(key: PyHash) -> Optional[Any]:
-            _logger.debug(f"Fetching key {key}")
-            res = self._store.fetch_blob(key)
-            _logger.debug(f"Fetching key {key} completed: {type(res)}")
-            return res
-
-        self._fetch_function = my_cache
+        self._cache = LRUCache(num_elem)
 
     def has_blob(self, key: PyHash) -> bool:
-        # TODO: consider if this should also be cached.
-        # TODO: use a custom cache instead of lru_cache to sync both content and key
-        return self._store.has_blob(key)
+        # Check the cache first for the key, and then check the store.
+        return (self._cache.get(key) is not None) or self._store.has_blob(key)
 
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
-        _logger.debug(f"fetch_blob key {key}")
-        return self._fetch_function(key)
+        cache_obj = self._cache.get(key)
+        if cache_obj is not None:
+            return cache_obj.obj
+        # Not in the cache
+        _logger.debug(f"Fetching key {key}")
+        res = self._store.fetch_blob(key)
+        _logger.debug(f"Fetching key {key} completed: {type(res)}")
+        self._cache.put(key, res)
+        return res
 
     def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
         """

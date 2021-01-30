@@ -128,7 +128,7 @@ def set_store(
             num_objects = default_cache_size
         elif isinstance(cache_objects, int):
             if cache_objects < 0:
-                num_objects = sys.maxsize
+                num_objects = sys.maxsize // 2
             elif cache_objects > 0:
                 num_objects = cache_objects
         if num_objects is not None:
