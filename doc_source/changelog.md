@@ -2,7 +2,12 @@
 
 ## v0.7.0
 
-Adds a major feature: caching in memory of most recently used objects.
+Adds a major feature: caching in memory of most recently used objects. See the documentation of 
+`dds.set_store`.
+
+Other features:
+
+* keyworded arguments are now accepted in `dds.keep` and `dds.eval`
 
 ## v0.6.0
 

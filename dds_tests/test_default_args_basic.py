@@ -43,3 +43,26 @@ def test():
     assert _c.value == 2
     dds.eval(fun3)
     assert _c.value == 2
+
+
+def fun_args(a, b):
+    return a + b
+
+
+def fun_args_outer():
+    dds.keep(spath, fun_args, 1, 2)
+    dds.keep(spath, fun_args, 1, b=2)
+    dds.keep(spath, fun_args, a=1, b=2)
+    return dds.keep(spath, fun_args, b=2, a=1)
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_args():
+    # TODO: these tests are just checking that the calls are processed
+    # They should also check that the function is not retriggered again.
+    assert dds.keep(spath, fun_args, 1, 2) == 3
+    assert dds.keep(spath, fun_args, 1, b=2) == 3
+    assert dds.keep(spath, fun_args, a=1, b=2) == 3
+    assert dds.eval(fun_args_outer) == 3
+    assert dds.eval(fun_args, 1, 2) == 3
+    assert dds.eval(fun_args, a=1, b=2) == 3

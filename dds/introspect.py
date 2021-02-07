@@ -1,5 +1,6 @@
 import ast
 import inspect
+from collections import OrderedDict
 import logging
 from enum import Enum
 from pathlib import PurePosixPath
@@ -750,14 +751,12 @@ class InspectFunction(object):
                     f"Call stack: {' '.join([str(p) for p in call_stack])}"
                 )
             new_call_stack = call_stack + [call_fun_path]
-            # TODO: deal with the arguments here
-            if node.keywords:
-                raise NotImplementedError(
-                    (_function_name(node.func), node, node.keywords)
-                )
+            # TODO: this is an approximation as all the arguments may be keyworded.
+            # This assumes that only the function's normal arguments are going to be keyworded.
+            kwargs = OrderedDict([(n.arg, n.value) for n in node.keywords])
             # For now, accept the constant arguments. This is enough for some basic objects.
             arg_ctx = FunctionArgContext(
-                named_args=get_arg_ctx_ast(called_fun, node.args[2:]),  # type: ignore
+                named_args=get_arg_ctx_ast(called_fun, node.args[2:], kwargs),  # type: ignore
                 inner_call_key=context_sig,
             )
             inner_intro = _introspect(called_fun, arg_ctx, gctx, new_call_stack)
@@ -770,7 +769,8 @@ class InspectFunction(object):
         # the functions.
         # TODO: add more arguments if we can parse constant arguments
         arg_ctx = FunctionArgContext(
-            named_args=get_arg_ctx_ast(caller_fun, []), inner_call_key=context_sig,
+            named_args=get_arg_ctx_ast(caller_fun, [], OrderedDict()),
+            inner_call_key=context_sig,
         )
         new_call_stack = call_stack + [caller_fun_path]
         return _introspect(caller_fun, arg_ctx, gctx, new_call_stack)
