@@ -50,8 +50,10 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            Latest revision
-          draft: true
+            Latest revision.
+
+            The full changelog is available at https://tjhunter.github.io/dds_py/changelog/
+          draft: false
           prerelease: true
 
 
