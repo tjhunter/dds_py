@@ -89,8 +89,8 @@ class LRUCacheStore(Store):
 
         The operation of storing the blob may trigger side effects which are referentially
         transparent but have a big impact on the performance.
-        For example, Spark dataframes are converted to datasets, as opposed to just
-        lazy query plans.
+        For example, Spark dataframes are fully materialized and stored as parquet,
+         as opposed to just lazy query plans.
         """
         _logger.debug(f"store_blob key {key}")
         self._store.store_blob(key, blob, codec)

@@ -81,26 +81,39 @@ def get_arg_ctx(
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
 ) -> FunctionArgContext:
-    if len(kwargs) > 0:
-        raise NotImplementedError(f"kwargs")
     arg_sig = inspect.signature(f)
+    num_args = len(args)
     # _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
     args_hashes = []
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
         # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
         if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
-            raise NotImplementedError(f"{p.kind} {f} {arg_sig}")
-        elif p.default != Parameter.empty and idx >= len(args):
-            # Use the default argument as an input
-            # This assumes that the user does not mutate the argument, which is
-            # a warning/errors in most linters.
-            h = dds_hash(p.default or "__none__")
-            # raise NotImplementedError(f"{p} {p.default} {f} {arg_sig}")
-        elif len(args) <= idx:
-            raise NotImplementedError(f"{len(args)} {arg_sig}")
-        else:
+            raise NotImplementedError(
+                f"Argument type not understood: {p.kind} {f} {arg_sig}"
+            )
+        if idx < num_args:
+            # It is a list argument
+            # TODO: should it discard arguments of not-whitelisted types?
+            # TODO: raise a warning for non-whitelisted objects
             h = dds_hash(args[idx])
+        else:
+            # Either positional or default argument
+            if n in kwargs:
+                # positional argument
+                h = dds_hash(kwargs[n])
+            elif p.default != Parameter.empty:
+                # Argument is not provided but it has a default value
+                # Use the default argument as an input
+                # This assumes that the user does not mutate the argument, which is
+                # a warning/errors in most linters.
+                # TODO: should it discard arguments of not-whitelisted types?
+                # TODO: raise a warning for non-whitelisted objects
+                h = dds_hash(p.default or "__none__")
+            else:
+                raise NotImplementedError(
+                    f"Cannot deal with argument name {n} {p.kind} {f} {arg_sig}"
+                )
         args_hashes.append((ArgName(n), h))
     return FunctionArgContext(OrderedDict(args_hashes), None)
 
@@ -108,39 +121,50 @@ def get_arg_ctx(
 def get_arg_ctx_ast(
     f: Callable,  # type: ignore
     args: List[ast.AST],
+    kwargs: "OrderedDict[str, ast.AST]",
 ) -> "OrderedDict[ArgName, Optional[PyHash]]":
     """
     Gets the arg context based on the AST.
     """
     arg_sig = inspect.signature(f)
+    num_args = len(args)
     # _logger.debug(f"get_arg_ctx: {f}: arg_sig={arg_sig} args={args}")
     args_hashes: List[Tuple[ArgName, Optional[PyHash]]] = []
+
+    def process_arg(node: ast.AST) -> Optional[PyHash]:
+        # NameConstant for python 3.5 - 3.7
+        if isinstance(node, (ast.Constant, ast.NameConstant)):
+            # We can deal with some constant nodes
+            default_ob = node.value if node.value is not None else "__none__"
+            return dds_hash(default_ob)
+        else:
+            # Cannot deal with it for the time being
+            return None
+
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
         # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
         h: Optional[PyHash]
         if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
-            raise NotImplementedError(f"{p.kind} {f} {arg_sig}")
-        elif p.default != Parameter.empty and idx >= len(args):
-            # Use the default argument as an input
-            # This assumes that the user does not mutate the argument, which is
-            # a warning/errors in most linters.
-            h = dds_hash(p.default or "__none__")
-            # raise NotImplementedError(f"{p} {p.default} {f} {arg_sig}")
-        elif len(args) <= idx:
-            # TODO: it should be dealt with kwargs here
-            # raise NotImplementedError(f"{f} {len(args)} {arg_sig}")
-            h = None
+            raise NotImplementedError(
+                f"Argument type not understood {p.kind} {f} {arg_sig}"
+            )
+        if idx < num_args:
+            # It is a list argument
+            h = process_arg(args[idx])
         else:
-            # Get the AST node:
-            node = args[idx]
-            # NameConstant for python 3.5 - 3.7
-            if isinstance(node, (ast.Constant, ast.NameConstant)):
-                # We can deal with some constant nodes
-                default_ob = node.value if node.value is not None else "__none__"
-                h = dds_hash(default_ob)
+            if n in kwargs:
+                h = process_arg(kwargs[n])
+            elif p.default != Parameter.empty:
+                # Argument is not provided but it has a default value
+                # Use the default argument as an input
+                # This assumes that the user does not mutate the argument, which is
+                # a warning/errors in most linters.
+                # TODO: should it discard arguments of not-whitelisted types?
+                # TODO: raise a warning for non-whitelisted objects
+                h = dds_hash(p.default or "__none__")
             else:
-                # Cannot deal with it for the time being
+                # Do not consider this argument for the time being
                 h = None
         args_hashes.append((ArgName(n), h))
     return OrderedDict(args_hashes)
