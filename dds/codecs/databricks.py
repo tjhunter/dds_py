@@ -53,6 +53,9 @@ class DBFSURI:
     def parse(url: str) -> DBFSURI:
         return DBFSURI(urlparse(url).geturl())
 
+    def __repr__(self):
+        return repr(self._uri)
+
 
 def displayGraph(f: FunctionType) -> None:
     """
