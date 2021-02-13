@@ -48,7 +48,7 @@ class DBFSURI:
         return DBFSURI(uri)
 
     @staticmethod
-    def parse(url: str) -> DBFSURI:
+    def parse(url: str) -> "DBFSURI":
         return DBFSURI(urlparse(url).geturl())
 
     def __repr__(self):
