@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Databricks-specific storage implementation. It is based on the dbutils object
 which has to be provided at runtime.
