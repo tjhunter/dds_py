@@ -9,7 +9,9 @@ from collections import OrderedDict
 from enum import Enum
 from pathlib import Path
 from types import FunctionType
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Union
+from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from ..codec import CodecRegistry
 from ..store import Store, current_timestamp
@@ -18,6 +20,39 @@ from ..structures import PyHash, DDSPath, GenericLocation, SupportedType as ST
 from ..structures_utils import SupportedTypeUtils as STU
 
 _logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class DBFSURI:
+    """ A URI that can be interpreted by DBFS """
+
+    _uri: str
+
+    def joinpath(self, *segments: Union[Path, str]) -> "DBFSURI":
+        uri: str = self._uri
+        for seg in segments:
+            s: str
+            if isinstance(seg, Path):
+                s = str(seg)
+            elif isinstance(seg, str):
+                s = seg
+            else:
+                raise NotImplemented(f"{self}: {type(seg)}: {seg}")
+            if s.startswith("."):
+                s = s[1:]
+            if s.startswith("/"):
+                s = s[1:]
+            if not uri.endswith("/"):
+                uri = uri + "/"
+            uri = uri + s
+        return DBFSURI(uri)
+
+    @staticmethod
+    def parse(url: str) -> "DBFSURI":
+        return DBFSURI(urlparse(url).geturl())
+
+    def __repr__(self):
+        return self._uri
 
 
 def displayGraph(f: FunctionType) -> None:
@@ -100,10 +135,14 @@ class PySparkDatabricksCodec(CodecProtocol):
 
 class DBFSStore(Store):
     def __init__(
-        self, internal_dir: str, data_dir: str, dbutils: Any, commit_type: CommitType
+        self,
+        internal_dir: DBFSURI,
+        data_dir: DBFSURI,
+        dbutils: Any,
+        commit_type: CommitType,
     ):
-        self._internal_dir: Path = Path(internal_dir)
-        self._data_dir: Path = Path(data_dir)
+        self._internal_dir: DBFSURI = internal_dir
+        self._data_dir: DBFSURI = data_dir
         _logger.debug(
             f"Created DBFSStore: internal_dir: {self._internal_dir} data_dir: {self._data_dir}"
         )
@@ -271,13 +310,13 @@ class DBFSStore(Store):
     def codec_registry(self) -> CodecRegistry:
         return self._registry
 
-    def _blob_path(self, key: PyHash) -> Path:
+    def _blob_path(self, key: PyHash) -> DBFSURI:
         return self._internal_dir.joinpath("blobs", key)
 
-    def _blob_meta_path(self, key: PyHash) -> Path:
+    def _blob_meta_path(self, key: PyHash) -> DBFSURI:
         return self._internal_dir.joinpath("blobs", key + ".meta")
 
-    def _physical_path(self, dds_p: Path) -> Path:
+    def _physical_path(self, dds_p: Path) -> DBFSURI:
         return self._data_dir.joinpath(dds_p)
 
     def _fetch_meta(self, key: PyHash) -> Optional[Any]:
@@ -293,8 +332,8 @@ class DBFSStore(Store):
             )
             return None
 
-    def _head(self, p: Path) -> str:
+    def _head(self, p: DBFSURI) -> str:
         return self._dbutils.fs.head(str(p))  # type:ignore
 
-    def _put(self, p: Path, blob: str) -> Any:
+    def _put(self, p: DBFSURI, blob: str) -> Any:
         return self._dbutils.fs.put(str(p), blob, overwrite=True)

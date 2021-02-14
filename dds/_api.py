@@ -108,12 +108,14 @@ def set_store(
                 "Missing dbutils objects from input or from arguments."
                 " You must be using a databricks notebook to use the DBFS store"
             )
-        from .codecs.databricks import DBFSStore, CommitType
+        from .codecs.databricks import DBFSStore, CommitType, DBFSURI
 
         commit_type = str(commit_type or CommitType.FULL.name).upper()
         commit_type_ = CommitType[commit_type]
 
-        _store = DBFSStore(internal_dir, data_dir, dbutils, commit_type_)
+        _store = DBFSStore(
+            DBFSURI.parse(internal_dir), DBFSURI.parse(data_dir), dbutils, commit_type_
+        )
     else:
         raise KSException(f"Unknown store {store}")
 
