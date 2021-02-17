@@ -22,7 +22,7 @@ from ._eval_ctx import (
     AuthorizedObject,
 )
 from .structures import (
-    KSException,
+    DDSException,
     CanonicalPath,
     LocalDepPath,
 )
@@ -38,7 +38,7 @@ def _mod_path(m: ModuleType) -> CanonicalPath:
 def function_path(f: Union[type, FunctionType]) -> CanonicalPath:
     mod = inspect.getmodule(f)
     if mod is None:
-        raise KSException(f"Function {f} has no module")
+        raise DDSException(f"Function {f} has no module")
     return CanonicalPath(_mod_path(mod)._path.joinpath(f.__name__))
 
 
@@ -209,7 +209,7 @@ class ObjectRetrieval(object):
 
         mod = importlib.import_module(mod_name)
         if mod is None:
-            raise KSException(
+            raise DDSException(
                 f"Cannot process path {path}: module {mod_name} cannot be loaded"
             )
         sub_path = CanonicalPathUtils.tail(path)
@@ -217,7 +217,7 @@ class ObjectRetrieval(object):
         # _logger.debug(f"Calling retrieve_object on {dep_path}, {mod}")
         z = cls.retrieve_object(dep_path, mod, gctx)
         if z is None or isinstance(z, ExternalObject):
-            raise KSException(
+            raise DDSException(
                 f"Cannot load path {path}: this object cannot be retrieved, however "
                 f"the module '{mod_name}' exists. The typical cause of the issue is "
                 f"that the module {mod_name} has not been whitelisted for use by DDS. Use the "

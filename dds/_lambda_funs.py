@@ -11,7 +11,7 @@ import asttokens  # type: ignore
 import inspect
 import logging
 from ._print_ast import pformat
-from .structures import KSException
+from .structures import DDSException
 
 _logger = logging.getLogger(__name__)
 
@@ -79,9 +79,9 @@ def inspect_lambda_condition(fun: Callable[..., Any]) -> ast.Lambda:
     _logger.debug(f"_parse_lambda: call_node: {pformat(call_node)}")
 
     if call_node is None:
-        raise KSException(f"Could not find call node {pformat(call_node)}")
+        raise DDSException(f"Could not find call node {pformat(call_node)}")
 
     for node in ast.walk(call_node):
         if isinstance(node, ast.Lambda):
             return node
-    raise KSException(f"Could not parse lambda {pformat(call_node)}")
+    raise DDSException(f"Could not parse lambda {pformat(call_node)}")
