@@ -1,7 +1,6 @@
 import pathlib
 import warnings
 from types import ModuleType
-from typing import Tuple, Dict
 from typing import TypeVar, Callable, Any, Optional, Union, List
 
 from ._annotations import dds_function, data_function
@@ -37,8 +36,8 @@ _In = TypeVar("_In")
 def keep(
     path: Union[str, DDSPath, pathlib.Path],
     fun: Callable[..., _Out],
-    *args: Tuple[Any, ...],
-    **kwargs: Dict[str, Any]
+    *args: Any,
+    **kwargs: Any
 ) -> _Out:
     """
     Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,
@@ -140,11 +139,11 @@ def keep(
 
 def eval(
     fun: Callable[..., _Out],
-    *args: Tuple[Any, ...],
+    *args: Any,
     dds_export_graph: Union[str, pathlib.Path, None] = None,
     dds_extra_debug: Optional[bool] = None,
     dds_stages: Optional[List[Union[str, ProcessingStage]]] = None,
-    **kwargs: Dict[str, Any]
+    **kwargs: Any
 ) -> Optional[_Out]:
     """
     Evaluates a function. The result of the function is not stored in the data store, but the function itself may

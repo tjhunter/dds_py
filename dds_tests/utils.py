@@ -6,20 +6,22 @@ import shutil
 from pathlib import Path
 import pkgutil
 from io import UnsupportedOperation
+from typing import Generator
 
 
 _logger = logging.getLogger(__name__)
 
 
-def _add_tests():
+def _add_tests() -> None:
     """
     Adds programmatically all the sub-test files to the whitelist.
     """
     import dds_tests
 
+    p: str = dds_tests.__path__  # type: ignore
     test_mods = [
         f"dds_tests.{m.name}"
-        for m in pkgutil.iter_modules(dds_tests.__path__)
+        for m in pkgutil.iter_modules(p)
         if str(m.name).startswith("test_")
     ]
     _logger.info(str(test_mods))
