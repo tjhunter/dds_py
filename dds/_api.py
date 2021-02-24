@@ -65,7 +65,7 @@ def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
     path_ = DDSPathUtils.create(path)
     key = _store().fetch_paths([path_]).get(path_)
     if key is None:
-        raise KSException(f"The store {_store} did not return path {path_}")
+        raise KSException(f"The store {_store()} did not return path {path_}")
     else:
         return _store().fetch_blob(key)
 
