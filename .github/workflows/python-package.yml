@@ -41,6 +41,7 @@ jobs:
     - name: Typing with mypy
       run: |
         mypy dds
+        mypy dds_tests/test_typed.py
     - name: Test with pytest
       run: |
         pytest -o log_cli=true -o log_cli_level=debug
