@@ -19,7 +19,7 @@ def fun1():
 @pytest.mark.usefixtures("cleandir")
 def test_rec():
     # Recursion not supported for now
-    with pytest.raises(dds.structures.KSException):
+    with pytest.raises(dds.structures.DDSException):
         fun1()
 
 

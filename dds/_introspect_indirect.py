@@ -33,7 +33,7 @@ from .introspect import (
 from .structures import (
     FunctionArgContext,
     DDSPath,
-    KSException,
+    DDSException,
     CanonicalPath,
     LocalDepPath,
     FunctionIndirectInteractions,
@@ -59,7 +59,7 @@ def _introspect(
         return _introspect_fun(obj, gctx, call_stack)
     if isinstance(obj, type):
         return _introspect_class(obj, gctx, call_stack)
-    raise KSException(
+    raise DDSException(
         f"Expected function or class, got object of type {type(obj)} instead: {obj}"
     )
 
@@ -74,7 +74,7 @@ def _introspect_class(
 
     fun_module = inspect.getmodule(c)
     if fun_module is None:
-        raise KSException(f"Could not find module: class:{c} module: {fun_module}")
+        raise DDSException(f"Could not find module: class:{c} module: {fun_module}")
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     fiis_ = gctx.cached_indirect_interactions.get(fun_path)
     if fiis_ is not None:
@@ -103,7 +103,7 @@ def _introspect_fun(
 
     fun_module = inspect.getmodule(f)
     if fun_module is None:
-        raise KSException(f"Could not find module: f; {f} module: {fun_module}")
+        raise DDSException(f"Could not find module: f; {f} module: {fun_module}")
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
@@ -160,7 +160,7 @@ class InspectFunctionIndirect(object):
         elif isinstance(node, ast.Lambda):
             body = [node.body]
         else:
-            raise KSException(f"unknown ast node {type(node)}")
+            raise DDSException(f"unknown ast node {type(node)}")
         dummy_arg_ctx = FunctionArgContext(OrderedDict(), None)
         local_vars = set(
             InspectFunction.get_local_vars(body, dummy_arg_ctx) + arg_names
@@ -255,7 +255,9 @@ class InspectFunctionIndirect(object):
             # - parse the arguments
             # - introspect the callee
             if len(node.args) < 2:
-                raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
+                raise DDSException(
+                    f"Wrong number of args: expected 2+, got {node.args}"
+                )
             store_path = InspectFunction._retrieve_store_path(node.args[0], mod, gctx)
             called_path_ast = node.args[1]
             if isinstance(called_path_ast, ast.Name):
@@ -276,7 +278,7 @@ class InspectFunctionIndirect(object):
             assert isinstance(called_z, AuthorizedObject)
             called_fun, call_fun_path = called_z.object_val, called_z.resolved_path
             if call_fun_path in call_stack:
-                raise KSException(
+                raise DDSException(
                     f"Detected circular function calls or (co-)recursive calls."
                     f"This is currently not supported. Change your code to split the "
                     f"recursive section into a separate function. "
@@ -291,7 +293,7 @@ class InspectFunctionIndirect(object):
         if caller_fun_path == CPU.from_list(["dds", "load"]):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
-                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
+                raise DDSException(f"Wrong number of args: expected 1, got {node.args}")
             store_path = InspectFunction._retrieve_store_path(node.args[0], mod, gctx)
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
@@ -300,7 +302,7 @@ class InspectFunctionIndirect(object):
             raise NotImplementedError("eval")
 
         if caller_fun_path in call_stack:
-            raise KSException(
+            raise DDSException(
                 f"Detected circular function calls or (co-)recursive calls."
                 f"This is currently not supported. Change your code to split the "
                 f"recursive section into a separate function. "

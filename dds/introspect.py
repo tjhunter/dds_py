@@ -36,7 +36,7 @@ from .structures import (
     FunctionArgContext,
     DDSPath,
     FunctionInteractions,
-    KSException,
+    DDSException,
     CanonicalPath,
     ExternalDep,
     LocalDepPath,
@@ -100,7 +100,7 @@ def _introspect_class(
 
     fun_module = inspect.getmodule(c)
     if fun_module is None:
-        raise KSException(f"Could not find module: class:{c} module: {fun_module}")
+        raise DDSException(f"Could not find module: class:{c} module: {fun_module}")
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     fis_key = (fun_path, arg_ctx_hash)
     fis_ = gctx.cached_fun_interactions.get(fis_key)
@@ -145,7 +145,7 @@ def _introspect(
         return _introspect_fun(obj, arg_ctx, gctx, call_stack)
     if isinstance(obj, type):
         return _introspect_class(obj, arg_ctx, gctx, call_stack)
-    raise KSException(
+    raise DDSException(
         f"Expected function or class, got object of type {type(obj)} instead: {obj}"
     )
 
@@ -186,7 +186,7 @@ def _introspect_fun(
 
     fun_module = inspect.getmodule(f)
     if fun_module is None:
-        raise KSException(f"Could not find module: f; {f} module: {fun_module}")
+        raise DDSException(f"Could not find module: f; {f} module: {fun_module}")
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
@@ -519,7 +519,7 @@ class InspectFunction(object):
         elif isinstance(node, ast.Lambda):
             body = [node.body]
         else:
-            raise KSException(f"unknown ast node {type(node)}")
+            raise DDSException(f"unknown ast node {type(node)}")
         local_vars = set(cls.get_local_vars(body, arg_ctx))
         # _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
@@ -629,7 +629,7 @@ class InspectFunction(object):
                     ["dds", "_annotations", "data_function"]
                 ):
                     if len(dec.args) != 1:
-                        raise KSException(
+                        raise DDSException(
                             f"Wrong number of arguments for decorator: {pformat(dec)}"
                         )
                     store_path = cls._retrieve_store_path(dec.args[0], mod, gctx)
@@ -679,7 +679,7 @@ class InspectFunction(object):
 
         if caller_fun_path in call_stack:
             # Recursive calls are not supported currently.
-            raise KSException(
+            raise DDSException(
                 f"Detected circular function calls or (co-)recursive calls."
                 f"This is currently not supported. Change your code to split the "
                 f"recursive section into a separate function. "
@@ -690,7 +690,7 @@ class InspectFunction(object):
         elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
-                raise KSException(f"Wrong number of args: expected 1, got {node.args}")
+                raise DDSException(f"Wrong number of args: expected 1, got {node.args}")
             store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
@@ -720,7 +720,9 @@ class InspectFunction(object):
             # - parse the arguments
             # - introspect the callee
             if len(node.args) < 2:
-                raise KSException(f"Wrong number of args: expected 2+, got {node.args}")
+                raise DDSException(
+                    f"Wrong number of args: expected 2+, got {node.args}"
+                )
             store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
             called_path_ast = node.args[1]
             if isinstance(called_path_ast, ast.Name):
@@ -743,7 +745,7 @@ class InspectFunction(object):
             assert isinstance(called_z, AuthorizedObject)
             called_fun, call_fun_path = called_z.object_val, called_z.resolved_path
             if call_fun_path in call_stack:
-                raise KSException(
+                raise DDSException(
                     f"Detected circular function calls or (co-)recursive calls."
                     f"This is currently not supported. Change your code to split the "
                     f"recursive section into a separate function. "

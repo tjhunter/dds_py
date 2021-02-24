@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 
 from ..codec import CodecRegistry
 from ..store import Store, current_timestamp
-from ..structures import CodecProtocol, ProtocolRef, FileCodecProtocol, KSException
+from ..structures import CodecProtocol, ProtocolRef, FileCodecProtocol, DDSException
 from ..structures import PyHash, DDSPath, GenericLocation, SupportedType as ST
 from ..structures_utils import SupportedTypeUtils as STU
 
@@ -186,7 +186,7 @@ class DBFSStore(Store):
                 self._dbutils.fs.cp(str(p), str(lp2))
                 return codec.deserialize_from(lp)
         else:
-            raise KSException(f"{type(codec)} codec")
+            raise DDSException(f"{type(codec)} codec")
 
     def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
         protocol = self._registry.get_codec(STU.from_type(type(blob)), codec)
@@ -205,7 +205,7 @@ class DBFSStore(Store):
                 _logger.debug(f"Temporary copy from DBFS: {lp2} -> {p}")
                 self._dbutils.fs.cp(lp2, str(p))
         else:
-            raise KSException(f"{type(protocol)} codec")
+            raise DDSException(f"{type(protocol)} codec")
         meta_p = self._blob_meta_path(key)
         try:
             meta = json.dumps(
