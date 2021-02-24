@@ -96,9 +96,11 @@ def set_store(
         return
     elif store == "local":
         if not internal_dir:
-            internal_dir = pathlib.Path(tempfile.gettempdir()).joinpath("dds", "store")
+            internal_dir = str(
+                pathlib.Path(tempfile.gettempdir()).joinpath("dds", "store")
+            )
         if not data_dir:
-            data_dir = pathlib.Path(tempfile.gettempdir()).joinpath("dds", "data")
+            data_dir = str(pathlib.Path(tempfile.gettempdir()).joinpath("dds", "data"))
         _store_var = LocalFileStore(internal_dir, data_dir)
     elif store == "dbfs":
         if data_dir is None:
