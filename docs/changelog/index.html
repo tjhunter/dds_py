@@ -87,6 +87,8 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">Changelog</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#v072">v0.7.2</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#v070">v0.7.0</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#v060">v0.6.0</a>
@@ -127,6 +129,13 @@
             <div class="section">
               
                 <h1 id="changelog">Changelog</h1>
+<h2 id="v072">v0.7.2</h2>
+<p>Small usability fixes in this release:</p>
+<ul>
+<li>delaying the creation of a default store (and all its side effects) to better support highly concurrent environments</li>
+<li>fix to the type signature of <code>dds.keep</code> and <code>dds.eval</code></li>
+<li>improves debugging messages (with a potential extra round trip to the store)</li>
+</ul>
 <h2 id="v070">v0.7.0</h2>
 <p>Adds a major feature: caching in memory of most recently used objects. See the documentation of 
 <code>dds.set_store</code>.</p>

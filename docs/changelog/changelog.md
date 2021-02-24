@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.2
+
+Small usability fixes in this release:
+
+* delaying the creation of a default store (and all its side effects) to better support highly concurrent environments
+* fix to the type signature of `dds.keep` and `dds.eval`
+* improves debugging messages (with a potential extra round trip to the store)
+
 ## v0.7.0
 
 Adds a major feature: caching in memory of most recently used objects. See the documentation of 
