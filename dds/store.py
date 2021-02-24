@@ -86,6 +86,9 @@ class LocalFileStore(Store):
         if not os.path.exists(p_blobs):
             os.makedirs(p_blobs)
 
+    def __repr__(self):
+        return f"LocalFileStore(internal_dir={self._root} data_dir={self._data_root})"
+
     def fetch_blob(self, key: PyHash) -> Any:
         p = os.path.join(self._root, "blobs", key)
         meta_p = os.path.join(self._root, "blobs", key + ".meta")

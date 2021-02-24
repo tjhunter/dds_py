@@ -301,7 +301,7 @@ enable automatic parallel execution of internal statements.</p>
 </tr>
 <tr>
 <td><code>args</code></td>
-<td><code>Tuple[Any, ...]</code></td>
+<td><code>Any</code></td>
 <td>
 <p>the optional arguments for this function.</p>
 <p>NOTE: keyworded arguments are not supported yet.</p>
@@ -346,11 +346,11 @@ def all_fs():
           <div class="highlight">
 <pre><span></span><code><span class="k">def</span> <span class="nf">eval</span><span class="p">(</span>
     <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">dds_export_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">dds_extra_debug</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">dds_stages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ProcessingStage</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Out</span><span class="p">]:</span>
     <span class="sd">"""</span>
 <span class="sd">    Evaluates a function. The result of the function is not stored in the data store, but the function itself may</span>
@@ -450,7 +450,7 @@ or being an absolute path if a pathlib's <code>Path</code> object).</p>
 </tr>
 <tr>
 <td><code>args</code></td>
-<td><code>Tuple[Any, ...]</code></td>
+<td><code>Any</code></td>
 <td>
 <p>the arguments of this function</p>
 </td>
@@ -458,7 +458,7 @@ or being an absolute path if a pathlib's <code>Path</code> object).</p>
 </tr>
 <tr>
 <td><code>kwargs</code></td>
-<td><code>Dict[str, Any]</code></td>
+<td><code>Any</code></td>
 <td>
 <p><em>(keyworded arguments are currently unsupported)</em></p>
 </td>
@@ -518,8 +518,8 @@ only be evaluated once.</p>
 <pre><span></span><code><span class="k">def</span> <span class="nf">keep</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
     <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Out</span><span class="p">:</span>
     <span class="sd">"""</span>
 <span class="sd">    Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,</span>

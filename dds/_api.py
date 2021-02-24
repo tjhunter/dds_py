@@ -6,6 +6,7 @@ import sys
 import logging
 import pathlib
 import time
+import tempfile
 from collections import OrderedDict
 from typing import TypeVar, Tuple, Callable, Dict, Any, Optional, Union, Set, List
 
@@ -36,7 +37,7 @@ _logger = logging.getLogger(__name__)
 
 
 # TODO: set up in the use temporary space
-_store: Store = LocalFileStore("/tmp/dds/internal/", "/tmp/dds/data/")
+_store_var: Optional[Store] = None
 _eval_ctx: Optional[EvalContext] = None
 
 
@@ -64,11 +65,11 @@ def eval(
 
 def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
     path_ = DDSPathUtils.create(path)
-    key = _store.fetch_paths([path_]).get(path_)
+    key = _store().fetch_paths([path_]).get(path_)
     if key is None:
-        raise DDSException(f"The store {_store} did not return path {path_}")
+        raise DDSException(f"The store {_store()} did not return path {path_}")
     else:
-        return _store.fetch_blob(key)
+        return _store().fetch_blob(key)
 
 
 def set_store(
@@ -84,21 +85,23 @@ def set_store(
 
     store: either a store, or 'local' or 'dbfs'
     """
-    global _store
+    global _store_var
     if isinstance(store, Store):
         if cache_objects is not None:
             raise DDSException(
                 f"Cannot provide a caching option and a store object of type 'Store' at the same time"
             )
         # Directly setting the store
-        _store = store
+        _store_var = store
         return
     elif store == "local":
         if not internal_dir:
-            internal_dir = "/tmp"
+            internal_dir = str(
+                pathlib.Path(tempfile.gettempdir()).joinpath("dds", "store")
+            )
         if not data_dir:
-            data_dir = "/tmp/data"
-        _store = LocalFileStore(internal_dir, data_dir)
+            data_dir = str(pathlib.Path(tempfile.gettempdir()).joinpath("dds", "data"))
+        _store_var = LocalFileStore(internal_dir, data_dir)
     elif store == "dbfs":
         if data_dir is None:
             raise DDSException("Missing data_dir argument")
@@ -115,7 +118,7 @@ def set_store(
         commit_type = str(commit_type or CommitType.FULL.name).upper()
         commit_type_ = CommitType[commit_type]
 
-        _store = DBFSStore(
+        _store_var = DBFSStore(
             DBFSURI.parse(internal_dir), DBFSURI.parse(data_dir), dbutils, commit_type_
         )
     else:
@@ -136,8 +139,8 @@ def set_store(
             elif cache_objects > 0:
                 num_objects = cache_objects
         if num_objects is not None:
-            _store = LRUCacheStore(_store, num_elem=num_objects)
-    _logger.debug(f"Setting the store to {_store}")
+            _store_var = LRUCacheStore(_store(), num_elem=num_objects)
+    _logger.debug(f"Setting the store to {_store()}")
 
 
 def _parse_stages(
@@ -196,9 +199,9 @@ def _eval(
             )
         key = None if path is None else _eval_ctx.requested_paths[path]
         t = _time()
-        if key is not None and _store.has_blob(key):
+        if key is not None and _store().has_blob(key):
             _logger.debug(f"_eval:Return cached {path} from {key}")
-            blob = _store.fetch_blob(key)
+            blob = _store().fetch_blob(key)
             _add_delta(t, ProcessingStage.STORE_COMMIT)
             return blob
         else:
@@ -217,9 +220,25 @@ def _eval(
         if key is not None:
             _logger.info(f"_eval:Storing blob into key {key}")
             t = _time()
-            _store.store_blob(key, res, codec=None)
+            _store().store_blob(key, res, codec=None)
             _add_delta(t, ProcessingStage.STORE_COMMIT)
         return res
+
+
+def _store() -> Store:
+    """
+    Gets the current store (or initializes it to the local default store if necessary)
+    """
+    global _store_var
+    if _store_var is None:
+        p = pathlib.Path(tempfile.gettempdir()).joinpath("dds")
+        store_path = p.joinpath("store")
+        data_path = p.joinpath("data")
+        _logger.info(
+            f"Initializing default store. store dir: {store_path} data dir: {data_path}"
+        )
+        _store_var = LocalFileStore(str(store_path), str(data_path))
+    return _store_var
 
 
 def _time() -> float:
@@ -272,7 +291,7 @@ def _eval_new_ctx(
             _logger.debug(
                 f"_eval_new_ctx: need to resolve indirect references: {loads_to_check}"
             )
-            resolved_indirect_refs = _store.fetch_paths(loads_to_check)
+            resolved_indirect_refs = _store().fetch_paths(loads_to_check)
             _logger.debug(
                 f"_eval_new_ctx: fetched indirect references: {resolved_indirect_refs}"
             )
@@ -296,7 +315,7 @@ def _eval_new_ctx(
         present_blobs: Optional[Set[PyHash]]
         if extra_debug:
             present_blobs = set(
-                [key for key in set(store_paths.values()) if _store.has_blob(key)]
+                [key for key in set(store_paths.values()) if _store().has_blob(key)]
             )
             _logger.debug(f"_eval_new_ctx: {len(present_blobs)} present blobs")
         else:
@@ -327,9 +346,9 @@ def _eval_new_ctx(
         current_sig = inters.fun_return_sig
         _logger.debug(f"_eval_new_ctx:current_sig: {current_sig}")
         t = _time()
-        if _store.has_blob(current_sig):
+        if _store().has_blob(current_sig):
             _logger.debug(f"_eval_new_ctx:Return cached signature {current_sig}")
-            res = _store.fetch_blob(current_sig)
+            res = _store().fetch_blob(current_sig)
             _add_delta(t, ProcessingStage.STORE_COMMIT)
         else:
             arg_repr = [str(type(arg)) for arg in args]
@@ -349,13 +368,13 @@ def _eval_new_ctx(
                 # TODO: add a phase for storing the blobs
                 _logger.info(f"_eval:Storing blob into key {obj_key}")
                 t = _time()
-                _store.store_blob(obj_key, res, codec=None)
+                _store().store_blob(obj_key, res, codec=None)
                 _add_delta(t, ProcessingStage.STORE_COMMIT)
 
         if ProcessingStage.PATH_COMMIT in stages:
             _logger.debug(f"Starting stage {ProcessingStage.PATH_COMMIT}")
             t = _time()
-            _store.sync_paths(store_paths)
+            _store().sync_paths(store_paths)
             _add_delta(t, ProcessingStage.PATH_COMMIT)
             _logger.debug(f"Stage {ProcessingStage.PATH_COMMIT} done")
         else:
