@@ -11,7 +11,7 @@ from typing import Union
 
 from .structures import (
     DDSPath,
-    KSException,
+    DDSException,
     FunctionInteractions,
     PyHash,
     LocalDepPath,
@@ -28,14 +28,14 @@ class DDSPathUtils(object):
     def create(p: Union[str, pathlib.Path]) -> DDSPath:
         if isinstance(p, str):
             if not p or p[0] != "/":
-                raise KSException(
+                raise DDSException(
                     f"Provided path {p} is not absolute. All paths must be absolute"
                 )
             # TODO: more checks
             return DDSPath(p)
         if isinstance(p, pathlib.Path):
             if not p.is_absolute():
-                raise KSException(
+                raise DDSException(
                     f"Provided path {p} is not absolute. All paths must be absolute"
                 )
             return DDSPath(p.absolute().as_posix())
@@ -93,11 +93,13 @@ class FunctionInteractionsUtils(object):
         printed_nodes: Set[PyHash] = set()
 
         def to_nodes(fi_: FunctionInteractions) -> _PrintNode:
-            status = (
-                "-- "
-                if present_blobs is not None and fi_.fun_return_sig in present_blobs
-                else "<- *"
-            )
+            if present_blobs is not None:
+                if fi_.fun_return_sig in present_blobs:
+                    status = "<-- "
+                else:
+                    status = "<-* "
+            else:
+                status = "--- "
             sig = str(fi_.fun_return_sig)[:10]
             path = (
                 f"@ {sig}"
@@ -211,4 +213,4 @@ class CanonicalPathUtils(object):
                 s = s[1:]
             return CanonicalPath(p._path.joinpath(s))
         else:
-            raise KSException(f"{type(o)} {o}")
+            raise DDSException(f"{type(o)} {o}")

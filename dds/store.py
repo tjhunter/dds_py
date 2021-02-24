@@ -10,7 +10,7 @@ from .codec import codec_registry, CodecRegistry
 from .structures import (
     PyHash,
     DDSPath,
-    KSException,
+    DDSException,
     GenericLocation,
     ProtocolRef,
     FileCodecProtocol,
@@ -75,13 +75,13 @@ class LocalFileStore(Store):
                 _logger.debug(f"Creating dir {internal_dir}")
                 os.makedirs(internal_dir)
             else:
-                raise KSException(f"Path {internal_dir} is not a directory")
+                raise DDSException(f"Path {internal_dir} is not a directory")
         if not os.path.isdir(data_dir):
             if create_dirs:
                 _logger.debug(f"Creating dir {data_dir}")
                 os.makedirs(data_dir)
             else:
-                raise KSException(f"Path {data_dir} is not a directory")
+                raise DDSException(f"Path {data_dir} is not a directory")
         p_blobs = os.path.join(self._root, "blobs")
         if not os.path.exists(p_blobs):
             os.makedirs(p_blobs)
@@ -116,7 +116,7 @@ class LocalFileStore(Store):
             # This is the local file system, we can directly copy the file to its final destination
             protocol.serialize_into(blob, PurePath(p))
         else:
-            raise KSException(f"{type(protocol)} {protocol}")
+            raise DDSException(f"{type(protocol)} {protocol}")
         meta_p = os.path.join(self._root, "blobs", key + ".meta")
         with open(meta_p, "wb") as f:
             f.write(
@@ -160,11 +160,11 @@ class LocalFileStore(Store):
                 loc = os.path.join(loc_dir, splits[-1])
                 if not os.path.exists(loc_dir):
                     _logger.debug(f"Dir {loc_dir} does not exist")
-                    raise KSException(
+                    raise DDSException(
                         f"Requested to load path {path} but directory {loc_dir} does not exist"
                     )
                 if not os.path.exists(loc):
-                    raise KSException(
+                    raise DDSException(
                         f"Requested to load path {path} but path {loc} does not exist"
                     )
                 rp = os.path.realpath(loc)

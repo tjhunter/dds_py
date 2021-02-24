@@ -1,10 +1,9 @@
-from dataclasses import dataclass
 from collections import OrderedDict
+from dataclasses import dataclass
 from enum import Enum
-from functools import total_ordering
 from pathlib import PurePath
 from pathlib import PurePosixPath
-from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple, Union
+from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
 
 
 class ProcessingStage(str, Enum):
@@ -41,7 +40,11 @@ DDSPath = NewType("DDSPath", str)
 PyHash = NewType("PyHash", str)
 
 
-class KSException(BaseException):
+class DDSException(BaseException):
+    """
+    The base exception for all the exceptions generated in DDS.
+    """
+
     pass
 
 

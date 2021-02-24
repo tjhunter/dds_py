@@ -15,10 +15,11 @@ from ._introspect_indirect import introspect_indirect
 from .fun_args import get_arg_ctx
 from .introspect import introspect, _accepted_packages
 from ._lru_store import LRUCacheStore, default_cache_size
+
 from .store import LocalFileStore, Store
 from .structures import (
     DDSPath,
-    KSException,
+    DDSException,
     EvalContext,
     PyHash,
     ProcessingStage,
@@ -28,6 +29,7 @@ from .structures_utils import (
     FunctionInteractionsUtils,
     FunctionIndirectInteractionUtils,
 )
+from . import _options
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
@@ -65,7 +67,7 @@ def load(path: Union[str, DDSPath, pathlib.Path]) -> Any:
     path_ = DDSPathUtils.create(path)
     key = _store().fetch_paths([path_]).get(path_)
     if key is None:
-        raise KSException(f"The store {_store()} did not return path {path_}")
+        raise DDSException(f"The store {_store()} did not return path {path_}")
     else:
         return _store().fetch_blob(key)
 
@@ -86,7 +88,7 @@ def set_store(
     global _store_var
     if isinstance(store, Store):
         if cache_objects is not None:
-            raise KSException(
+            raise DDSException(
                 f"Cannot provide a caching option and a store object of type 'Store' at the same time"
             )
         # Directly setting the store
@@ -100,12 +102,12 @@ def set_store(
         _store_var = LocalFileStore(internal_dir, data_dir)
     elif store == "dbfs":
         if data_dir is None:
-            raise KSException("Missing data_dir argument")
+            raise DDSException("Missing data_dir argument")
         if internal_dir is None:
-            raise KSException("Missing internal_dir argument")
+            raise DDSException("Missing internal_dir argument")
         dbutils = dbutils or _fetch_ipython_vars().get("dbutils")
         if dbutils is None:
-            raise KSException(
+            raise DDSException(
                 "Missing dbutils objects from input or from arguments."
                 " You must be using a databricks notebook to use the DBFS store"
             )
@@ -118,13 +120,13 @@ def set_store(
             DBFSURI.parse(internal_dir), DBFSURI.parse(data_dir), dbutils, commit_type_
         )
     else:
-        raise KSException(f"Unknown store {store}")
+        raise DDSException(f"Unknown store {store}")
 
     if cache_objects is not None:
         num_objects: Optional[int] = None
 
         if not isinstance(cache_objects, (int, bool)):
-            raise KSException(
+            raise DDSException(
                 f"cached_object should be int or bool, received type {type(cache_objects)}"
             )
         if isinstance(cache_objects, bool) and cache_objects:
@@ -149,16 +151,16 @@ def _parse_stages(
         if isinstance(s, str):
             s = s.upper()
             if s not in dir(ProcessingStage):
-                raise KSException(
+                raise DDSException(
                     f"{s} is not a valid stage name. Valid names are {dir(ProcessingStage)}"
                 )
             x = ProcessingStage[s]
         elif isinstance(s, ProcessingStage):
             x = s
         else:
-            raise KSException(f"Not a valid type: {s} {type(s)}")
+            raise DDSException(f"Not a valid type: {s} {type(s)}")
         if x != cur:
-            raise KSException(
+            raise DDSException(
                 f"Wrong order for the stage name, expected {cur} but got {x}"
             )
         return cur
@@ -183,15 +185,15 @@ def _eval(
 
     stages = _parse_stages(dds_stages)
 
-    extra_debug = dds_extra_debug or False
+    extra_debug = dds_extra_debug or _options._dds_extra_debug
 
     if not _eval_ctx:
         # Not in an evaluation context, create one and introspect
         return _eval_new_ctx(fun, path, args, kwargs, export_graph, extra_debug, stages)
     else:
         if not path:
-            raise KSException(
-                "Already in eval() context. Nested eval contexts are not supported"
+            raise DDSException(
+                "Already in dds.eval() context. Nested eval contexts are not supported"
             )
         key = None if path is None else _eval_ctx.requested_paths[path]
         t = _time()
@@ -319,7 +321,7 @@ def _eval_new_ctx(
 
         _logger.debug(f"Interaction tree:")
         FunctionInteractionsUtils.pprint_tree(
-            inters, present_blobs, printer=lambda s: _logger.debug(s)
+            inters, present_blobs, printer=_logger.debug
         )
         if export_graph is not None:
             # Attempt to run the export module:

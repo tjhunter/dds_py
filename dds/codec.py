@@ -2,7 +2,7 @@ import logging
 from typing import Optional, Dict, List, Union
 
 from .structures import (
-    KSException,
+    DDSException,
     CodecProtocol,
     ProtocolRef,
     SupportedType,
@@ -58,7 +58,7 @@ class CodecRegistry(object):
         # First the reference
         if ref:
             if ref not in self._protocols:
-                raise KSException(f"Requested protocol {ref}, which is not registered")
+                raise DDSException(f"Requested protocol {ref}, which is not registered")
             return self._protocols[ref]
         # Then the object type
         if obj_type is not None:
@@ -68,11 +68,11 @@ class CodecRegistry(object):
                 SupportedTypeUtils.from_type(object)
             )
             if cp is None:
-                raise KSException(
+                raise DDSException(
                     f"Requested protocol for type {obj_type}, which is not registered"
                 )
             return cp
-        raise KSException(f"No protocol found")
+        raise DDSException(f"No protocol found")
 
 
 def _build_default_registry() -> CodecRegistry:
