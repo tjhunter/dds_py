@@ -88,10 +88,11 @@ def get_arg_ctx(
     for (idx, (n, p_)) in enumerate(arg_sig.parameters.items()):
         p: inspect.Parameter = p_
         # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
-        if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
+        if p.kind not in (Parameter.POSITIONAL_OR_KEYWORD, Parameter.VAR_KEYWORD):
             raise NotImplementedError(
                 f"Argument type not understood: {p.kind} {f} {arg_sig}"
             )
+        h: Optional[PyHash]
         if idx < num_args:
             # It is a list argument
             # TODO: should it discard arguments of not-whitelisted types?
@@ -110,6 +111,9 @@ def get_arg_ctx(
                 # TODO: should it discard arguments of not-whitelisted types?
                 # TODO: raise a warning for non-whitelisted objects
                 h = dds_hash(p.default or "__none__")
+            elif p.kind == Parameter.VAR_KEYWORD:
+                # kwargs: for now, just ignored
+                h = None
             else:
                 raise NotImplementedError(
                     f"Cannot deal with argument name {n} {p.kind} {f} {arg_sig}"
@@ -145,7 +149,11 @@ def get_arg_ctx_ast(
         p: inspect.Parameter = p_
         # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
         h: Optional[PyHash]
-        if p.kind != Parameter.POSITIONAL_OR_KEYWORD:
+        if p.kind not in (
+            Parameter.POSITIONAL_OR_KEYWORD,
+            Parameter.VAR_KEYWORD,
+            Parameter.VAR_POSITIONAL,
+        ):
             raise NotImplementedError(
                 f"Argument type not understood {p.kind} {f} {arg_sig}"
             )

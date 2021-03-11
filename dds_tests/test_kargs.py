@@ -46,4 +46,4 @@ def f2_2():
 @pytest.mark.usefixtures("cleandir")
 def test_kargs_2():
     assert dds.eval(f2_1) == 3
-    assert dds.eval(f2_2) == 2
+    assert dds.eval(f2_2) == 3
