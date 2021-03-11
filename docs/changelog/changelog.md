@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.3
+
+Fixes the usage of positional and keyworded arguments when used in conjunction
+with `dds.keep`. 
+
 ## v0.7.2
 
 Small usability fixes in this release:
