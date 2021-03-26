@@ -6,9 +6,10 @@ import dds
 import pytest
 from .utils import cleandir, Counter
 from io import UnsupportedOperation
-import dds_tests.test_mod.os
-import dds_tests.test_mod as test_mod
 from typing import List
+import dataclasses
+import datetime
+from collections import OrderedDict
 
 _ = cleandir
 
@@ -176,5 +177,33 @@ def fun_7_f():
 
 @pytest.mark.usefixtures("cleandir")
 def test_7():
-    """ Variables with names that shadow existing modules should not trigger errors during method access. """
+    """ Variables with names that shadow existing modules should not trigger
+     errors during method access. """
     assert dds.eval(fun_7_f) == "test"
+
+
+@dataclasses.dataclass(frozen=True)
+class Fun8DC:
+    x: int
+
+
+fun_8_obj1 = {"a": datetime.datetime(year=4, month=4, day=4)}
+fun_8_obj2 = Fun8DC(x=4)
+fun_8_obj3 = OrderedDict([("a", 3)])
+
+
+def fun_8_f():
+    _ = fun_8_obj1["a"]
+    _ = fun_8_obj2
+    _ = fun_8_obj3
+    return None
+
+
+def fun_8_f1():
+    dds.keep(p, fun_1_f)
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_8():
+    """ Using various objects does not cause an error """
+    assert dds.eval(fun_1_f1) is None
