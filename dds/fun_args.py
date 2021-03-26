@@ -92,7 +92,7 @@ def dds_hash(x: Any) -> PyHash:
         # Not going to check for obscure corner cases for now.
         return dds_hash([name + "|" + dds_hash(v) for (name, v) in x.items()])
     if dataclasses.is_dataclass(x):
-        names = dataclasses.fields(x)
+        names: List[str] = [f.name for f in dataclasses.fields(x)]
         vals = [dds_hash(getattr(x, n)) for n in names]
         return dds_hash([name + "|" + h for (name, h) in zip(names, vals)])
     if isinstance(
