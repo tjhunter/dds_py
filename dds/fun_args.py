@@ -5,12 +5,14 @@ import hashlib
 import inspect
 import logging
 import struct
+import dataclasses
 from collections import OrderedDict
 from inspect import Parameter
 from pathlib import PurePosixPath
 from typing import Tuple, Callable, Any, Dict, List, Optional, NewType
+import datetime
 
-from .structures import CanonicalPath
+from .structures import CanonicalPath, DDSException
 from .structures import PyHash, FunctionArgContext, ArgName
 
 _logger = logging.getLogger(__name__)
@@ -21,7 +23,7 @@ HashKey = NewType("HashKey", str)
 def dds_hash_commut(i: List[Tuple[HashKey, PyHash]]) -> Optional[PyHash]:
     """
     Takes a dictionary-like structure of keys and values and returns a hash of it with the
-    following commutatitivity property: the hash is stable under permutation of elements
+    following commutativity property: the hash is stable under permutation of elements
     in the key.
 
     Returns None if the input is empty
@@ -51,7 +53,21 @@ def _algo_bytes(b: bytes) -> PyHash:
 
 
 def dds_hash(x: Any) -> PyHash:
+    """
+    Converts a python object to a hash.
 
+    This function does not make use of the general __hash__ function of python:
+    * it is meant to offer a more cryptographically stronger solution (full 2^256 space)
+    * it is more restricted to the sort of inputs that are expected to be quickly hashed
+
+    The expectation is that all the inputs tend to be primitive types or known structured types
+    (named tuples or dataclass types). All other inputs are meant to be ignored unless their
+    type has been flagged in an accepted module.
+
+    """
+    if x is None:
+        # TODO: this is not robust to adversarial changes.
+        return PyHash(hashlib.sha256("__DDS_NONE__".encode("utf-8")).hexdigest())
     if isinstance(x, str):
         return _algo_str(x)
     if isinstance(x, float):
@@ -66,7 +82,41 @@ def dds_hash(x: Any) -> PyHash:
         return dds_hash(list(x))
     if isinstance(x, PurePosixPath):
         return _algo_str(str(x))
-    raise NotImplementedError(str(type(x)))
+    if isinstance(x, OrderedDict):
+        # Directly using the ordering of the items in the dictionary.
+        return dds_hash([name + "|" + dds_hash(v) for (name, v) in x.items()])
+    if isinstance(x, dict):
+        # Starting from python 3.7 the order of the keys in a dictionary is the order of insertion
+        # This code should return reliable results for CPython 3.6 and python 3.7+ (i.e. the overwhelming
+        # majority of python interpreters out there).
+        # Not going to check for obscure corner cases for now.
+        return dds_hash([name + "|" + dds_hash(v) for (name, v) in x.items()])
+    if dataclasses.is_dataclass(x):
+        names = dataclasses.fields(x)
+        vals = [dds_hash(getattr(x, n)) for n in names]
+        return dds_hash([name + "|" + h for (name, h) in zip(names, vals)])
+    if isinstance(
+        x,
+        (
+            datetime.datetime,
+            datetime.date,
+            datetime.time,
+            datetime.timedelta,
+            datetime.timezone,
+            datetime.tzinfo,
+        ),
+    ):
+        # TODO: there may be some confusion because we use the same representation for the object
+        # and its string
+        return dds_hash(repr(x))
+    msg = (
+        f"The type {type(x)} is currently not supported. The only supported types are"
+        f"'well-known' types that are part of the standard data structures in the python library."
+        f"If you think your data type should be supported by DDS, please open a request ticket."
+        f"General Python classes will not be supported since they can carry arbitrary state and "
+        f"cannot be easily compared. Consider using a dataclass, a dictionary or a named tuple instead."
+    )
+    raise DDSException(msg)
 
 
 def get_arg_list(
