@@ -5,6 +5,14 @@
 Fixes the usage of positional and keyworded arguments when used in conjunction
 with `dds.keep`. 
 
+## v0.8.8
+
+A number of small improvements in ergonomics to this release:
+
+* the error messages are more complete and include more contextual information
+* more types are supported by default during the analysis phase: lists, dictionaries, 
+dates (`datetime` objects), arbitrary named tuples and arbitrary data classes.
+
 ## v0.7.2
 
 Small usability fixes in this release:
