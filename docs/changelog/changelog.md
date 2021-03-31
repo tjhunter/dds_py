@@ -5,7 +5,7 @@
 Fixes the usage of positional and keyworded arguments when used in conjunction
 with `dds.keep`. 
 
-## v0.8.8
+## v0.8.0 (unreleased)
 
 A number of small improvements in ergonomics to this release:
 
