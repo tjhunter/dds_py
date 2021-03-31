@@ -170,7 +170,12 @@ def get_arg_ctx(
                 h = None
             else:
                 raise NotImplementedError(
-                    f"Cannot deal with argument name {n} {p.kind} {f} {arg_sig}"
+                    f"Cannot deal with argument name {n} of function {f}:"
+                    f"The argument kind {p.kind} is not understood (see exact definition in"
+                    f"the module {Parameter}). Suggestion: your function is probably "
+                    f"using non-standard arguments. Use arguments of a simpler sort "
+                    f"(no kargs or kwargs). "
+                    f"The full signature was: {arg_sig}"
                 )
         args_hashes.append((ArgName(n), h))
     return FunctionArgContext(OrderedDict(args_hashes), None)

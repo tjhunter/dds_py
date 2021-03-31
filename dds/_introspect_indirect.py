@@ -178,7 +178,7 @@ class InspectFunctionIndirect(object):
             )
         dummy_arg_ctx = FunctionArgContext(OrderedDict(), None)
         local_vars = set(
-            InspectFunction.get_local_vars(body, dummy_arg_ctx) + arg_names
+            InspectFunction.get_local_vars(body, dummy_arg_ctx, fun_path) + arg_names
         )
         # _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
@@ -274,7 +274,9 @@ class InspectFunctionIndirect(object):
                 raise DDSException(
                     f"Wrong number of args: expected 2+, got {node.args}"
                 )
-            store_path = InspectFunction._retrieve_store_path(node.args[0], mod, gctx)
+            store_path = InspectFunction._retrieve_store_path(
+                node.args[0], mod, gctx, local_path
+            )
             called_path_ast = node.args[1]
             if isinstance(called_path_ast, ast.Name):
                 called_path_symbol = node.args[1].id  # type: ignore
@@ -321,7 +323,9 @@ class InspectFunctionIndirect(object):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
                 raise DDSException(f"Wrong number of args: expected 1, got {node.args}")
-            store_path = InspectFunction._retrieve_store_path(node.args[0], mod, gctx)
+            store_path = InspectFunction._retrieve_store_path(
+                node.args[0], mod, gctx, local_path
+            )
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
 

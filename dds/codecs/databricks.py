@@ -37,7 +37,7 @@ class DBFSURI:
             elif isinstance(seg, str):
                 s = seg
             else:
-                raise NotImplemented(f"{self}: {type(seg)}: {seg}")
+                raise NotImplemented(f"Cannot join path for {self}: {type(seg)}: {seg}")
             if s.startswith("."):
                 s = s[1:]
             if s.startswith("/"):
