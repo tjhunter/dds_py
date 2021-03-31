@@ -15,6 +15,7 @@ from .structures import (
     ProtocolRef,
     FileCodecProtocol,
     CodecProtocol,
+    DDSErrorCode,
 )
 from .structures_utils import SupportedTypeUtils as STU
 
@@ -75,13 +76,19 @@ class LocalFileStore(Store):
                 _logger.debug(f"Creating dir {internal_dir}")
                 os.makedirs(internal_dir)
             else:
-                raise DDSException(f"Path {internal_dir} is not a directory")
+                raise DDSException(
+                    f"Path {internal_dir} is not a directory",
+                    DDSErrorCode.STORE_PATH_NOT_FOUND,
+                )
         if not os.path.isdir(data_dir):
             if create_dirs:
                 _logger.debug(f"Creating dir {data_dir}")
                 os.makedirs(data_dir)
             else:
-                raise DDSException(f"Path {data_dir} is not a directory")
+                raise DDSException(
+                    f"Path {data_dir} is not a directory",
+                    DDSErrorCode.STORE_PATH_NOT_FOUND,
+                )
         p_blobs = os.path.join(self._root, "blobs")
         if not os.path.exists(p_blobs):
             os.makedirs(p_blobs)
@@ -116,7 +123,7 @@ class LocalFileStore(Store):
             # This is the local file system, we can directly copy the file to its final destination
             protocol.serialize_into(blob, PurePath(p))
         else:
-            raise DDSException(f"{type(protocol)} {protocol}")
+            raise DDSException(f"Wrong protocol type: {type(protocol)} {protocol}")
         meta_p = os.path.join(self._root, "blobs", key + ".meta")
         with open(meta_p, "wb") as f:
             f.write(

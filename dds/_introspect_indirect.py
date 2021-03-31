@@ -37,6 +37,7 @@ from .structures import (
     CanonicalPath,
     LocalDepPath,
     FunctionIndirectInteractions,
+    DDSErrorCode,
 )
 from .structures_utils import CanonicalPathUtils as CPU
 
@@ -74,7 +75,13 @@ def _introspect_class(
 
     fun_module = inspect.getmodule(c)
     if fun_module is None:
-        raise DDSException(f"Could not find module: class:{c} module: {fun_module}")
+        msg = (
+            f"Could not find the module for class {c}. "
+            f"This usually happens when the class is defined at run time, or when the class"
+            f"is moved between modules. Suggestion: rewrite your code to use functions instead,"
+            f"or do not accept the module for this class (see dds.accept_module)."
+        )
+        raise DDSException(msg, DDSErrorCode.MODULE_NOT_FOUND)
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     fiis_ = gctx.cached_indirect_interactions.get(fun_path)
     if fiis_ is not None:
@@ -103,7 +110,13 @@ def _introspect_fun(
 
     fun_module = inspect.getmodule(f)
     if fun_module is None:
-        raise DDSException(f"Could not find module: f; {f} module: {fun_module}")
+        msg = (
+            f"Could not find the module for function {f} located at {fun_path}. "
+            f"This usually happens when the function is defined at run time, or when the function"
+            f"is moved between modules. Suggestion: rewrite your code to use functions instead, "
+            f"or do not accept the module for this class (see dds.accept_module)."
+        )
+        raise DDSException(msg, DDSErrorCode.MODULE_NOT_FOUND)
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
@@ -160,10 +173,12 @@ class InspectFunctionIndirect(object):
         elif isinstance(node, ast.Lambda):
             body = [node.body]
         else:
-            raise DDSException(f"unknown ast node {type(node)}")
+            raise DDSException(
+                f"unknown ast node {type(node)}", DDSErrorCode.UNKNOWN_AST_NODE
+            )
         dummy_arg_ctx = FunctionArgContext(OrderedDict(), None)
         local_vars = set(
-            InspectFunction.get_local_vars(body, dummy_arg_ctx) + arg_names
+            InspectFunction.get_local_vars(body, dummy_arg_ctx, fun_path) + arg_names
         )
         # _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
@@ -243,8 +258,9 @@ class InspectFunctionIndirect(object):
         assert isinstance(z, AuthorizedObject)
         caller_fun, caller_fun_path = z.object_val, z.resolved_path
         if not isinstance(caller_fun, FunctionType) and not inspect.isclass(caller_fun):
-            raise NotImplementedError(
-                f"Expected FunctionType for {caller_fun_path}, got {type(caller_fun)}"
+            raise DDSException(
+                f"Expected FunctionType or class for {caller_fun_path}, got {type(caller_fun)}",
+                DDSErrorCode.UNSUPPORTED_CALLABLE_TYPE,
             )
 
         # Check if this is a call we should do something about.
@@ -258,13 +274,20 @@ class InspectFunctionIndirect(object):
                 raise DDSException(
                     f"Wrong number of args: expected 2+, got {node.args}"
                 )
-            store_path = InspectFunction._retrieve_store_path(node.args[0], mod, gctx)
+            store_path = InspectFunction._retrieve_store_path(
+                node.args[0], mod, gctx, local_path
+            )
             called_path_ast = node.args[1]
             if isinstance(called_path_ast, ast.Name):
                 called_path_symbol = node.args[1].id  # type: ignore
             else:
-                raise NotImplementedError(
-                    f"Cannot use nested callables of type {called_path_ast}"
+                raise DDSException(
+                    f"Introspection of {local_path} failed: cannot use nested callables of"
+                    f" type {called_path_ast}. Only "
+                    f"regular function names are allowed for now. Suggestion: if you are "
+                    f"using a complex callable such as a method, wrap it inside a top-level "
+                    f"function.",
+                    DDSErrorCode.UNSUPPORTED_CALLABLE_TYPE,
                 )
             called_local_path = LocalDepPath(PurePosixPath(called_path_symbol))
             called_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
@@ -272,8 +295,13 @@ class InspectFunctionIndirect(object):
             )
             if not called_z or isinstance(called_z, ExternalObject):
                 # Not sure what to do yet in this case.
-                raise NotImplementedError(
-                    f"Invalid called_z: {called_local_path} {mod}"
+                raise DDSException(
+                    f"Introspection of {local_path} failed: cannot access called function"
+                    f" {called_local_path}. The function {called_local_path} was expected "
+                    f"to be found in module {mod}, but could not be retrieved. The usual reason is"
+                    f"that that this object is not a regular top-level function. "
+                    f"Suggestion: ensure that this function is a top-level function.",
+                    DDSErrorCode.UNSUPPORTED_CALLABLE_TYPE,
                 )
             assert isinstance(called_z, AuthorizedObject)
             called_fun, call_fun_path = called_z.object_val, called_z.resolved_path
@@ -283,7 +311,8 @@ class InspectFunctionIndirect(object):
                     f"This is currently not supported. Change your code to split the "
                     f"recursive section into a separate function. "
                     f"Function: {call_fun_path}"
-                    f"Call stack: {' '.join([str(p) for p in call_stack])}"
+                    f"Call stack: {' '.join([str(p) for p in call_stack])}",
+                    DDSErrorCode.CIRCULAR_CALL,
                 )
             new_call_stack = call_stack + [call_fun_path]
             # For now, accept the constant arguments. This is enough for some basic objects.
@@ -294,12 +323,19 @@ class InspectFunctionIndirect(object):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
                 raise DDSException(f"Wrong number of args: expected 1, got {node.args}")
-            store_path = InspectFunction._retrieve_store_path(node.args[0], mod, gctx)
+            store_path = InspectFunction._retrieve_store_path(
+                node.args[0], mod, gctx, local_path
+            )
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
 
         if caller_fun_path == CPU.from_list(["dds", "eval"]):
-            raise NotImplementedError("eval")
+            raise DDSException(
+                f"Cannot process {local_path}: this function is calling dds.eval, which"
+                f" is not allowed inside other eval calls. Suggestion: remove the "
+                f"call to dds.eval inside {local_path}",
+                DDSErrorCode.EVAL_IN_EVAL,
+            )
 
         if caller_fun_path in call_stack:
             raise DDSException(
@@ -307,7 +343,8 @@ class InspectFunctionIndirect(object):
                 f"This is currently not supported. Change your code to split the "
                 f"recursive section into a separate function. "
                 f"Function: {caller_fun_path}"
-                f"Call stack: {' '.join([str(p) for p in call_stack])}"
+                f"Call stack: {' '.join([str(p) for p in call_stack])}",
+                DDSErrorCode.CIRCULAR_CALL,
             )
         # Normal function call.
         new_call_stack = call_stack + [caller_fun_path]

@@ -21,11 +21,7 @@ from ._eval_ctx import (
     ExternalObject,
     AuthorizedObject,
 )
-from .structures import (
-    DDSException,
-    CanonicalPath,
-    LocalDepPath,
-)
+from .structures import DDSException, CanonicalPath, LocalDepPath, DDSErrorCode
 from .structures_utils import LocalDepPathUtils, CanonicalPathUtils
 
 _logger = logging.getLogger(__name__)
@@ -38,7 +34,14 @@ def _mod_path(m: ModuleType) -> CanonicalPath:
 def function_path(f: Union[type, FunctionType]) -> CanonicalPath:
     mod = inspect.getmodule(f)
     if mod is None:
-        raise DDSException(f"Function {f} has no module")
+        raise DDSException(
+            f"Function {f} has no module. DDS is expecting that the function"
+            f" {f} be associated with a module. However, the interpreter could "
+            f"not find a module associated to this function. This can happen "
+            f"when the function is defined at runtime. Suggestion: define "
+            f"this function in a Python module.",
+            DDSErrorCode.FUNCTION_NO_MODULE,
+        )
     return CanonicalPath(_mod_path(mod)._path.joinpath(f.__name__))
 
 
@@ -59,14 +62,17 @@ def _is_authorized_type(tpe: Type[Any], gctx: EvalMainContext) -> bool:
             return False
         mod_path = _mod_path(mod)
         if gctx.is_authorized_path(mod_path):
-            msg = f"Type {tpe} ({mod_path}) is authorized: not implemented"
+            msg = (
+                f"Type {tpe} ({mod_path}) is authorized. This is currently not implemented."
+                f" Suggestion: use a built-in type instead."
+            )
             _logger.warning(msg)
-            raise NotImplementedError(msg)
+            raise DDSException(msg, DDSErrorCode.AUTHORIZED_TYPE_NOT_UNDERSTOOD)
         return False
     else:
         msg = f"Type {tpe} is not implemented"
         _logger.warning(msg)
-        raise NotImplementedError(msg)
+        raise DDSException(msg, DDSErrorCode.AUTHORIZED_TYPE_NOT_UNDERSTOOD)
 
 
 class ObjectRetrieval(object):
@@ -210,7 +216,12 @@ class ObjectRetrieval(object):
         mod = importlib.import_module(mod_name)
         if mod is None:
             raise DDSException(
-                f"Cannot process path {path}: module {mod_name} cannot be loaded"
+                f"Cannot process path {path}: module {mod_name} cannot be loaded. "
+                f"DDS is attempting to load an object in the path {path} and is expecting"
+                f"to find it in the module {mod_name}. However, "
+                f"Python is indicating that {mod_name} is not a module that can be loaded. "
+                f"Suggestions: ensure that {mod_name} is a Python module.",
+                DDSErrorCode.MODULE_NOT_FOUND,
             )
         sub_path = CanonicalPathUtils.tail(path)
         dep_path = LocalDepPath(sub_path._path)
@@ -223,7 +234,8 @@ class ObjectRetrieval(object):
                 f"that the module {mod_name} has not been whitelisted for use by DDS. Use the "
                 f"function 'dds.accept_module' to whitelist {mod_name} or one of its "
                 f"submodules."
-                f" dep_path: {dep_path} module: {mod}"
+                f" dep_path: {dep_path} module: {mod}",
+                DDSErrorCode.MODULE_NOT_FOUND,
             )
         elif isinstance(z, AuthorizedObject):
             obj = z.object_val
@@ -263,10 +275,14 @@ class ObjectRetrieval(object):
         fname = local_path.parts[0]
         tail_path = LocalDepPathUtils.tail(local_path)
         if fname not in context_mod.__dict__:
+            mod_keys = sorted(context_mod.__dict__.keys())
             # It should be in the context module, this was assumed to be taken care of
-            raise NotImplementedError(
+            raise DDSException(
                 f"_retrieve_object_rec: Object {fname} not found in module {context_mod}."
-                f"  {local_path} {context_mod.__dict__}"
+                f"DDS attempted to load object with path {local_path} inside the module "
+                f"{context_mod}. However, no object called {fname} is present in that module. "
+                f"The other keys of that module are: {mod_keys}.",
+                DDSErrorCode.OBJECT_PATH_NOT_FOUND,
             )
         obj = context_mod.__dict__[fname]
         if debug:

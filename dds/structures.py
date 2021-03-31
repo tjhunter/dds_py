@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, IntEnum
 from pathlib import PurePath
 from pathlib import PurePosixPath
 from typing import Any, NewType, NamedTuple, Optional, Dict, List, Tuple
@@ -40,12 +40,31 @@ DDSPath = NewType("DDSPath", str)
 PyHash = NewType("PyHash", str)
 
 
+class DDSErrorCode(IntEnum):
+    EVAL_IN_EVAL = 1
+    CIRCULAR_CALL = 2
+    UNKNOWN_AST_NODE = 3
+    MODULE_NOT_FOUND = 4
+    FUNCTION_NO_MODULE = 5
+    PROTOCOL_NOT_FOUND = 6
+    TYPE_NOT_SUPPORTED = 7
+    STORE_PATH_NOT_FOUND = 8
+    PATH_NOT_ABSOLUTE = 9
+    UNSUPPORTED_CALLABLE_TYPE = 10
+    AUTHORIZED_TYPE_NOT_UNDERSTOOD = 11
+    OBJECT_PATH_NOT_FOUND = 12
+    CONSTRUCT_NOT_SUPPORTED = 13
+    STORE_PATH_NOT_SUPPORTED = 14
+
+
 class DDSException(BaseException):
     """
     The base exception for all the exceptions generated in DDS.
     """
 
-    pass
+    def __init__(self, message: str, error_code: Optional[DDSErrorCode] = None):
+        super(DDSException, self).__init__(message)
+        self.error_code: Optional[DDSErrorCode] = error_code
 
 
 class EvalContext(NamedTuple):

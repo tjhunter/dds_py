@@ -18,6 +18,7 @@ from .structures import (
     FunctionIndirectInteractions,
     SupportedType,
     CanonicalPath,
+    DDSErrorCode,
 )
 
 _logger = logging.getLogger(__name__)
@@ -29,14 +30,16 @@ class DDSPathUtils(object):
         if isinstance(p, str):
             if not p or p[0] != "/":
                 raise DDSException(
-                    f"Provided path {p} is not absolute. All paths must be absolute"
+                    f"Provided path {p} is not absolute. All paths must be absolute",
+                    DDSErrorCode.PATH_NOT_ABSOLUTE,
                 )
             # TODO: more checks
             return DDSPath(p)
         if isinstance(p, pathlib.Path):
             if not p.is_absolute():
                 raise DDSException(
-                    f"Provided path {p} is not absolute. All paths must be absolute"
+                    f"Provided path {p} is not absolute. All paths must be absolute",
+                    DDSErrorCode.PATH_NOT_ABSOLUTE,
                 )
             return DDSPath(p.absolute().as_posix())
         raise NotImplementedError(f"Cannot make a path from object type {type(p)}: {p}")
@@ -213,4 +216,4 @@ class CanonicalPathUtils(object):
                 s = s[1:]
             return CanonicalPath(p._path.joinpath(s))
         else:
-            raise DDSException(f"{type(o)} {o}")
+            raise DDSException(f"Only str or PurePosixPath expected, got {type(o)} {o}")

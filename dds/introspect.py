@@ -40,6 +40,7 @@ from .structures import (
     CanonicalPath,
     ExternalDep,
     LocalDepPath,
+    DDSErrorCode,
 )
 from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
@@ -100,7 +101,10 @@ def _introspect_class(
 
     fun_module = inspect.getmodule(c)
     if fun_module is None:
-        raise DDSException(f"Could not find module: class:{c} module: {fun_module}")
+        raise DDSException(
+            f"Could not find module: class:{c} module: {fun_module}",
+            DDSErrorCode.MODULE_NOT_FOUND,
+        )
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     fis_key = (fun_path, arg_ctx_hash)
     fis_ = gctx.cached_fun_interactions.get(fis_key)
@@ -186,7 +190,10 @@ def _introspect_fun(
 
     fun_module = inspect.getmodule(f)
     if fun_module is None:
-        raise DDSException(f"Could not find module: f; {f} module: {fun_module}")
+        raise DDSException(
+            f"Could not find module: f; {f} module: {fun_module}",
+            DDSErrorCode.MODULE_NOT_FOUND,
+        )
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
@@ -386,13 +393,16 @@ class LocalVarsVisitor(ast.NodeVisitor):
     A brute-force attempt to find all the variables defined in the scope of a module.
     """
 
-    def __init__(self, existing_vars: List[str]):
+    def __init__(self, existing_vars: List[str], fun_path: CanonicalPath):
         self.vars: Set[str] = set(existing_vars)
+        self._fun_path = fun_path
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> Any:
-        # TODO: make the error message more explicit
-        # TODO: this is used in tests. It would be better to have something more robust.
-        raise NotImplementedError(f"You cannot use async function with dds")
+        raise DDSException(
+            f"Function {self._fun_path} rejected by DDS because it includes a call to an "
+            f"async function. You cannot use async function with DDS",
+            DDSErrorCode.CONSTRUCT_NOT_SUPPORTED,
+        )
 
     def visit_Name(self, node: ast.Name) -> Any:
         # _logger.debug(f"visit_vars: {node.id} {node.ctx}")
@@ -443,9 +453,12 @@ def _function_name(node: ast.AST) -> List[str]:
 class InspectFunction(object):
     @classmethod
     def get_local_vars(
-        cls, body: Sequence[ast.AST], arg_ctx: FunctionArgContext
+        cls,
+        body: Sequence[ast.AST],
+        arg_ctx: FunctionArgContext,
+        fun_path: CanonicalPath,
     ) -> List[LocalVar]:
-        lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()))
+        lvars_v = LocalVarsVisitor(list(arg_ctx.named_args.keys()), fun_path)
         for node in body:
             lvars_v.visit(node)
         lvars = sorted(list(lvars_v.vars))
@@ -520,7 +533,7 @@ class InspectFunction(object):
             body = [node.body]
         else:
             raise DDSException(f"unknown ast node {type(node)}")
-        local_vars = set(cls.get_local_vars(body, arg_ctx))
+        local_vars = set(cls.get_local_vars(body, arg_ctx, fun_path))
         # _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
         for n in body:
@@ -632,7 +645,9 @@ class InspectFunction(object):
                         raise DDSException(
                             f"Wrong number of arguments for decorator: {pformat(dec)}"
                         )
-                    store_path = cls._retrieve_store_path(dec.args[0], mod, gctx)
+                    store_path = cls._retrieve_store_path(
+                        dec.args[0], mod, gctx, local_path
+                    )
                     return store_path
         return None
 
@@ -671,8 +686,9 @@ class InspectFunction(object):
         assert isinstance(z, AuthorizedObject)
         caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
         if not isinstance(caller_fun, FunctionType) and not inspect.isclass(caller_fun):
-            raise NotImplementedError(
-                f"Expected FunctionType for {caller_fun_path}, got {type(caller_fun)}"
+            raise DDSException(
+                f"Expected FunctionType or class for {caller_fun_path}, got {type(caller_fun)}",
+                DDSErrorCode.UNSUPPORTED_CALLABLE_TYPE,
             )
 
         # Check if this is a call we should do something about.
@@ -684,19 +700,25 @@ class InspectFunction(object):
                 f"This is currently not supported. Change your code to split the "
                 f"recursive section into a separate function. "
                 f"Function: {caller_fun_path}"
-                f"Call stack: {' '.join([str(p) for p in call_stack])}"
+                f"Call stack: {' '.join([str(p) for p in call_stack])}",
+                DDSErrorCode.CIRCULAR_CALL,
             )
 
         elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
             # Evaluation call: get the argument and returns the function interaction for this call.
             if len(node.args) != 1:
                 raise DDSException(f"Wrong number of args: expected 1, got {node.args}")
-            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
+            store_path = cls._retrieve_store_path(node.args[0], mod, gctx, local_path)
             _logger.debug(f"inspect_call:eval: store_path: {store_path}")
             return store_path
 
         elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "eval"]):
-            raise NotImplementedError("eval")
+            raise DDSException(
+                f"Cannot process {local_path}: this function is calling dds.eval, which"
+                f" is not allowed inside other eval calls. Suggestion: remove the "
+                f"call to dds.eval inside {local_path}",
+                DDSErrorCode.EVAL_IN_EVAL,
+            )
 
         # 2 cases left: normal call or kept call (normal call wrapped in ddd.keep())
 
@@ -723,13 +745,18 @@ class InspectFunction(object):
                 raise DDSException(
                     f"Wrong number of args: expected 2+, got {node.args}"
                 )
-            store_path = cls._retrieve_store_path(node.args[0], mod, gctx)
+            store_path = cls._retrieve_store_path(node.args[0], mod, gctx, local_path)
             called_path_ast = node.args[1]
             if isinstance(called_path_ast, ast.Name):
                 called_path_symbol = node.args[1].id  # type: ignore
             else:
-                raise NotImplementedError(
-                    f"Cannot use nested callables of type {called_path_ast}"
+                raise DDSException(
+                    f"Introspection of {local_path} failed: cannot use nested callables of"
+                    f" type {called_path_ast}. Only "
+                    f"regular function names are allowed for now. Suggestion: if you are "
+                    f"using a complex callable such as a method, wrap it inside a top-level "
+                    f"function.",
+                    DDSErrorCode.UNSUPPORTED_CALLABLE_TYPE,
                 )
             called_local_path = LocalDepPath(PurePosixPath(called_path_symbol))
             called_z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(
@@ -739,8 +766,13 @@ class InspectFunction(object):
                 _logger.debug(f"called_z: {called_z}")
             if not called_z or isinstance(called_z, ExternalObject):
                 # Not sure what to do yet in this case.
-                raise NotImplementedError(
-                    f"Invalid called_z: {called_local_path} {mod}"
+                raise DDSException(
+                    f"Introspection of {local_path} failed: cannot access called function"
+                    f" {called_local_path}. The function {called_local_path} was expected "
+                    f"to be found in module {mod}, but could not be retrieved. The usual reason is"
+                    f"that that this object is not a regular top-level function. "
+                    f"Suggestion: ensure that this function is a top-level function.",
+                    DDSErrorCode.UNSUPPORTED_CALLABLE_TYPE,
                 )
             assert isinstance(called_z, AuthorizedObject)
             called_fun, call_fun_path = called_z.object_val, called_z.resolved_path
@@ -750,7 +782,8 @@ class InspectFunction(object):
                     f"This is currently not supported. Change your code to split the "
                     f"recursive section into a separate function. "
                     f"Function: {call_fun_path}"
-                    f"Call stack: {' '.join([str(p) for p in call_stack])}"
+                    f"Call stack: {' '.join([str(p) for p in call_stack])}",
+                    DDSErrorCode.CIRCULAR_CALL,
                 )
             new_call_stack = call_stack + [call_fun_path]
             # TODO: this is an approximation as all the arguments may be keyworded.
@@ -779,7 +812,11 @@ class InspectFunction(object):
 
     @classmethod
     def _retrieve_store_path(
-        cls, local_path_node: ast.AST, mod: ModuleType, gctx: EvalMainContext
+        cls,
+        local_path_node: ast.AST,
+        mod: ModuleType,
+        gctx: EvalMainContext,
+        local_path: LocalDepPath,
     ) -> DDSPath:
         called_path_symbol: str
         if isinstance(local_path_node, ast.Constant):
@@ -791,8 +828,13 @@ class InspectFunction(object):
         elif isinstance(local_path_node, ast.Name):
             store_path_symbol = local_path_node.id
         else:
-            raise NotImplementedError(
-                f"{type(local_path_node)} {pformat(local_path_node)}"
+            raise DDSException(
+                f"Invalid path type: {type(local_path_node)} encountered in {local_path} (module {mod}). "
+                f"Suggestion: the path to a node can only be a string, a Path object or a "
+                f"variable name that points to a string or Path object. "
+                f"See the documentation for more details."
+                f"Full parse tree: {pformat(local_path_node)}",
+                DDSErrorCode.STORE_PATH_NOT_SUPPORTED,
             )
         # _logger.debug(
         #     f"Keep: store_path_symbol: %s %s",
@@ -806,7 +848,14 @@ class InspectFunction(object):
         )
         if not store_z or isinstance(store_z, ExternalObject):
             # Not sure what to do yet in this case.
-            raise NotImplementedError(f"Invalid store_z: {store_path_local_path} {mod}")
+            raise DDSException(
+                f"Invalid path {store_path_local_path} encountered in {local_path} (module {mod}). "
+                f"Suggestion: the path to a node can only be a string, a Path object or a "
+                f"variable name that points to a string or Path object. "
+                f"See the documentation for more details."
+                f"Full parse tree: {pformat(local_path_node)}",
+                DDSErrorCode.STORE_PATH_NOT_SUPPORTED,
+            )
         store_path = store_z.object_val
         return DDSPathUtils.create(store_path)
 
