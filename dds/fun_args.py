@@ -12,7 +12,7 @@ from pathlib import PurePosixPath
 from typing import Tuple, Callable, Any, Dict, List, Optional, NewType
 import datetime
 
-from .structures import CanonicalPath, DDSException
+from .structures import CanonicalPath, DDSException, DDSErrorCode
 from .structures import PyHash, FunctionArgContext, ArgName
 
 _logger = logging.getLogger(__name__)
@@ -116,7 +116,8 @@ def dds_hash(x: Any) -> PyHash:
         f"General Python classes will not be supported since they can carry arbitrary state and "
         f"cannot be easily compared. Consider using a dataclass, a dictionary or a named tuple instead."
     )
-    raise DDSException(msg)
+    raise DDSException(msg,         DDSErrorCode.TYPE_NOT_SUPPORTED
+)
 
 
 def get_arg_list(
@@ -140,7 +141,11 @@ def get_arg_ctx(
         # _logger.debug(f"get_arg_ctx: {f}: idx={idx} n={n} p={p}")
         if p.kind not in (Parameter.POSITIONAL_OR_KEYWORD, Parameter.VAR_KEYWORD):
             raise NotImplementedError(
-                f"Argument type not understood: {p.kind} {f} {arg_sig}"
+                f"Argument type not understood for function {f}: {p.kind} (see "
+                f"exact definition in the module {Parameter}). Suggestion: "
+                f"your function is probably using complex argument types. Use "
+                f"simpler sorts of arguments (no kargs or kwargs)."
+                f" The full signature was: {arg_sig}"
             )
         h: Optional[PyHash]
         if idx < num_args:
@@ -205,7 +210,11 @@ def get_arg_ctx_ast(
             Parameter.VAR_POSITIONAL,
         ):
             raise NotImplementedError(
-                f"Argument type not understood {p.kind} {f} {arg_sig}"
+                f"Argument type not understood for function {f}: {p.kind} (see "
+                f"exact definition in the module {Parameter}). Suggestion: "
+                f"your function is probably using complex argument types. Use "
+                f"simpler sorts of arguments (no kargs or kwargs)."
+                f" The full signature was: {arg_sig}"
             )
         if idx < num_args:
             # It is a list argument

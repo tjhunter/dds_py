@@ -23,6 +23,7 @@ from .structures import (
     EvalContext,
     PyHash,
     ProcessingStage,
+DDSErrorCode
 )
 from .structures_utils import (
     DDSPathUtils,
@@ -195,7 +196,8 @@ def _eval(
     else:
         if not path:
             raise DDSException(
-                "Already in dds.eval() context. Nested eval contexts are not supported"
+                "Already in dds.eval() context. Nested eval contexts are not supported",
+                DDSErrorCode.EVAL_IN_EVAL
             )
         key = None if path is None else _eval_ctx.requested_paths[path]
         t = _time()
