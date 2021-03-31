@@ -39,7 +39,8 @@ from .structures import (
     DDSException,
     CanonicalPath,
     ExternalDep,
-    LocalDepPath, DDSErrorCode
+    LocalDepPath,
+    DDSErrorCode,
 )
 from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
@@ -100,7 +101,10 @@ def _introspect_class(
 
     fun_module = inspect.getmodule(c)
     if fun_module is None:
-        raise DDSException(f"Could not find module: class:{c} module: {fun_module}", DDSErrorCode.MODULE_NOT_FOUND)
+        raise DDSException(
+            f"Could not find module: class:{c} module: {fun_module}",
+            DDSErrorCode.MODULE_NOT_FOUND,
+        )
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     fis_key = (fun_path, arg_ctx_hash)
     fis_ = gctx.cached_fun_interactions.get(fis_key)
@@ -186,7 +190,10 @@ def _introspect_fun(
 
     fun_module = inspect.getmodule(f)
     if fun_module is None:
-        raise DDSException(f"Could not find module: f; {f} module: {fun_module}", DDSErrorCode.MODULE_NOT_FOUND)
+        raise DDSException(
+            f"Could not find module: f; {f} module: {fun_module}",
+            DDSErrorCode.MODULE_NOT_FOUND,
+        )
     # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
     ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
@@ -685,7 +692,7 @@ class InspectFunction(object):
                 f"recursive section into a separate function. "
                 f"Function: {caller_fun_path}"
                 f"Call stack: {' '.join([str(p) for p in call_stack])}",
-                DDSErrorCode.CIRCULAR_CALL
+                DDSErrorCode.CIRCULAR_CALL,
             )
 
         elif caller_fun_path == CanonicalPathUtils.from_list(["dds", "load"]):
@@ -752,7 +759,7 @@ class InspectFunction(object):
                     f"recursive section into a separate function. "
                     f"Function: {call_fun_path}"
                     f"Call stack: {' '.join([str(p) for p in call_stack])}",
-                    DDSErrorCode.CIRCULAR_CALL
+                    DDSErrorCode.CIRCULAR_CALL,
                 )
             new_call_stack = call_stack + [call_fun_path]
             # TODO: this is an approximation as all the arguments may be keyworded.

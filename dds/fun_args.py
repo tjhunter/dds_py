@@ -116,8 +116,7 @@ def dds_hash(x: Any) -> PyHash:
         f"General Python classes will not be supported since they can carry arbitrary state and "
         f"cannot be easily compared. Consider using a dataclass, a dictionary or a named tuple instead."
     )
-    raise DDSException(msg,         DDSErrorCode.TYPE_NOT_SUPPORTED
-)
+    raise DDSException(msg, DDSErrorCode.TYPE_NOT_SUPPORTED)
 
 
 def get_arg_list(

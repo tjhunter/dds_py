@@ -59,6 +59,7 @@ class DDSException(BaseException):
     """
     The base exception for all the exceptions generated in DDS.
     """
+
     def __init__(self, message: str, error_code: Optional[DDSErrorCode] = None):
         super(DDSException, self).__init__(message)
         self.error_code: Optional[DDSErrorCode] = error_code

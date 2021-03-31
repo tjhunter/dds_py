@@ -6,7 +6,8 @@ from .structures import (
     CodecProtocol,
     ProtocolRef,
     SupportedType,
-    FileCodecProtocol, DDSErrorCode
+    FileCodecProtocol,
+    DDSErrorCode,
 )
 from .structures_utils import SupportedTypeUtils
 
@@ -58,8 +59,10 @@ class CodecRegistry(object):
         # First the reference
         if ref:
             if ref not in self._protocols:
-                raise DDSException(f"Requested protocol {ref}, which is not registered",
-                                   DDSErrorCode.PROTOCOL_NOT_FOUND)
+                raise DDSException(
+                    f"Requested protocol {ref}, which is not registered",
+                    DDSErrorCode.PROTOCOL_NOT_FOUND,
+                )
             return self._protocols[ref]
         # Then the object type
         if obj_type is not None:
