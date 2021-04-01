@@ -142,6 +142,9 @@ with <code>dds.keep</code>. </p>
 <li>the error messages are more complete and include more contextual information</li>
 <li>more types are supported by default during the analysis phase: lists, dictionaries, 
 dates (<code>datetime</code> objects), arbitrary named tuples and arbitrary data classes.</li>
+<li>the input for <code>@data_function</code> has been tightened to reflect the fact that data functions
+should not take arguments (<code>dds.keep</code> should be used instead). Passing arguments
+now triggers an error.</li>
 </ul>
 <h2 id="v072">v0.7.2</h2>
 <p>Small usability fixes in this release:</p>

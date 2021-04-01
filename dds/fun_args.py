@@ -168,10 +168,19 @@ def get_arg_ctx(
             elif p.kind == Parameter.VAR_KEYWORD:
                 # kwargs: for now, just ignored
                 h = None
+            elif p.kind == Parameter.POSITIONAL_OR_KEYWORD:
+                # We are expecting a positional arguments, but no positional arguments
+                # was provided. This is a programming error on the user side.
+                raise DDSException(
+                    f"Missing argument {n} for function {f}. "
+                    f"DDS detected that the function {f} is missing the argument "
+                    f"{n} of type {p.kind}. This would trigger an error during the "
+                    f"execution of the code, aborting."
+                )
             else:
                 raise NotImplementedError(
                     f"Cannot deal with argument name {n} of function {f}:"
-                    f"The argument kind {p.kind} is not understood (see exact definition in"
+                    f"The argument kind {p.kind} is not understood (see exact definition in "
                     f"the module {Parameter}). Suggestion: your function is probably "
                     f"using non-standard arguments. Use arguments of a simpler sort "
                     f"(no kargs or kwargs). "

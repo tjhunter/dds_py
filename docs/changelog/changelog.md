@@ -12,6 +12,9 @@ A number of small improvements in ergonomics to this release:
 * the error messages are more complete and include more contextual information
 * more types are supported by default during the analysis phase: lists, dictionaries, 
 dates (`datetime` objects), arbitrary named tuples and arbitrary data classes.
+* the input for `@data_function` has been tightened to reflect the fact that data functions
+should not take arguments (`dds.keep` should be used instead). Passing arguments
+now triggers an error.
 
 ## v0.7.2
 

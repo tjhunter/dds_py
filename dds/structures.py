@@ -55,6 +55,7 @@ class DDSErrorCode(IntEnum):
     OBJECT_PATH_NOT_FOUND = 12
     CONSTRUCT_NOT_SUPPORTED = 13
     STORE_PATH_NOT_SUPPORTED = 14
+    ARG_IN_DATA_FUNCTION = 15
 
 
 class DDSException(BaseException):

@@ -4,7 +4,7 @@ import warnings
 from typing import Any, Callable, TypeVar, cast, Union
 
 from ._api import keep as _keep
-from .structures import DDSPath
+from .structures import DDSPath, DDSErrorCode, DDSException
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -55,6 +55,16 @@ def data_function(path: Union[str, DDSPath, pathlib.Path]) -> Callable[[F], F]:
     def decorator_(func: F) -> F:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            if len(args) > 0 or len(kwargs) > 0:
+                raise DDSException(
+                    f"@data_function cannot be used with arguments. "
+                    f"Arguments were passed to the function {func}, but this function "
+                    f"also has a dds.data_function annotation, which is not allowed (see "
+                    f"user guide of DDS). "
+                    f"Suggestion: write a wrapper function that does not take arguments itself, "
+                    f"or use dds.keep to pass arguments",
+                    DDSErrorCode.ARG_IN_DATA_FUNCTION,
+                )
             return _keep(path, func, *args, **kwargs)
 
         return cast(F, wrapper)
