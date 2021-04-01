@@ -198,6 +198,16 @@ def function():
     <span class="k">def</span> <span class="nf">decorator_</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DDSException</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"@data_function cannot be used with arguments. "</span>
+                    <span class="sa">f</span><span class="s2">"Arguments were passed to the function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2">, but this function "</span>
+                    <span class="sa">f</span><span class="s2">"also has a dds.data_function annotation, which is not allowed (see "</span>
+                    <span class="sa">f</span><span class="s2">"user guide of DDS). "</span>
+                    <span class="sa">f</span><span class="s2">"Suggestion: write a wrapper function that does not take arguments itself, "</span>
+                    <span class="sa">f</span><span class="s2">"or use dds.keep to pass arguments"</span><span class="p">,</span>
+                    <span class="n">DDSErrorCode</span><span class="o">.</span><span class="n">ARG_IN_DATA_FUNCTION</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
