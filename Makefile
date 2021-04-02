@@ -24,4 +24,7 @@ release:
 
 
 doc:
-	PYTHONPATH=$(PWD) JUPYTER_CONFIG_DIR=$(PWD)/doc_source/jupyter mkdocs build
+	PYTHONPATH=$(PWD):$(PWD)/doc_source JUPYTER_CONFIG_DIR=$(PWD)/doc_source/jupyter mkdocs build
+
+doc-serve:
+	PYTHONPATH=$(PWD):$(PWD)/doc_source JUPYTER_CONFIG_DIR=$(PWD)/doc_source/jupyter mkdocs serve --no-livereload

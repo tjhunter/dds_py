@@ -13,9 +13,10 @@ from ._api import (
 from ._version import version
 from .introspect import accept_module as _accept_module
 from .store import Store
-from .structures import DDSPath, ProcessingStage
+from .structures import DDSPath, ProcessingStage, DDSException
 
 __all__ = [
+    "DDSException",
     "DDSPath",
     "keep",
     "eval",

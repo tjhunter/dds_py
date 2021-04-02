@@ -1,11 +1,6 @@
 # Changelog
 
-## v0.7.3
-
-Fixes the usage of positional and keyworded arguments when used in conjunction
-with `dds.keep`. 
-
-## v0.8.0 (unreleased)
+## v0.8.0
 
 A number of small improvements in ergonomics to this release:
 
@@ -15,6 +10,11 @@ dates (`datetime` objects), arbitrary named tuples and arbitrary data classes.
 * the input for `@data_function` has been tightened to reflect the fact that data functions
 should not take arguments (`dds.keep` should be used instead). Passing arguments
 now triggers an error.
+
+## v0.7.3
+
+Fixes the usage of positional and keyworded arguments when used in conjunction
+with `dds.keep`. 
 
 ## v0.7.2
 

@@ -9,6 +9,10 @@ plugins:
   - mkdocs-jupyter:
       include_source: True
       execute: True
+  - exclude:
+      glob:
+        - "*.py"
+        - "jupyter/*"
 
 extra_css: [extra.css]
 
@@ -17,12 +21,12 @@ theme:
 
 nav:
     - Home: index.md
-    - Reference: dds-reference.md
     - User guide: user_guide.ipynb
-    - FAQ: faq.md
-    - Tutorial - modules: tut_modules.ipynb
-    - Tutorial - plotting: tut_plotting.ipynb
-    - Tutorial - collaboration: tut_collab.ipynb
-    - Tutorial - custome types: tut_custom_types.ipynb
+    - Reference: dds-reference.md
+    - Collaboration and branching: tut_collab.ipynb
+    - Working with modules: tut_modules.ipynb
+    - Plotting dependencies: tut_plotting.ipynb
+    - Adding custom types: tut_custom_types.ipynb
     - Tutorial - scikit-learn: tut_sklearn.ipynb
+    - FAQ: faq.md
     - Changelog: changelog.md
