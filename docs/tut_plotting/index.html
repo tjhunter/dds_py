@@ -1,150 +1,178 @@
 <!DOCTYPE html>
-
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-<meta charset="utf-8"/>
-<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="../img/favicon.ico" rel="shortcut icon"/>
-<title>Tutorial - plotting - DDS documentation</title>
-<link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
-<link href="../css/theme.css" rel="stylesheet"/>
-<link href="../css/theme_extra.css" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet"/>
-<link href="../extra.css" rel="stylesheet"/>
-<script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Plotting dependencies - DDS documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+  <link href="../extra.css" rel="stylesheet" />
+  
+  <script>
     // Current page data
-    var mkdocs_page_name = "Tutorial - plotting";
+    var mkdocs_page_name = "Plotting dependencies";
     var mkdocs_page_input_path = "tut_plotting.ipynb";
     var mkdocs_page_url = null;
   </script>
-<script defer="" src="../js/jquery-2.1.1.min.js"></script>
-<script defer="" src="../js/modernizr-2.8.3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-</link></head>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
 <body class="wy-body-for-nav" role="document">
-<div class="wy-grid-for-nav">
-<nav class="wy-nav-side stickynav" data-toggle="wy-nav-shift">
-<div class="wy-side-scroll">
-<div class="wy-side-nav-search">
-<a class="icon icon-home" href=".."> DDS documentation</a>
-<div role="search">
-<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
-<input name="q" placeholder="Search docs" title="Type search term here" type="text"/>
-</form>
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> DDS documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
 </div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../dds-reference/">Reference</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Collaboration and branching</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Working with modules</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Plotting dependencies</a>
+    <ul class="current">
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Adding custom types</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tut_sklearn/">Tutorial - scikit-learn</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../changelog/">Changelog</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">DDS documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Plotting dependencies</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
 </div>
-<div aria-label="main navigation" class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="..">Home</a>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../dds-reference/">Reference</a>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Tutorial - modules</a>
-</li>
-</ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - plotting</a>
-<ul class="current">
-</ul>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Tutorial - collaboration</a>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Tutorial - custome types</a>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tut_sklearn/">Tutorial - scikit-learn</a>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../changelog/">Changelog</a>
-</li>
-</ul>
-</div>
-</div>
-</nav>
-<section class="wy-nav-content-wrap" data-toggle="wy-nav-shift">
-<nav aria-label="top navigation" class="wy-nav-top" role="navigation">
-<i class="fa fa-bars" data-toggle="wy-nav-top"></i>
-<a href="..">DDS documentation</a>
-</nav>
-<div class="wy-nav-content">
-<div class="rst-content">
-<div aria-label="breadcrumbs navigation" role="navigation">
-<ul class="wy-breadcrumbs">
-<li><a href="..">Docs</a> »</li>
-<li>Tutorial - plotting</li>
-<li class="wy-breadcrumbs-aside">
-</li>
-</ul>
-<hr/>
-</div>
-<div role="main">
-<div class="section">
+          <div role="main">
+            <div class="section">
+              
+                
 <div class="notebook-content">
 <style type="text/css">
-    .highlight .hll { background-color: var(--jp-cell-editor-active-background) }
-.highlight  { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
-.highlight .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
-.highlight .err { color: var(--jp-mirror-editor-error-color) } /* Error */
-.highlight .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
-.highlight .o { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator */
-.highlight .p { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation */
-.highlight .ch { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Hashbang */
-.highlight .cm { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Multiline */
-.highlight .cp { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Preproc */
-.highlight .cpf { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.PreprocFile */
-.highlight .c1 { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Single */
-.highlight .cs { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Special */
-.highlight .kc { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Constant */
-.highlight .kd { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Declaration */
-.highlight .kn { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Namespace */
-.highlight .kp { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Pseudo */
-.highlight .kr { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Reserved */
-.highlight .kt { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Type */
-.highlight .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
-.highlight .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
-.highlight .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
-.highlight .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
-.highlight .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
-.highlight .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
-.highlight .mh { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Hex */
-.highlight .mi { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer */
-.highlight .mo { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Oct */
-.highlight .sa { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Affix */
-.highlight .sb { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Backtick */
-.highlight .sc { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Char */
-.highlight .dl { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Delimiter */
-.highlight .sd { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Doc */
-.highlight .s2 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Double */
-.highlight .se { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Escape */
-.highlight .sh { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Heredoc */
-.highlight .si { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Interpol */
-.highlight .sx { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Other */
-.highlight .sr { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Regex */
-.highlight .s1 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Single */
-.highlight .ss { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Symbol */
-.highlight .il { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer.Long */
+    
+    .highlight-ipynb .hll { background-color: var(--jp-cell-editor-active-background) }
+.highlight-ipynb  { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
+.highlight-ipynb .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
+.highlight-ipynb .err { color: var(--jp-mirror-editor-error-color) } /* Error */
+.highlight-ipynb .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
+.highlight-ipynb .o { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator */
+.highlight-ipynb .p { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation */
+.highlight-ipynb .ch { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Hashbang */
+.highlight-ipynb .cm { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Multiline */
+.highlight-ipynb .cp { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Preproc */
+.highlight-ipynb .cpf { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.PreprocFile */
+.highlight-ipynb .c1 { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Single */
+.highlight-ipynb .cs { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Special */
+.highlight-ipynb .kc { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Constant */
+.highlight-ipynb .kd { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Declaration */
+.highlight-ipynb .kn { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Namespace */
+.highlight-ipynb .kp { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Pseudo */
+.highlight-ipynb .kr { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Reserved */
+.highlight-ipynb .kt { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Type */
+.highlight-ipynb .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
+.highlight-ipynb .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
+.highlight-ipynb .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
+.highlight-ipynb .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
+.highlight-ipynb .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
+.highlight-ipynb .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
+.highlight-ipynb .mh { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Hex */
+.highlight-ipynb .mi { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer */
+.highlight-ipynb .mo { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Oct */
+.highlight-ipynb .sa { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Affix */
+.highlight-ipynb .sb { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Backtick */
+.highlight-ipynb .sc { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Char */
+.highlight-ipynb .dl { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Delimiter */
+.highlight-ipynb .sd { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Doc */
+.highlight-ipynb .s2 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Double */
+.highlight-ipynb .se { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Escape */
+.highlight-ipynb .sh { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Heredoc */
+.highlight-ipynb .si { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Interpol */
+.highlight-ipynb .sx { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Other */
+.highlight-ipynb .sr { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Regex */
+.highlight-ipynb .s1 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Single */
+.highlight-ipynb .ss { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Symbol */
+.highlight-ipynb .il { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer.Long */
   </style>
+
+
+
 <style type="text/css">
 /*-----------------------------------------------------------------------------
 | Copyright (c) Jupyter Development Team.
@@ -13883,7 +13911,8 @@ body.lm-mod-override-cursor .jp-OutputArea-output.jp-mod-isolated:before {
 |----------------------------------------------------------------------------*/
 
 </style>
-<style type="text/css">
+
+    <style type="text/css">
 /*-----------------------------------------------------------------------------
 | Copyright (c) Jupyter Development Team.
 | Distributed under the terms of the Modified BSD License.
@@ -14273,7 +14302,10 @@ all of MD as it is not optimized for dense, information rich UIs.
   --jp-icon-contrast-color3: var(--md-blue-600);
 }
 </style>
-<style type="text/css">
+
+
+
+<style>
 /* Reset */
 *, *::before, *::after {
     -webkit-box-sizing: border-box;
@@ -14294,54 +14326,60 @@ all of MD as it is not optimized for dense, information rich UIs.
 }
 
 /* Anchor links */
-.anchor-link {
+.jupyter-notebook .anchor-link {
     display: none;
 }
 h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     display: inline-block;
 }
 
-/* Markdown cells: Remove prompt */
+/* Markdown cells: Remove Input prompt */
 .jp-Cell-inputWrapper .jp-InputPrompt {
     display: none;
 }
 
-/* Code cells: Show prompt */
+/* Code cells: Show Input prompt */
 .jp-CodeCell .jp-Cell-inputWrapper .jp-InputPrompt {
     display: block;
 }
 
-/* Prompt fixes */
+/* Code pre block scroll horizontaly */
 .jp-InputPrompt, .jp-OutputPrompt{
     overflow: visible;
 }
 
-/* Lab uses move for the input prompts */
+/* Lab uses move cursor for the input prompts */
 .jp-Notebook .jp-Cell .jp-InputPrompt {
     cursor: default;
 }
 
-/* Editor max-width */
+/* Code cell max-width */
 .jp-InputArea-editor {
     width: 1px;
 }
 
-/* Editor colors */
-.jp-Editor .highlight {
-    margin: 0.4em;
-    background: var(--jp-cell-editor-background);
-    color: var(--jp-mirror-editor-variable-color);
+/* Code cell Fix pre margin */
+.jp-InputArea-editor .highlight-ipynb pre {
+    margin: 0;
+    padding: 5px 10px;
 }
 
 /* Editor colors */
-.jp-Editor .highlight pre {
+/* .jp-Editor .highlight {
+    margin: 0.4em;
+    background: var(--jp-cell-editor-background);
+    color: var(--jp-mirror-editor-variable-color);
+} */
+
+/* Editor colors */
+/* .jp-Editor .highlight pre {
     background: none;
     border: none;
     margin: 0;
     overflow-x: auto;
-}
+} */
 
-/* Material mkdocs */
+/* MKDocs Material theme defaults */
 .jp-RenderedHTMLCommon p {
     font-size: .8rem;
     line-height: 1.6;
@@ -14381,9 +14419,12 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     border: none;
 }
 
+.jp-RenderedHTMLCommon .admonition p:not(:first-child) {
+    margin: 1em 0;
+}
 
 /* Tags on cells */
-/* Mostly copying this from straight Jupyter */
+/* Mostly copying this from straight from Jupyter */
 .celltoolbar {
     border: none;
     background: #EEE;
@@ -14429,7 +14470,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     display: inline-block;
 }
 
-/* Bokeh plots table no hover */
+/* Fix: Bokeh plots table no hover */
 .bk-plot-wrapper tbody tr {
     background: none !important;
 }
@@ -14437,10 +14478,11 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     background: none !important;
 }
 </style>
+
 <!-- Load mathjax -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML-full,Safe"> </script>
-<!-- MathJax configuration -->
-<script type="text/x-mathjax-config">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML-full,Safe"> </script>
+    <!-- MathJax configuration -->
+    <script type="text/x-mathjax-config">
     init_mathjax = function() {
         if (window.MathJax) {
         // MathJax loaded
@@ -14475,14 +14517,14 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     }
     init_mathjax();
     </script>
-<!-- End of mathjax configuration -->
-<body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
+    <!-- End of mathjax configuration --><div class="jupyter-notebook"><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs   celltag_hide_cell">
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs   celltag_hide_cell">
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="plotting-network-dependencies-with-dds">Plotting network dependencies with DDS<a class="anchor-link" href="#Plotting-network-dependencies-with-DDS">¶</a></h2><p><code>DDS</code> allows you to track and display the dependencies between data objects that get tracked with a name.</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="plotting-network-dependencies-with-dds">Plotting network dependencies with DDS<a class="anchor-link" href="#Plotting-network-dependencies-with-DDS">&#182;</a></h2><p><code>DDS</code> allows you to track and display the dependencies between data objects that get tracked with a name.</p>
 <blockquote><p>Reminder:</p>
 <p>In order to use the plotting facilities, you must have the <code>pydotplus</code> package installed, as well as its own dependency (Graphviz).</p>
 </blockquote>
@@ -14493,66 +14535,89 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
          <span class="n">arg1</span><span class="p">,</span>
          <span class="n">arg2</span><span class="p">,</span>
          <span class="o">...</span>
-         <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">"path_to_png_file"</span><span class="p">,</span>
+         <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">&quot;path_to_png_file&quot;</span><span class="p">,</span>
          <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-         <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
+         <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">])</span>
 </pre></div>
 <p>With this call, the function will not be executed. Instead, all its code dependencies will be resolved and analyzed.</p>
 <p>Here is an example that leverages the integration with Jupyter. This shows a single function the output of which is registered
 under the path <code>/f</code>.</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
 
 <span class="c1"># A small utility to plot a function without executing it:</span>
 <span class="k">def</span> <span class="nf">plot_function</span><span class="p">(</span><span class="n">fun</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Image</span><span class="p">:</span>
-    <span class="n">f_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"/tmp/tut_plotting/dds_plot_</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">fun</span><span class="p">))</span><span class="si">}</span><span class="s2">.png"</span>
-    <span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="n">f_name</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
+    <span class="n">f_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/tmp/tut_plotting/dds_plot_</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">fun</span><span class="p">))</span><span class="si">}</span><span class="s2">.png&quot;</span>
+    <span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="n">f_name</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">Image</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span>
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFMAAAA7CAYAAAAHFbY3AAAABmJLR0QA/wD/AP+gvaeTAAACk0lEQVR4nO3cTUgUcRjH8e+IFdKLpRFB9yS6BRVBRWpZYhqFzhwEbxJLGXiJwm6yRUGnIoUohAicWZPewYJKqN2kkKKDRC8WrAeJJJZC2Reng4dodTHlyfm7PB8YWP57+fFlZ1l2YS3f932UhEhB0AvyicYUpDEFFWYfxONxotFoEFsWFdu2px/6WVzX9QG9Zrlm4OW8zX3f12uGy3XdXMn0PVOSxhSkMQVpTEEaU5DGFKQxBWlMQRpTkMYUpDEFaUxBGlOQxhSkMQUZGzMzdI6txfvojE9OHUyO0n8xRPPJs5xu2Mbm7UcIPxsLdmSWaT9bmCHDUE+EDztCHNpQAEwy3NlIXZvFheErHC2tZ9OJUwyOjQc99C9mxky/w4sMs7O1jvUWkH7L9Y5+EtZhSkssWLqRps5emoLemcXI2zz9xqMnvhv74DosgMxXPn/JBD1rVgbGTPHau8VouUPNWp+RB2GOt3QwMOFDepCrLSFCx84Q+WheXPNu8+QAbu93KsPVlFgFWDVtXN5bhn3jEZ/YQvOlDuqXBT1yZsa9MieiLrcTVTgH1kzd4ouIYTHHee7eYXy/Q1Vx0FvmzqyYv/px76WodipZGfSWeTAq5s+nLvf9GuzyFUFPmReDYiZ43P2QJbUOe5ZnPZVKkpp6QDK18Mv+lTEx/R99uH1F1Nq7KPpzSuL9E26e7yKWBJIvuBbu4u6rEdKBLc3NmI9G1uoGur81ZJ+yqqyCxvYKGtsDmTUnxrwy84HGFKQxBWlMQRpTkMYUpDEFaUxBGlOQxhSkMQVpTEEaU5DGFKQxBWlMQRpTUM5v2j3PW8gdi0YsFsv5XM6YjuP8lzH5zNJ/jxGj/x4jSWMK0piCCoFI0CPyxMvfFRjhIfcnpO8AAAAASUVORK5CYII=
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>How to show multiple independent functions? Multiple DDS functions can be packaged under a single function.
 In most cases, DDS can infer that they are independent of each other and will show them 
 separately. Here is the examle of two independent functions <code>f1</code> and <code>f2</code>:</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ex1a</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f2&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ex1b</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span>
 
 <span class="k">def</span> <span class="nf">ex1</span><span class="p">():</span>
@@ -14561,37 +14626,57 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">ex1</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALMAAAA7CAYAAAAw97tGAAAABmJLR0QA/wD/AP+gvaeTAAAEh0lEQVR4nO3cf0zUdRzH8echkC7TiZU2Vv1BlOWWykRXKAUkaKAuwmPNIlpjZq2ELWuMP8Q/kFVUNENYPxyb6PzeKcXQSgmMNE62chEti36I7apRkxXjl3ccn/4Il9KB3MXd9/jwfmyff2734/197fX97nO33deilFIIMfXZw8yeQIjJImUW2pAyC22Ej37A6XTS0tJixixTitVqDcj7Sv4T4zV/NYphGAqQdZUVKJK/3/nbxtxmKKVkeVmGYYwV2aQy+zhDdY2Xv+yZhTakzEIbUmahDSmz0IaUWWhDyiy0IWUW2pAyC21ImYU2pMxCG1JmoQ0ps9CGlFloQ8ostCFlFtoImTJ7zpYSP3cNVc7hfx4Y7qL51a3kvbCLwk0rWLwyk5JPLtD/WxvH95WxPSeVpTG51F40dWxtTCj/hq9peiWXpLtvYd6cG4hZvpHt+7/iL2Xu7JeESJk9nD1k5/t7rGyMDgOGOVe1mQ1FP7C8oJDS/TW8uAz+6B5k5k1LSEqYQavRQNuv/QybPboWJpD/Eie7MzN46edFPLxlG89kxtLXVk9ZTjLWyg7cZh8CXv4DaIqhdmz2c6wq2MBCCzDUxt7KZnosDzE/ygKRt5NTVUvOyNPDom9mYYichlqYQP7WR9I4FZ/LnryYkdJsIycujRX5TTS+vIfTeeWsjjD3MEKiEkNf2jjkTMSacSMWAM95fur0mD3WtHH1/Ifp8qwi//GYy65+4cQ++hgJkaD6e+kLga1GCFyZ3XxuO0xX0g7Sr1f8cnQXpXWf0jqogDO8/exWGiPmk1ywk023zTB7WA35kH/kla9Ufb30Kwtz7r2PZSZflSEUyuxqxai9QErJOqIsYVjSi3jzgTuw7jvOj8SRt7uSrGvMHlJjfuev+P3jjzgTHkd+URYLLMEe/L9M32YMthi835NK9tp5hEAe047f+fc5eL28ncTXaiiKnxWo8XxicpkHOGXUMZCWTepccyeZnvzMX3XTtKOYjifrOLhlEZFXf0VQmFvmvmaMejfrslO4ztRBpim/8u+nvbKQw4vf4MBzS7k2gOP5ytQy954wOKLSsSbNNnOMacv3/Af4proYY0Eh5U/cyb+bCzedrV8EZkgfmPgFsIeGgx8Qsb6G+0ef3m7XyI/wblxuYPQXkIEBBgEYxiO/4PnJ1/wv8u07uTz1YSxZyUd5q2LkucpFd0cjrVHFHFkZvOm9Ma3M6s9jGMdmsd5YfdkZruj57gT1NdU4XACf8W5JNbMz1/BgfDThuOhsNnjvQAUnXYDFwd6dFQylZ7A58VaTjmRq8i3/FO7qeJ61T9s571acrL3yvSwzEyhrjwvm+N6pUS7duE94F+h8JP/xjZPP2DdOFGKqkTILbUiZhTakzEIbUmahDSmz0IaUWWhDyiy0IWUW2pAyC21ImYU2pMxCG1JmoQ0ps9CGlFloQ8ostCFlFtoY829TNpstmHNMGQ6HIyifI/l7N17+Y5Y5Ozs7IMOIiZH8fWdRSoXALe+E+N/ssmcW2pAyC21ImYU2wgG72UMIMQlO/w1E2hLKD+8LzwAAAABJRU5ErkJggg==
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p><strong>Data dependencies</strong></p>
 <p>The DDS function <code>f1</code> depends on the DDS function <code>f2</code>. This is tracked with a solid line. The graph shows the outputs first at the top, and the dependencies at the bottom.</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ex2a</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f2&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ex2b</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">ex2a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">ex2</span><span class="p">():</span>
@@ -14599,37 +14684,57 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">ex2</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,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
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p><strong>Implicit dependencies</strong></p>
 <p>In the function <code>f</code>, the output of the DDS function <code>f1</code> is passed as an argument to the DDS function <code>f2</code>. This is a case of implicit dependency: DDS has infered that the calculation of <code>f2</code> is dependent on the calculation of <code>f1</code> (through potentially other steps in the function <code>f</code>). It indicates that through dashed arrows.</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f1</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f2&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f2</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span>
 
 <span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
@@ -14639,36 +14744,56 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,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
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Note that only the most significant dependencies are represented. In this case, <code>f1</code> is evaluated twice: before and after <code>f2</code>. Because <code>f2</code> implicitly depends on <code>f1</code> but not the opposite, only the first call to <code>f1</code> is taken into account.</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ex4a</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f2&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">ex4b</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span>
 
 <span class="k">def</span> <span class="nf">ex4</span><span class="p">():</span>
@@ -14678,42 +14803,62 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">ex4</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,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
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>The functions call can be arbitrarily nested. In this case, because <code>f1</code> is already a dependency of <code>f3</code>, it is not brought further even if it is called in <code>f</code>.</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f1&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f1</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> 
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f2"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f2&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f2</span><span class="p">():</span> <span class="k">return</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">f1</span><span class="p">()</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f3"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f3&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f3</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">f2</span><span class="p">()</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f4"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f4&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f4</span><span class="p">():</span> <span class="k">return</span> <span class="mi">1</span>
 
 
@@ -14724,33 +14869,53 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,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
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Note that in general when the functions take arguments, DDS cannot infer independencies. In this case, <code>f3</code> and <code>f5</code> could be independent. However, because they share an argument call through <code>x</code>, this argument could be modified during the call and as such, no further independence can be assumed.</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f5"</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f5&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f5</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span>
 
 <span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
@@ -14762,70 +14927,110 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,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
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="indirect-references">Indirect references<a class="anchor-link" href="#Indirect-references">¶</a></h2><p>Indirect references (the <code>load</code> function) refers directly to the content without having to call the function itself.</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="indirect-references">Indirect references<a class="anchor-link" href="#Indirect-references">&#182;</a></h2><p>Indirect references (the <code>load</code> function) refers directly to the content without having to call the function itself.</p>
 <p>This is plotted as usual. Note that the link is in dashed lines, indicating that the call is not a direct dependency to the function that generates the data. Furthermore, the box is always greyed out (indicating that it has already been calculated).</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="c1"># Ensure that f1 has been evaluated and that the path '/f1' exists.</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Ensure that f1 has been evaluated and that the path &#39;/f1&#39; exists.</span>
 <span class="n">f1</span><span class="p">()</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/f6"</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/f6&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f6</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">dds</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"/f1"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dds</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/f1&quot;</span><span class="p">)</span>
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">f6</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFMAAACbCAYAAAAeCafZAAAABmJLR0QA/wD/AP+gvaeTAAAIJklEQVR4nO3df0zU9x3H8df37rBoccKYTGXZGC6LTud+dNbhqvXHbFWwtVggjUualGwrE/srm87Yrms3OrOlaU1W59K5NSA/vseNUe9gV67+KpQfHUOXLTKjA51HgQ3wZIfe8b37fvbHFa3Al8PkzX0/6PuRXKLf+6pvn/neHfe9+36/ihBCgFGotJg9we2EYxLimIRsoxd4vV40NjaaMcu0kpubO3ahGEVVVQGAb1Fu47AbPsyFEHwb56aqqlEyfs6kxDEJcUxCHJMQxyTEMQlxTEIckxDHJMQxCXFMQhyTEMckxDEJjdk5PJ0Mf9iCI2+fQLsvAV/a+Bi2fe2Tps4jzZYZbv8Fls/ZgINePbJA78XJVwvw3V2vYE/OvViyIhtFJwYgAGDoDCp2bcbSjOfQNPcRPLt7h+khAWm2zDDaHZU4l1GAh1MtAHR0HtyOh/Yq+GXnAXw/+VEsfurHaBu4Br3vBH66dRv2nb8Pb7x3FN/7YrzZw99g9LFFTGmnxAtfThSZv+8RuhBCaG3i+aU2gfgcURn42HrhS6Ik+9PCYpkvcsu7RDi2UwohJuxj/LFFLIVO2+HwrkZuVgoUAAhfRMeF8Jj1/O4Xsbv6P7DdsxMv5SyQ5znqIxLMo6HV/kf0rs1D5qcEumqKULjzN2gJCCDUhjd3FqBgx/OoPNcPd3E1enQrPrdIx+FHv4IFiYn4zNL1ePLNU7giw/dSbmEznhrBevHMwmSRUzEQeYgLIUSgUuTE4+aH+fAJsfOzVgHlE2LVC0dFp29QdLf+TnznC3cJxZIsthZ/GJNxpX6YBxpVVA8+gLyNSZGHuBF9AH0DOjBjJR5/ai3S5szGvHuewP6fP4RE9KPmtUOxGtmQyTGvoUF9G9cezMMDc6KsqiRgdoICKHGYETeSXUFixiosswGhf52d6mGjMjfm0EmoTg2b8tZjdrR1bYuxbFEcFL0f/+3Try+2JCUjyQIos2ZN6aiTYWpM/3EVLpGJ3LUJ0Ve2LEBmdgbiQ2fQ3DqIkdcbfaAPA7qC2Rmrp3TWyTAx5iA8FbWI25KHNXePuksbhhb5BYa1kYUWpD1RhOe+GkLdwT/gn8MAoKPLXYNT8Svww73ZsRvdgGnvgITvHajvzMQWdRVm3liKwbPH4Tz8FpqGAeB9HCp6CwnZG7B5eSpsd6/Ez47XI23PT7Dr8XNYlGZDd+cSHGh8GduXzDT6p2LnFl76mZD8R6PbCcckxDEJcUxCHJMQxyTEMQlxTEIckxDHJMQxCXFMQhyTEMckxDEJcUxC0yKmruvRV5KA4ccWdrs9lnMYEkLA7XZj06ZNZo8CAGhqajK+02i3PN9u/Xhz6T/sKSgoEADEsWPHzB4lGrk/A9I0DeXl5QCAsrIyk6eJTuqYHo8HPp8PAKCqKoLBoMkTTUzqmGVlZYiLiwMA+P1+1NXVmTzRxKSNefXqVVRVVUHTIl/psFqtKC0tNXmqiUkb0+l0IhAIXP99KBRCdXU1/H6/iVNNTNqYpaWlsFqtNy3TNA1HjhwxaaLopIzp8/ngdrsRCoVuWq4oCkpKSkyaKjopYzocjnHfQobDYXg8HvT395swVXRSxoy29TkcjhhNcmuki9nd3Y2GhgaEw2MPXQEi79WLi4tjPNXkSBdTVVVYLMZj6bqOpqYmeL3eGE41OdLFLCkpGfPCM5oQAhUVFTGaaPIkOXYyoru7G5cvX0Zqaur1ZcFgEFeuXEFKSspN6zY3N8d6vKgUIeQ+57DdbkdeXh4kHxMAKqWPOTQ0hN7eXqSnp5s9SjTyx5xG+GzYlDgmIY5JiGMS4piEOCYh6WPW1tZi4cKFZo8xKdLH9Pv96OjoMHuMSZE+5nTCMQlxTEIckxDHJMQxCUm/C473Z96ZeH8mJY5JiGMS4piEOCYhjklI+pi8P5MQ78+8Q3FMQhyTEMckxDEJSX9985Hju2U5/n0EX998io83N/wa9oULF4zuuqO5XC4UFhaOex8/ZxLimIQ4JiGOSYhjEuKYhDgmIY5JiGMS4piEOCYhjkmIYxLimIQ4JiFpTisRPn8Aj2xtRJ6nGNvnWwC9Dy2HXsOf+hYg6VId3u2ah4f37EN+eg9aG+pR31CP+tYUPP3uq9g4w+zpIyTZMsM4X1uDzq9nYsO8yPXNL5U+jfxfXcSy/B9g9/7X8eQSYMAXxF0pi5HxDStOO+vR3huATGcjlmPLDJ1FTe0lLM/fgLkKgFA77Idb4FceRGKiAsR9Htte+S22fbS6Zd58zJVkM/g4KUYKnXGhtnsFMtcnRy5+rHfh397xTxIlMwm2zBD+XvNn9GU8g3VJAj3H3sABTwtOBwWAf6D8xb1435aElfnPIjPNGvVvM5P5MbVTcLp9+NaP1iBRsUBZV4iX70vHjqp6XMRSPPZSETZL8gITjekP8+BfXaj73ypk3T9n4uubTwMmxwzgL846BO7fgtVRr8ktP3NjXm2B62gIa7JWYvSFpKcjU2MONTlxVKxDVsbtkNLUmH40OI/Dtj4L35w16i5Nu359c00b+ycRCCByxnYdukQ/QZkWUwyehPO9eHw7617E31gKf0cjqg860KYB0Fqh/toBz996EDkJpAZvSxUO7SvGBxqAUBvU/cWo/qDLnP/EKGOOnRw5KyB/12h8I981GueQUz52khLHJMQxCXFMQhyTEMckxDEJcUxCHJMQxyTEMQlxTEIckxDHJMQxCXFMQhyTkOGXEFwuVyznmDba2toM7zOMaXQYMDPG58+kw58BUeKYhDgmIRuASrOHuE00/x8hNnO18g3axwAAAABJRU5ErkJggg==
-"/>
+"
+>
 </div>
+
 </div>
+
 </div>
+
 </div>
+
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Here is a final example that combines all the dependencies.</p>
 <p>Note that <code>dds</code> does not automatically sort the ordering for you. When a single function call both calls a path through its function definition and through an indirect reference, the indirect reference must happen <em>after</em> the call to the direct function. In the example of the function <code>f</code> below, the call to <code>f6</code> must happen <em>after</em> calling <code>f2</code> or <code>f3</code>. Otherwise, <code>f6</code> depends on <code>f1</code>, but <code>f1</code> will be calculated in the <em>future</em>. <code>dds</code> prevents such circular dependencies.</p>
+
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+    <div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">f</span><span class="p">():</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">f4</span><span class="p">()</span>
     <span class="n">f3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">f5</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -14833,55 +15038,95 @@ separately. Here is the examle of two independent functions <code>f1</code> and 
 
 <span class="n">plot_function</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
+
+        </div>
+    </div>
+
 </div>
 </div>
-</div>
-</div>
+
 <div class="jp-Cell-outputWrapper">
+
+
 <div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+
+
+
+
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
 <img src="data:image/png;base64,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
-"/>
+"
+>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 </div>
 </div>
+
+
 </div>
-</div>
-</div>
-</body>
-</div>
-</div>
-</div>
-<footer>
-<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a class="btn btn-neutral float-right" href="../tut_collab/" title="Tutorial - collaboration">Next <span class="icon icon-circle-arrow-right"></span></a>
-<a class="btn btn-neutral" href="../tut_modules/" title="Tutorial - modules"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-</div>
-<hr/>
-<div role="contentinfo">
-<!-- Copyright etc -->
-</div>
+
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../tut_custom_types/" class="btn btn-neutral float-right" title="Adding custom types">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../tut_modules/" class="btn btn-neutral" title="Working with modules"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
 
   Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../tut_modules/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../tut_custom_types/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
 </div>
-</div>
-</section>
-</div>
-<div aria-label="versions" class="rst-versions" role="note">
-<span class="rst-current-version" data-toggle="rst-current-version">
-<span><a href="../tut_modules/" style="color: #fcfcfc;">« Previous</a></span>
-<span style="margin-left: 15px"><a href="../tut_collab/" style="color: #fcfcfc">Next »</a></span>
-</span>
-</div>
-<script>var base_url = '..';</script>
-<script defer="" src="../js/theme.js"></script>
-<script defer="" src="../search/main.js"></script>
-<script defer="">
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
         window.onload = function () {
             SphinxRtdTheme.Navigation.enable(true);
         };
     </script>
+
 </body>
 </html>

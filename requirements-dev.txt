@@ -22,6 +22,7 @@ black==19.10b0
 # Documentation
 mkdocs
 mkdocs-jupyter
+mkdocs-exclude
 mkdocstrings
 jupyter
 pillow

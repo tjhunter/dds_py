@@ -110,9 +110,9 @@ def dds_hash(x: Any) -> PyHash:
         # and its string
         return dds_hash(repr(x))
     msg = (
-        f"The type {type(x)} is currently not supported. The only supported types are"
-        f"'well-known' types that are part of the standard data structures in the python library."
-        f"If you think your data type should be supported by DDS, please open a request ticket."
+        f"The type {type(x)} is currently not supported. The only supported types are "
+        f"'well-known' types that are part of the standard data structures in the python library. "
+        f"If you think your data type should be supported by DDS, please open a request ticket. "
         f"General Python classes will not be supported since they can carry arbitrary state and "
         f"cannot be easily compared. Consider using a dataclass, a dictionary or a named tuple instead."
     )
