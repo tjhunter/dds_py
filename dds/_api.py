@@ -125,7 +125,7 @@ def set_store(
     elif store == "noop":
         _store_var = NoOpStore()
     elif store == "memory":
-        _store_var = MemoryStore()
+        _store_var = MemoryStore()  # type: ignore
     else:
         raise DDSException(f"Unknown store {store}")
 
