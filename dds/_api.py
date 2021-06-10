@@ -16,7 +16,7 @@ from .fun_args import get_arg_ctx
 from .introspect import introspect, _accepted_packages
 from ._lru_store import LRUCacheStore, default_cache_size
 
-from .store import LocalFileStore, Store
+from .store import LocalFileStore, Store, NoOpStore, MemoryStore
 from .structures import (
     DDSPath,
     DDSException,
@@ -122,6 +122,10 @@ def set_store(
         _store_var = DBFSStore(
             DBFSURI.parse(internal_dir), DBFSURI.parse(data_dir), dbutils, commit_type_
         )
+    elif store == "noop":
+        _store_var = NoOpStore()
+    elif store == "memory":
+        _store_var = MemoryStore()
     else:
         raise DDSException(f"Unknown store {store}")
 

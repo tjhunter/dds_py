@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from pathlib import PurePath
-from typing import Any, Optional, List, Union
+from typing import Any, Optional, List, Union, Dict
 from collections import OrderedDict
 
 from .codec import codec_registry, CodecRegistry
@@ -55,7 +55,7 @@ class Store(object):
         """
         The registry of codecs associated to this instance of a store.
 
-        It is not necessaily unique
+        It is not necessarily unique
         It may not be called for mutable operations during an evaluation. In that case, the behavior is not defined.
         """
         pass
@@ -63,8 +63,93 @@ class Store(object):
     # TODO: reset paths to start the store from scratch without losing data
 
 
-# TODO: add a notion of FileSystemType (Local, DBFS, S3)
-# We need to have a matrix between FS types and object types
+class NoOpStore(Store):
+    """
+    The store that never stores an object.
+
+    This store is in practice of very limited value because it cannot store paths to an object either.
+    As a result, dds.load() will not work correctly with this store.
+
+    It is recommended to use this store only to debug specific issues for which DDS would be disabled
+    altogether.
+    """
+
+    def has_blob(self, key: PyHash) -> bool:
+        return False
+
+    def fetch_blob(self, key: PyHash) -> Optional[Any]:
+        raise DDSException(f"Blob {key} not store (NoOpStore)")
+
+    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
+        return
+
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
+        """
+        Commits all the paths.
+        """
+        return
+
+    def fetch_paths(self, paths: List[DDSPath]) -> "OrderedDict[DDSPath, PyHash]":
+        """
+        Fetches a set of paths from the store. It is expected that all the paths are returned.
+        """
+        raise DDSException(f"Cannot fetch paths (the NoOpStore does not store paths)")
+
+    def codec_registry(self) -> CodecRegistry:
+        return codec_registry()
+
+
+class MemoryStore(Store):
+    """
+    The store that stores all objects in memory, without saving them permanently in storage.
+    It is an good example of how to implement a store that is fully functional.
+
+    This store is useful when the following conditions are met:
+    - there is limited value in storing objects beyond the lifetime of the process
+    - some complex objects are not serializable
+    - the objects are not too large in memory
+
+    This store is not useful for most users, but is useful in debugging or testing context.
+    """
+
+    def __init__(self):
+        self._cache: Dict[PyHash, Any] = {}
+        self._paths: Dict[DDSPath, PyHash] = {}
+
+    def has_blob(self, key: PyHash) -> bool:
+        return key in self._cache
+
+    def fetch_blob(self, key: PyHash) -> Optional[Any]:
+        return self._cache.get(key)
+
+    def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
+        if key in self._cache:
+            _logger.warning(f"Overwriting key {key}")
+        self._cache[key] = blob
+
+    def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
+        """
+        Commits all the paths.
+        """
+        for (p, k) in paths.items():
+            if p in self._paths:
+                _logger.debug(f"Overwriting path: {p} -> {k}")
+            else:
+                _logger.debug(f"Registering path: {p} -> {k}")
+            self._paths[p] = k
+
+    def fetch_paths(self, paths: List[DDSPath]) -> "OrderedDict[DDSPath, PyHash]":
+        """
+        Fetches a set of paths from the store. It is expected that all the paths are returned.
+        """
+        missing_paths = [p for p in paths if p not in self._paths]
+        if missing_paths:
+            raise DDSException(f"Missing paths in store: {missing_paths}")
+        return OrderedDict([(p, self._paths[p]) for p in paths])
+
+    def codec_registry(self) -> CodecRegistry:
+        # All the default content
+        return codec_registry()
 
 
 class LocalFileStore(Store):
