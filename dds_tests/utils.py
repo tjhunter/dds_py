@@ -5,6 +5,7 @@ import tempfile
 import shutil
 from pathlib import Path
 import pkgutil
+from typing import Optional
 from io import UnsupportedOperation
 import os
 
@@ -37,8 +38,9 @@ def cleandir():
     tdir = Path(tempfile.mkdtemp(prefix="dds"))
     internal_dir = tdir.joinpath("internal_dir")
     data_dir = tdir.joinpath("data_dir")
-    if os.environ.get("DDS_STORE_TYPE") is not None:
-        dds.set_store(os.environ.get("DDS_STORE_TYPE"))
+    env: Optional[str] = os.environ.get("DDS_STORE_TYPE")
+    if env is not None:
+        dds.set_store(env)
     else:
         dds.set_store(
             "local",
