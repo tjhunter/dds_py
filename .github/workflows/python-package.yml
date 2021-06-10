@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
     - uses: actions/checkout@v2
@@ -42,9 +42,12 @@ jobs:
       run: |
         mypy dds
         mypy dds_tests/test_typed.py
-    - name: Test with pytest
+    - name: Test
       run: |
         pytest -o log_cli=true -o log_cli_level=debug
+    - name: Test (in-memory store)
+      run: |
+        DDS_STORE_TYPE=memory pytest -o log_cli=true -o log_cli_level=debug
     - name: Run the documentation notebooks
       run: |
         jupyter kernelspec list

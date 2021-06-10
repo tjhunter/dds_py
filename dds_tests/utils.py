@@ -5,8 +5,9 @@ import tempfile
 import shutil
 from pathlib import Path
 import pkgutil
+from typing import Optional
 from io import UnsupportedOperation
-from typing import Generator
+import os
 
 
 _logger = logging.getLogger(__name__)
@@ -37,12 +38,16 @@ def cleandir():
     tdir = Path(tempfile.mkdtemp(prefix="dds"))
     internal_dir = tdir.joinpath("internal_dir")
     data_dir = tdir.joinpath("data_dir")
-    dds.set_store(
-        "local",
-        internal_dir=str(internal_dir),
-        data_dir=str(data_dir),
-        cache_objects=100,
-    )
+    env: Optional[str] = os.environ.get("DDS_STORE_TYPE")
+    if env is not None:
+        dds.set_store(env)
+    else:
+        dds.set_store(
+            "local",
+            internal_dir=str(internal_dir),
+            data_dir=str(data_dir),
+            cache_objects=100,
+        )
     _logger.debug(f"data dir: {tdir}")
     yield
     shutil.rmtree(str(tdir), ignore_errors=True)
