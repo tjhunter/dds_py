@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="../css/theme.css" />
   <link rel="stylesheet" href="../css/theme_extra.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
-  <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
   <link href="../extra.css" rel="stylesheet" />
   
   <script>
@@ -72,11 +71,11 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.keep">keep()</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#dds.__init__.keep--accepted-functions">Accepted functions.</a>
+    <li class="toctree-l3"><a class="reference internal" href="#accepted-functions">Accepted functions.</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#dds.__init__.keep--accepted-arguments">Accepted arguments.</a>
+    <li class="toctree-l3"><a class="reference internal" href="#accepted-arguments">Accepted arguments.</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#dds.__init__.keep--using-complex-arguments">Using complex arguments</a>
+    <li class="toctree-l3"><a class="reference internal" href="#using-complex-arguments">Using complex arguments</a>
     </li>
         </ul>
     </li>
@@ -147,53 +146,36 @@
               
                 <h1 id="dds-package-documentation">DDS package documentation</h1>
 <p>This is the reference documentation of all the public-facing functions.</p>
+<div class="doc doc-object doc-module">
+<h2 class="hidden-toc" href="#dds._annotations" id="dds._annotations" style="visibility: hidden; position: absolute;">
+        </h2>
+<div class="doc doc-contents first">
+<div class="doc doc-children">
+<div class="doc doc-object doc-function">
+<h2 class="doc doc-heading" id="dds._annotations.data_function">
+
+        <code class="highlight language-python">
+data_function<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
 
 
-  <div class="doc doc-object doc-module">
-
-<a id="dds._annotations"></a>
-    <div class="doc doc-contents first">
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-  <div class="doc doc-object doc-function">
-
-
-
-<h2 id="dds._annotations.data_function" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">data_function</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
-
-
-</h2>
-
-    <div class="doc doc-contents ">
-
-      <p>Annotation-style for <code>dds.keep</code>.</p>
+      </h2>
+<div class="doc doc-contents ">
+<p>Annotation-style for <code>dds.keep</code>.</p>
 <p>This is useful for functions with no arguments that should be cached as DDS functions.</p>
 <p>The following definitions are equivalent:</p>
-<pre><code class="language-py">dds.data_function(&quot;/function&quot;)
+<pre><code class="language-py">dds.data_function("/function")
 def function(): return 1
 </code></pre>
 <pre><code class="language-py">def _function(): return 1
 
 def function():
-    return dds.keep(&quot;/function&quot;, _function)
+    return dds.keep("/function", _function)
 </code></pre>
-
-        <details class="quote">
+<details class="quote">
           <summary>Source code in <code>dds/_annotations.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">data_function</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">F</span><span class="p">],</span> <span class="n">F</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">data_function</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">F</span><span class="p">],</span> <span class="n">F</span><span class="p">]:</span>
+    <span class="sd">"""</span>
 <span class="sd">    Annotation-style for `dds.keep`.</span>
 
 <span class="sd">    This is useful for functions with no arguments that should be cached as DDS functions.</span>
@@ -201,7 +183,7 @@ def function():
 <span class="sd">    The following definitions are equivalent:</span>
 
 <span class="sd">    ```py</span>
-<span class="sd">    dds.data_function(&quot;/function&quot;)</span>
+<span class="sd">    dds.data_function("/function")</span>
 <span class="sd">    def function(): return 1</span>
 <span class="sd">    ```</span>
 
@@ -209,21 +191,21 @@ def function():
 <span class="sd">    def _function(): return 1</span>
 
 <span class="sd">    def function():</span>
-<span class="sd">        return dds.keep(&quot;/function&quot;, _function)</span>
+<span class="sd">        return dds.keep("/function", _function)</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span> <span class="nf">decorator_</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">DDSException</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;@data_function cannot be used with arguments. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Arguments were passed to the function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2">, but this function &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;also has a dds.data_function annotation, which is not allowed (see &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;user guide of DDS). &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Suggestion: write a wrapper function that does not take arguments itself, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;or use dds.keep to pass arguments&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">"@data_function cannot be used with arguments. "</span>
+                    <span class="sa">f</span><span class="s2">"Arguments were passed to the function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2">, but this function "</span>
+                    <span class="sa">f</span><span class="s2">"also has a dds.data_function annotation, which is not allowed (see "</span>
+                    <span class="sa">f</span><span class="s2">"user guide of DDS). "</span>
+                    <span class="sa">f</span><span class="s2">"Suggestion: write a wrapper function that does not take arguments itself, "</span>
+                    <span class="sa">f</span><span class="s2">"or use dds.keep to pass arguments"</span><span class="p">,</span>
                     <span class="n">DDSErrorCode</span><span class="o">.</span><span class="n">ARG_IN_DATA_FUNCTION</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -231,55 +213,29 @@ def function():
         <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">decorator_</span>
-</code></pre></div>
-        </details>
-    </div>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-module">
+<h2 class="hidden-toc" href="#dds.__init__" id="dds.__init__" style="visibility: hidden; position: absolute;">
+        </h2>
+<div class="doc doc-contents first">
+<div class="doc doc-children">
+<div class="doc doc-object doc-function">
+<h2 class="doc doc-heading" id="dds.__init__.accept_module">
 
-  </div>
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-module">
-
-<a id="dds.__init__"></a>
-    <div class="doc doc-contents first">
+        <code class="highlight language-python">
+accept_module<span class="p">(</span><span class="n">module</span><span class="p">)</span>        </code>
 
 
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-  <div class="doc doc-object doc-function">
-
-
-
-<h2 id="dds.__init__.accept_module" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">accept_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span></code>
-
-
-</h2>
-
-    <div class="doc doc-contents ">
-
-      <p>Marks a module as accepted for introspection. Only functions in the current scope and in accepted modules
+      </h2>
+<div class="doc doc-contents ">
+<p>Marks a module as accepted for introspection. Only functions in the current scope and in accepted modules
 will be considered for the evaluation.</p>
 <p>Example to ensure that all the functions in my_lib are considered by DDS.</p>
 <pre><code class="language-py">import my_lib
@@ -287,13 +243,13 @@ dds.accept_module(my_lib)
 </code></pre>
 <p>The example above causes the <code>my_lib</code> module to be imported. If it is not desired, the name of the module can
 be passed instead:</p>
-<pre><code class="language-py">dds.accept_module(&quot;my_lib&quot;)
+<pre><code class="language-py">dds.accept_module("my_lib")
 </code></pre>
-
-        <details class="quote">
+<details class="quote">
           <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">accept_module</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">accept_module</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">"""</span>
 <span class="sd">    Marks a module as accepted for introspection. Only functions in the current scope and in accepted modules</span>
 <span class="sd">    will be considered for the evaluation.</span>
 
@@ -308,77 +264,97 @@ be passed instead:</p>
 <span class="sd">    be passed instead:</span>
 
 <span class="sd">    ```py</span>
-<span class="sd">    dds.accept_module(&quot;my_lib&quot;)</span>
+<span class="sd">    dds.accept_module("my_lib")</span>
 <span class="sd">    ```</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_accept_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-</code></pre></div>
-        </details>
-    </div>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-function">
+<h2 class="doc doc-heading" id="dds.__init__.eval">
 
-  </div>
-
-
-
-  <div class="doc doc-object doc-function">
-
-
-
-<h2 id="dds.__init__.eval" class="doc doc-heading">
-<code class="highlight language-python"><span class="nb">eval</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+eval<span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
 
 
-</h2>
-
-    <div class="doc doc-contents ">
-
-      <p>Evaluates a function. The result of the function is not stored in the data store, but the function itself may
+      </h2>
+<div class="doc doc-contents ">
+<p>Evaluates a function. The result of the function is not stored in the data store, but the function itself may
 contain multiple calls to keep().</p>
 <p>This function is useful to consider in one evaluation multiple functions that may themselves call keep() or
 refer to each other. eval() allows keep() calls to refer to complex arguments that cannot be evaluated before
 runtime. eval() als ensures some basic rules such as no circular references, and will eventually
 enable automatic parallel execution of internal statements.</p>
 <p>See also the documentation of keep() for an example of eval().</p>
-
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Parameters:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li><p><strong>fun</strong> (<code>Callable[..., ~_Out]</code>) – the function to call.</p></li>
-            <li><p><strong>args</strong> (<code>Any</code>) – the optional arguments for this function.</p>
-<p>NOTE: keyworded arguments are not supported yet.</p></li>
-            <li><p><strong>dds_extra_debug</strong> (<code>Optional[bool]</code>) – If true, will compute extra statistics to assist with debugging.
-As implemented, it reaches to the store to check which blobs need to be computed.</p></li>
-            <li><p><strong>dds_export_graph</strong> (<code>Union[str, pathlib.Path]</code>) – if specified, a file with the dependency graph of the function will be exported.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fun</code></td>
+<td><code>Callable[..., ~_Out]</code></td>
+<td>
+<p>the function to call.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>args</code></td>
+<td><code>Any</code></td>
+<td>
+<p>the optional arguments for this function.</p>
+<p>NOTE: keyworded arguments are not supported yet.</p>
+</td>
+<td><code>()</code></td>
+</tr>
+<tr>
+<td><code>dds_extra_debug</code></td>
+<td><code>Optional[bool]</code></td>
+<td>
+<p>If true, will compute extra statistics to assist with debugging.
+As implemented, it reaches to the store to check which blobs need to be computed.</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>dds_export_graph</code></td>
+<td><code>Union[str, pathlib.Path]</code></td>
+<td>
+<p>if specified, a file with the dependency graph of the function will be exported.</p>
 <p>NOTE: this requires the pydot or pydotplus package to be installed, as well as the graphviz program.
-These packages must be installed separately. If they are not present, a runtime error will be triggered.</p></li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>      <p>Simple example.</p>
+These packages must be installed separately. If they are not present, a runtime error will be triggered.</p>
+</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<p>Simple example.</p>
 <p>In this example, the function is evaluated only once and its result is served to f1 and f2.</p>
 <pre><code class="language-py">def f1_internal(): return 1
 
-def f1(): return dds.keep(&quot;/f1_value&quot;, f1_internal)
+def f1(): return dds.keep("/f1_value", f1_internal)
 
 def f2(): return 2 + f1()
 
 def all_fs():
     f1()
-    dds.keep(&quot;/f2_value&quot;, f2)
+    dds.keep("/f2_value", f2)
 </code></pre>
-
-        <details class="quote">
+<details class="quote">
           <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">eval</span><span class="p">(</span>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">eval</span><span class="p">(</span>
     <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">dds_export_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -386,7 +362,7 @@ def all_fs():
     <span class="n">dds_stages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ProcessingStage</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Out</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Evaluates a function. The result of the function is not stored in the data store, but the function itself may</span>
 <span class="sd">    contain multiple calls to keep().</span>
 
@@ -419,38 +395,32 @@ def all_fs():
 <span class="sd">    ```py</span>
 <span class="sd">    def f1_internal(): return 1</span>
 
-<span class="sd">    def f1(): return dds.keep(&quot;/f1_value&quot;, f1_internal)</span>
+<span class="sd">    def f1(): return dds.keep("/f1_value", f1_internal)</span>
 
 <span class="sd">    def f2(): return 2 + f1()</span>
 
 <span class="sd">    def all_fs():</span>
 <span class="sd">        f1()</span>
-<span class="sd">        dds.keep(&quot;/f2_value&quot;, f2)</span>
+<span class="sd">        dds.keep("/f2_value", f2)</span>
 <span class="sd">    ```</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_eval</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="p">,</span> <span class="n">dds_stages</span><span class="p">)</span>
-</code></pre></div>
-        </details>
-    </div>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-function">
+<h2 class="doc doc-heading" id="dds.__init__.keep">
 
-  </div>
-
-
-
-  <div class="doc doc-object doc-function">
-
-
-
-<h2 id="dds.__init__.keep" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+keep<span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
 
 
-</h2>
-
-    <div class="doc doc-contents ">
-
-      <p>Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,
+      </h2>
+<div class="doc doc-contents ">
+<p>Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,
 the function will be evaluated again (with the given arguments).</p>
 <p>For example, instead of writing:</p>
 <pre><code class="language-py">data = my_function(arg1, arg2)
@@ -458,30 +428,56 @@ the function will be evaluated again (with the given arguments).</p>
 <p>you should use:</p>
 <pre><code class="language-py">data = dds.keep(path, my_function, arg1, arg2)
 </code></pre>
-
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Parameters:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li><p><strong>path</strong> (<code>Union[str, DDSPath, pathlib.Path]</code>) – a path in the storage system which will store the content of the function, evaluated to the given
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>Union[str, DDSPath, pathlib.Path]</code></td>
+<td>
+<p>a path in the storage system which will store the content of the function, evaluated to the given
 arguments. It is expected to be in absolute form (starting with "/" if a string
 or being an absolute path if a pathlib's <code>Path</code> object).</p>
-<p>If this path exists, it will be overwritten silently.</p></li>
-            <li><p><strong>fun</strong> (<code>Callable[..., ~_Out]</code>) – A function to evaluate. See text above on the limitations over this function</p></li>
-            <li><p><strong>args</strong> (<code>Any</code>) – the arguments of this function</p></li>
-            <li><p><strong>kwargs</strong> (<code>Any</code>) – <em>(keyworded arguments are currently unsupported)</em></p></li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>      <p>return: the value that the function would produce for these arguments</p>
-<h5 id="dds.__init__.keep--accepted-functions">Accepted functions.</h5>
+<p>If this path exists, it will be overwritten silently.</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>fun</code></td>
+<td><code>Callable[..., ~_Out]</code></td>
+<td>
+<p>A function to evaluate. See text above on the limitations over this function</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>args</code></td>
+<td><code>Any</code></td>
+<td>
+<p>the arguments of this function</p>
+</td>
+<td><code>()</code></td>
+</tr>
+<tr>
+<td><code>kwargs</code></td>
+<td><code>Any</code></td>
+<td>
+<p><em>(keyworded arguments are currently unsupported)</em></p>
+</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+<p>return: the value that the function would produce for these arguments</p>
+<h3 id="accepted-functions">Accepted functions.</h3>
 <p>In general, the functions that should be provided are <em>total, non-recursive, deterministic and referentially
  transparent</em>.</p>
 <p>Functions have currently the following restrictions:</p>
@@ -492,50 +488,50 @@ or being an absolute path if a pathlib's <code>Path</code> object).</p>
 <li>the functions must be in an accepted module to be considered, see the <code>accept_module()</code> function</li>
 </ul>
 <p>They must return storable objects. The exact list depends on the store that is currently deployed.</p>
-<h5 id="dds.__init__.keep--accepted-arguments">Accepted arguments.</h5>
+<h3 id="accepted-arguments">Accepted arguments.</h3>
 <p>Only the following classes of arguments are accepted:</p>
 <ul>
 <li>the basic types of python (int, str, bool, float)</li>
 <li>lists and tuples of accepted arguments</li>
 <li>dictionaries. They are evaluated as sorted lists (by their keys)</li>
 </ul>
-<h5 id="dds.__init__.keep--using-complex-arguments">Using complex arguments</h5>
+<h3 id="using-complex-arguments">Using complex arguments</h3>
 <p>If more complex arguments should be accepted, two strategies are possible:
 - embed them inside the function call
 - wrap them inside a function which is then called through eval()</p>
 <p>Example: the following code will fail:</p>
-<pre><code class="language-py">df = pd.DataFrame({&quot;x&quot;:[1]})
+<pre><code class="language-py">df = pd.DataFrame({"x":[1]})
 
 def my_stats(data: pd.DataFrame) -&gt; int: return len(data)
 
-stats = dds.keep(&quot;/stats&quot;, my_stats, data)
+stats = dds.keep("/stats", my_stats, data)
 </code></pre>
 <p>The workaround is to use a wrapper function that create the dataframe:</p>
 <pre><code class="language-py">def my_pipeline():
-    df = pd.DataFrame({&quot;x&quot;:[1]})
-    return dds.keep(&quot;/stats&quot;, my_stats, df) # This will work
+    df = pd.DataFrame({"x":[1]})
+    return dds.keep("/stats", my_stats, df) # This will work
 
 stats = dds.eval(my_pipeline)
 </code></pre>
 <p>Another possibility is to move keep the result of the pipeline instead:</p>
 <pre><code class="language-py">def my_pipeline2():
-    df = pd.DataFrame({&quot;x&quot;:[1]})
+    df = pd.DataFrame({"x":[1]})
     return my_stats(df)
 
-stats = dds.keep(&quot;/stats&quot;, my_pipeline2)
+stats = dds.keep("/stats", my_pipeline2)
 </code></pre>
 <p>The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will
 only be evaluated once.</p>
-
-        <details class="quote">
+<details class="quote">
           <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">keep</span><span class="p">(</span>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">keep</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
     <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
     <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Out</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,</span>
 <span class="sd">    the function will be evaluated again (with the given arguments).</span>
 
@@ -553,8 +549,8 @@ only be evaluated once.</p>
 
 <span class="sd">    Arguments:</span>
 <span class="sd">        path: a path in the storage system which will store the content of the function, evaluated to the given</span>
-<span class="sd">            arguments. It is expected to be in absolute form (starting with &quot;/&quot; if a string</span>
-<span class="sd">            or being an absolute path if a pathlib&#39;s `Path` object).</span>
+<span class="sd">            arguments. It is expected to be in absolute form (starting with "/" if a string</span>
+<span class="sd">            or being an absolute path if a pathlib's `Path` object).</span>
 
 <span class="sd">            If this path exists, it will be overwritten silently.</span>
 
@@ -598,19 +594,19 @@ only be evaluated once.</p>
 <span class="sd">    Example: the following code will fail:</span>
 
 <span class="sd">    ```py</span>
-<span class="sd">    df = pd.DataFrame({&quot;x&quot;:[1]})</span>
+<span class="sd">    df = pd.DataFrame({"x":[1]})</span>
 
 <span class="sd">    def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</span>
 
-<span class="sd">    stats = dds.keep(&quot;/stats&quot;, my_stats, data)</span>
+<span class="sd">    stats = dds.keep("/stats", my_stats, data)</span>
 <span class="sd">    ```</span>
 
 <span class="sd">    The workaround is to use a wrapper function that create the dataframe:</span>
 
 <span class="sd">    ```py</span>
 <span class="sd">    def my_pipeline():</span>
-<span class="sd">        df = pd.DataFrame({&quot;x&quot;:[1]})</span>
-<span class="sd">        return dds.keep(&quot;/stats&quot;, my_stats, df) # This will work</span>
+<span class="sd">        df = pd.DataFrame({"x":[1]})</span>
+<span class="sd">        return dds.keep("/stats", my_stats, df) # This will work</span>
 
 <span class="sd">    stats = dds.eval(my_pipeline)</span>
 <span class="sd">    ```</span>
@@ -619,39 +615,33 @@ only be evaluated once.</p>
 
 <span class="sd">    ```py</span>
 <span class="sd">    def my_pipeline2():</span>
-<span class="sd">        df = pd.DataFrame({&quot;x&quot;:[1]})</span>
+<span class="sd">        df = pd.DataFrame({"x":[1]})</span>
 <span class="sd">        return my_stats(df)</span>
 
-<span class="sd">    stats = dds.keep(&quot;/stats&quot;, my_pipeline2)</span>
+<span class="sd">    stats = dds.keep("/stats", my_pipeline2)</span>
 <span class="sd">    ```</span>
 
 
 <span class="sd">    The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will</span>
 <span class="sd">    only be evaluated once.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div>
-        </details>
-    </div>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-function">
+<h2 class="doc doc-heading" id="dds.__init__.set_store">
 
-  </div>
-
-
-
-  <div class="doc doc-object doc-function">
-
-
-
-<h2 id="dds.__init__.set_store" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">set_store</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbutils</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commit_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+        <code class="highlight language-python">
+set_store<span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbutils</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commit_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>        </code>
 
 
-</h2>
-
-    <div class="doc doc-contents ">
-
-      <p>Sets a new store or replaces the existing store.</p>
+      </h2>
+<div class="doc doc-contents ">
+<p>Sets a new store or replaces the existing store.</p>
 <p>By default, a local store is created, pointing to the
 temporary directory of the current operating system:</p>
 <ul>
@@ -659,37 +649,71 @@ temporary directory of the current operating system:</p>
 <li>/tmp/dds/internal for the blobs</li>
 </ul>
 <p>The exact paths of the default store may change in the future.</p>
-
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Parameters:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li><p><strong>store</strong> (<code>Union[str, dds.store.Store]</code>) – a type of store. Two values are supported currently:</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>store</code></td>
+<td><code>Union[str, dds.store.Store]</code></td>
+<td>
+<p>a type of store. Four values are supported by default:</p>
 <ul>
-<li><code>local</code>: local file system</li>
+<li><code>local</code>: local file system (default)</li>
 <li><code>dbfs</code>: the Databricks file system (only valid for the Databricks environment)</li>
-</ul></li>
-            <li><p><strong>internal_dir</strong> (<code>Optional[str]</code>) – a path in a filesystem for the internal storage. The internal storage contains evaluated blobs
+<li><code>memory</code>: in-memory storage (useful for debugging and testing)</li>
+<li><code>noop</code>: no-op storage (nothing gets stored, useful for debugging)</li>
+</ul>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>internal_dir</code></td>
+<td><code>Optional[str]</code></td>
+<td>
+<p>a path in a filesystem for the internal storage. The internal storage contains evaluated blobs
   and corresponding metadata. Accepted values are:</p>
 <ul>
 <li>local: a path in the local filesystem</li>
 <li>dbfs: a path in DBFS</li>
-</ul></li>
-            <li><p><strong>data_dir</strong> (<code>Optional[str]</code>) – a path in a filesystem for the data storage. All paths provided by the user are guaranteed to map
+</ul>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>data_dir</code></td>
+<td><code>Optional[str]</code></td>
+<td>
+<p>a path in a filesystem for the data storage. All paths provided by the user are guaranteed to map
    to a path in the given data storage.</p>
 <ul>
 <li>for local: a path in the local filesystem. It contains symbolic links to the internal storage</li>
 <li>for dbfs: a path in DBFS. Objects are copied from the internal storage to the data storage</li>
-</ul></li>
-            <li><p><strong>dbutils</strong> (<code>Optional[Any]</code>) – (optional, valid only for the 'dbfs' store) the <code>dbutils</code> object that is in a notebook. If not provided,
-DDS will use reflection facilities from IPython to load it.</p></li>
-            <li><p><strong>commit_type</strong> (<code>Optional[str]</code>) – (DBFS only, 'none', 'links_only', 'full', default 'full'). The type of commit that will be
+</ul>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>dbutils</code></td>
+<td><code>Optional[Any]</code></td>
+<td>
+<p>(optional, valid only for the 'dbfs' store) the <code>dbutils</code> object that is in a notebook. If not provided,
+DDS will use reflection facilities from IPython to load it.</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>commit_type</code></td>
+<td><code>Optional[str]</code></td>
+<td>
+<p>(DBFS only, 'none', 'links_only', 'full', default 'full'). The type of commit that will be
 executed to update the paths. Committing a path in DBFS involves a full copy, which may be expensive,
 especially if the underlying table uses Databricks Delta. This is why the following options can be used:</p>
 <ul>
@@ -709,8 +733,15 @@ compatible with the Delta IO protocol which will allow the user to revert to old
 <p>NOTE: costs: in order for DDS to work, the data must be at least in the internal store, and also copied to
 the final place. In the case of large tables, this may incur extra storage costs.</p>
 </li>
-</ul></li>
-            <li><p><strong>cache_objects</strong> (<code>Union[NoneType, bool, int]</code>) – (optional, true/false or a positive integer, 0 means no caching, negative number means everything
+</ul>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>cache_objects</code></td>
+<td><code>Union[NoneType, bool, int]</code></td>
+<td>
+<p>(optional, true/false or a positive integer, 0 means no caching, negative number means everything
  cached). Sets a caching level of the objects (not the paths).
  With the cache enabled, if an object has already been fetched from the store, it may be kept in memory
  and reserved later.</p>
@@ -724,16 +755,17 @@ the final place. In the case of large tables, this may incur extra storage costs
  python process in memory.</p>
 <p>The exact details of the caching strategy are left as an implementation detail and should not be relied upon.
  The cache is currently implemented as a LRU cache on the most recent fetched objects.</p>
-<p>This option is not compatible with providing a <code>Store</code> object as an argument.</p></li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>      <p>:return: nothing</p>
-
-        <details class="quote">
+<p>This option is not compatible with providing a <code>Store</code> object as an argument.</p>
+</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<p>:return: nothing</p>
+<details class="quote">
           <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">set_store</span><span class="p">(</span>
+          <div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">set_store</span><span class="p">(</span>
     <span class="n">store</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Store</span><span class="p">],</span>
     <span class="n">internal_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">data_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -741,7 +773,7 @@ the final place. In the case of large tables, this may incur extra storage costs
     <span class="n">commit_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_objects</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">"""</span>
 <span class="sd">    Sets a new store or replaces the existing store.</span>
 
 <span class="sd">    By default, a local store is created, pointing to the</span>
@@ -754,10 +786,12 @@ the final place. In the case of large tables, this may incur extra storage costs
 
 <span class="sd">    Arguments:</span>
 
-<span class="sd">      store: a type of store. Two values are supported currently:</span>
+<span class="sd">      store: a type of store. Four values are supported by default:</span>
 
-<span class="sd">        - `local`: local file system</span>
+<span class="sd">        - `local`: local file system (default)</span>
 <span class="sd">        - `dbfs`: the Databricks file system (only valid for the Databricks environment)</span>
+<span class="sd">        - `memory`: in-memory storage (useful for debugging and testing)</span>
+<span class="sd">        - `noop`: no-op storage (nothing gets stored, useful for debugging)</span>
 
 <span class="sd">      internal_dir:  a path in a filesystem for the internal storage. The internal storage contains evaluated blobs</span>
 <span class="sd">          and corresponding metadata. Accepted values are:</span>
@@ -771,10 +805,10 @@ the final place. In the case of large tables, this may incur extra storage costs
 <span class="sd">        - for local: a path in the local filesystem. It contains symbolic links to the internal storage</span>
 <span class="sd">        - for dbfs: a path in DBFS. Objects are copied from the internal storage to the data storage</span>
 
-<span class="sd">      dbutils: (optional, valid only for the &#39;dbfs&#39; store) the `dbutils` object that is in a notebook. If not provided,</span>
+<span class="sd">      dbutils: (optional, valid only for the 'dbfs' store) the `dbutils` object that is in a notebook. If not provided,</span>
 <span class="sd">        DDS will use reflection facilities from IPython to load it.</span>
 
-<span class="sd">      commit_type: (DBFS only, &#39;none&#39;, &#39;links_only&#39;, &#39;full&#39;, default &#39;full&#39;). The type of commit that will be</span>
+<span class="sd">      commit_type: (DBFS only, 'none', 'links_only', 'full', default 'full'). The type of commit that will be</span>
 <span class="sd">        executed to update the paths. Committing a path in DBFS involves a full copy, which may be expensive,</span>
 <span class="sd">        especially if the underlying table uses Databricks Delta. This is why the following options can be used:</span>
 
@@ -815,24 +849,16 @@ the final place. In the case of large tables, this may incur extra storage costs
 <span class="sd">         This option is not compatible with providing a `Store` object as an argument.</span>
 
 <span class="sd">    :return: nothing</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">_set_store</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">dbutils</span><span class="p">,</span> <span class="n">commit_type</span><span class="p">,</span> <span class="n">cache_objects</span><span class="p">)</span>
-</code></pre></div>
-        </details>
-    </div>
-
-  </div>
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-  </div>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
               
             </div>
           </div>
