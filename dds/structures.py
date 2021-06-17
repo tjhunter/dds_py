@@ -40,6 +40,23 @@ DDSPath = NewType("DDSPath", str)
 PyHash = NewType("PyHash", str)
 
 
+@dataclass(frozen=True)
+class RelativePath:
+    """
+    A relative path to locate an object in the store.
+
+    TODO: more doc
+    """
+    _path: PurePosixPath
+
+    @staticmethod
+    def create(s: str) -> "RelativePath":
+        assert s
+        assert s[0:2] == "./"
+        # TODO: more checks and more docs
+        return RelativePath(PurePosixPath(s))
+
+
 class DDSErrorCode(IntEnum):
     EVAL_IN_EVAL = 1
     CIRCULAR_CALL = 2
