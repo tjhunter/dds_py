@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="../css/theme.css" />
   <link rel="stylesheet" href="../css/theme_extra.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
-  <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
   <link href="../extra.css" rel="stylesheet" />
   
   <script>
@@ -88,6 +87,8 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">Changelog</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#v090">v0.9.0</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#v080">v0.8.0</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#v073">v0.7.3</a>
@@ -134,11 +135,14 @@
             <div class="section">
               
                 <h1 id="changelog">Changelog</h1>
+<h2 id="v090">v0.9.0</h2>
+<p>Adding two useful stores for checking the correctness of the code without
+relying on DDS. See the documentation of <code>dds.set_store</code>.</p>
 <h2 id="v080">v0.8.0</h2>
 <p>A number of small improvements in ergonomics to this release:</p>
 <ul>
 <li>the error messages are more complete and include more contextual information</li>
-<li>more types are supported by default during the analysis phase: lists, dictionaries, 
+<li>more types are supported by default during the analysis phase: lists, dictionaries,
 dates (<code>datetime</code> objects), arbitrary named tuples and arbitrary data classes.</li>
 <li>the input for <code>@data_function</code> has been tightened to reflect the fact that data functions
 should not take arguments (<code>dds.keep</code> should be used instead). Passing arguments
@@ -146,7 +150,7 @@ now triggers an error.</li>
 </ul>
 <h2 id="v073">v0.7.3</h2>
 <p>Fixes the usage of positional and keyworded arguments when used in conjunction
-with <code>dds.keep</code>. </p>
+with <code>dds.keep</code>.</p>
 <h2 id="v072">v0.7.2</h2>
 <p>Small usability fixes in this release:</p>
 <ul>
@@ -155,7 +159,7 @@ with <code>dds.keep</code>. </p>
 <li>improves debugging messages (with a potential extra round trip to the store)</li>
 </ul>
 <h2 id="v070">v0.7.0</h2>
-<p>Adds a major feature: caching in memory of most recently used objects. See the documentation of 
+<p>Adds a major feature: caching in memory of most recently used objects. See the documentation of
 <code>dds.set_store</code>.</p>
 <p>Other features:</p>
 <ul>
@@ -163,7 +167,7 @@ with <code>dds.keep</code>. </p>
 </ul>
 <h2 id="v060">v0.6.0</h2>
 <p>This is a major release that changes
-the algorithm of calculating the signatures. 
+the algorithm of calculating the signatures.
 <em>Upgrading from a previous version will trigger the cache to be calculated again</em>.</p>
 <p>This change is not expected to happen again except for localized bug fixes.</p>
               

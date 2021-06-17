@@ -1,178 +1,155 @@
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  
-  
-  <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Tutorial - scikit-learn - DDS documentation</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-  <link rel="stylesheet" href="../css/theme.css" />
-  <link rel="stylesheet" href="../css/theme_extra.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
-  <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
-  <link href="../extra.css" rel="stylesheet" />
-  
-  <script>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="../img/favicon.ico" rel="shortcut icon"/>
+<title>Tutorial - scikit-learn - DDS documentation</title>
+<link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" rel="stylesheet">
+<link href="../css/theme.css" rel="stylesheet"/>
+<link href="../css/theme_extra.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet"/>
+<link href="../extra.css" rel="stylesheet"/>
+<script>
     // Current page data
     var mkdocs_page_name = "Tutorial - scikit-learn";
     var mkdocs_page_input_path = "tut_sklearn.ipynb";
     var mkdocs_page_url = null;
   </script>
-  
-  <script src="../js/jquery-2.1.1.min.js" defer></script>
-  <script src="../js/modernizr-2.8.3.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script> 
-  
-</head>
-
+<script defer="" src="../js/jquery-2.1.1.min.js"></script>
+<script defer="" src="../js/modernizr-2.8.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</link></head>
 <body class="wy-body-for-nav" role="document">
-
-  <div class="wy-grid-for-nav">
-
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
-    <div class="wy-side-scroll">
-      <div class="wy-side-nav-search">
-        <a href=".." class="icon icon-home"> DDS documentation</a>
-        <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
-  </form>
+<div class="wy-grid-for-nav">
+<nav class="wy-nav-side stickynav" data-toggle="wy-nav-shift">
+<div class="wy-side-scroll">
+<div class="wy-side-nav-search">
+<a class="icon icon-home" href=".."> DDS documentation</a>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search docs" title="Type search term here" type="text"/>
+</form>
 </div>
-      </div>
-
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../dds-reference/">Reference</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Collaboration and branching</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Working with modules</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_plotting/">Plotting dependencies</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Adding custom types</a>
-                    </li>
-                </ul>
-                <ul class="current">
-                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - scikit-learn</a>
-    <ul class="current">
-    </ul>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../changelog/">Changelog</a>
-                    </li>
-                </ul>
-      </div>
-    </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="..">DDS documentation</a>
-      </nav>
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="..">Docs</a> &raquo;</li>
-    
-      
-    
-    <li>Tutorial - scikit-learn</li>
-    <li class="wy-breadcrumbs-aside">
-      
-    </li>
-  </ul>
-  
-  <hr/>
 </div>
-          <div role="main">
-            <div class="section">
-              
-                
+<div aria-label="main navigation" class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dds-reference/">Reference</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Collaboration and branching</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Working with modules</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tut_plotting/">Plotting dependencies</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Adding custom types</a>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal current" href="./">Tutorial - scikit-learn</a>
+<ul class="current">
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/">Changelog</a>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+<section class="wy-nav-content-wrap" data-toggle="wy-nav-shift">
+<nav aria-label="top navigation" class="wy-nav-top" role="navigation">
+<i class="fa fa-bars" data-toggle="wy-nav-top"></i>
+<a href="..">DDS documentation</a>
+</nav>
+<div class="wy-nav-content">
+<div class="rst-content">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="wy-breadcrumbs">
+<li><a href="..">Docs</a> »</li>
+<li>Tutorial - scikit-learn</li>
+<li class="wy-breadcrumbs-aside">
+</li>
+</ul>
+<hr/>
+</div>
+<div role="main">
+<div class="section">
 <div class="notebook-content">
 <style type="text/css">
-    
-    .highlight-ipynb .hll { background-color: var(--jp-cell-editor-active-background) }
-.highlight-ipynb  { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
-.highlight-ipynb .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
-.highlight-ipynb .err { color: var(--jp-mirror-editor-error-color) } /* Error */
-.highlight-ipynb .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
-.highlight-ipynb .o { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator */
-.highlight-ipynb .p { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation */
-.highlight-ipynb .ch { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Hashbang */
-.highlight-ipynb .cm { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Multiline */
-.highlight-ipynb .cp { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Preproc */
-.highlight-ipynb .cpf { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.PreprocFile */
-.highlight-ipynb .c1 { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Single */
-.highlight-ipynb .cs { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Special */
-.highlight-ipynb .kc { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Constant */
-.highlight-ipynb .kd { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Declaration */
-.highlight-ipynb .kn { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Namespace */
-.highlight-ipynb .kp { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Pseudo */
-.highlight-ipynb .kr { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Reserved */
-.highlight-ipynb .kt { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Type */
-.highlight-ipynb .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
-.highlight-ipynb .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
-.highlight-ipynb .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
-.highlight-ipynb .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
-.highlight-ipynb .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
-.highlight-ipynb .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
-.highlight-ipynb .mh { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Hex */
-.highlight-ipynb .mi { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer */
-.highlight-ipynb .mo { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Oct */
-.highlight-ipynb .sa { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Affix */
-.highlight-ipynb .sb { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Backtick */
-.highlight-ipynb .sc { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Char */
-.highlight-ipynb .dl { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Delimiter */
-.highlight-ipynb .sd { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Doc */
-.highlight-ipynb .s2 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Double */
-.highlight-ipynb .se { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Escape */
-.highlight-ipynb .sh { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Heredoc */
-.highlight-ipynb .si { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Interpol */
-.highlight-ipynb .sx { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Other */
-.highlight-ipynb .sr { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Regex */
-.highlight-ipynb .s1 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Single */
-.highlight-ipynb .ss { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Symbol */
-.highlight-ipynb .il { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer.Long */
+    pre { line-height: 125%; }
+td.linenos pre { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
+td.linenos pre.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.highlight .hll { background-color: var(--jp-cell-editor-active-background) }
+.highlight { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
+.highlight .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
+.highlight .err { color: var(--jp-mirror-editor-error-color) } /* Error */
+.highlight .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
+.highlight .o { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator */
+.highlight .p { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation */
+.highlight .ch { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Preproc */
+.highlight .cpf { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Single */
+.highlight .cs { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Special */
+.highlight .kc { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Pseudo */
+.highlight .kr { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Type */
+.highlight .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
+.highlight .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
+.highlight .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
+.highlight .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
+.highlight .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
+.highlight .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
+.highlight .mh { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Hex */
+.highlight .mi { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer */
+.highlight .mo { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Oct */
+.highlight .sa { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Affix */
+.highlight .sb { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Backtick */
+.highlight .sc { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Char */
+.highlight .dl { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Delimiter */
+.highlight .sd { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Doc */
+.highlight .s2 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Double */
+.highlight .se { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Escape */
+.highlight .sh { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Heredoc */
+.highlight .si { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Interpol */
+.highlight .sx { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Other */
+.highlight .sr { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Regex */
+.highlight .s1 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Single */
+.highlight .ss { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Symbol */
+.highlight .il { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer.Long */
   </style>
-
-
-
 <style type="text/css">
 /*-----------------------------------------------------------------------------
 | Copyright (c) Jupyter Development Team.
@@ -13911,8 +13888,7 @@ body.lm-mod-override-cursor .jp-OutputArea-output.jp-mod-isolated:before {
 |----------------------------------------------------------------------------*/
 
 </style>
-
-    <style type="text/css">
+<style type="text/css">
 /*-----------------------------------------------------------------------------
 | Copyright (c) Jupyter Development Team.
 | Distributed under the terms of the Modified BSD License.
@@ -14302,10 +14278,7 @@ all of MD as it is not optimized for dense, information rich UIs.
   --jp-icon-contrast-color3: var(--md-blue-600);
 }
 </style>
-
-
-
-<style>
+<style type="text/css">
 /* Reset */
 *, *::before, *::after {
     -webkit-box-sizing: border-box;
@@ -14326,60 +14299,54 @@ all of MD as it is not optimized for dense, information rich UIs.
 }
 
 /* Anchor links */
-.jupyter-notebook .anchor-link {
+.anchor-link {
     display: none;
 }
 h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     display: inline-block;
 }
 
-/* Markdown cells: Remove Input prompt */
+/* Markdown cells: Remove prompt */
 .jp-Cell-inputWrapper .jp-InputPrompt {
     display: none;
 }
 
-/* Code cells: Show Input prompt */
+/* Code cells: Show prompt */
 .jp-CodeCell .jp-Cell-inputWrapper .jp-InputPrompt {
     display: block;
 }
 
-/* Code pre block scroll horizontaly */
+/* Prompt fixes */
 .jp-InputPrompt, .jp-OutputPrompt{
     overflow: visible;
 }
 
-/* Lab uses move cursor for the input prompts */
+/* Lab uses move for the input prompts */
 .jp-Notebook .jp-Cell .jp-InputPrompt {
     cursor: default;
 }
 
-/* Code cell max-width */
+/* Editor max-width */
 .jp-InputArea-editor {
     width: 1px;
 }
 
-/* Code cell Fix pre margin */
-.jp-InputArea-editor .highlight-ipynb pre {
-    margin: 0;
-    padding: 5px 10px;
-}
-
 /* Editor colors */
-/* .jp-Editor .highlight {
+.jp-Editor .highlight {
     margin: 0.4em;
     background: var(--jp-cell-editor-background);
     color: var(--jp-mirror-editor-variable-color);
-} */
+}
 
 /* Editor colors */
-/* .jp-Editor .highlight pre {
+.jp-Editor .highlight pre {
     background: none;
     border: none;
     margin: 0;
     overflow-x: auto;
-} */
+}
 
-/* MKDocs Material theme defaults */
+/* Material mkdocs */
 .jp-RenderedHTMLCommon p {
     font-size: .8rem;
     line-height: 1.6;
@@ -14419,12 +14386,9 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     border: none;
 }
 
-.jp-RenderedHTMLCommon .admonition p:not(:first-child) {
-    margin: 1em 0;
-}
 
 /* Tags on cells */
-/* Mostly copying this from straight from Jupyter */
+/* Mostly copying this from straight Jupyter */
 .celltoolbar {
     border: none;
     background: #EEE;
@@ -14470,7 +14434,7 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     display: inline-block;
 }
 
-/* Fix: Bokeh plots table no hover */
+/* Bokeh plots table no hover */
 .bk-plot-wrapper tbody tr {
     background: none !important;
 }
@@ -14478,11 +14442,10 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     background: none !important;
 }
 </style>
-
 <!-- Load mathjax -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML-full,Safe"> </script>
-    <!-- MathJax configuration -->
-    <script type="text/x-mathjax-config">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML-full,Safe"> </script>
+<!-- MathJax configuration -->
+<script type="text/x-mathjax-config">
     init_mathjax = function() {
         if (window.MathJax) {
         // MathJax loaded
@@ -14517,53 +14480,43 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     }
     init_mathjax();
     </script>
-    <!-- End of mathjax configuration --><div class="jupyter-notebook">
+<!-- End of mathjax configuration -->
+<body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="end-to-end-tutorial-scikit-learn-tutorial">End-to-end tutorial: scikit-learn tutorial<a class="anchor-link" href="#End-to-end-tutorial:-scikit-learn-tutorial">&#182;</a></h1><p>This tutorial is an adaptation of the Machine Learning tutorial from Elite Data Science. The original tutorial is here:</p>
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="end-to-end-tutorial-scikit-learn-tutorial">End-to-end tutorial: scikit-learn tutorial<a class="anchor-link" href="#End-to-end-tutorial:-scikit-learn-tutorial">¶</a></h1><p>This tutorial is an adaptation of the Machine Learning tutorial from Elite Data Science. The original tutorial is here:</p>
 <p><a href="https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn">https://elitedatascience.com/python-machine-learning-tutorial-scikit-learn</a></p>
 <p>Let us start with a few imports</p>
-
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs   celltag_hide_cell">
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs   celltag_hide_cell">
-
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs celltag_hide_cell">
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Seting up the <code>dds</code> store. This is a recommended operation (here necessary to generate the documentation).</p>
-
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
-<span class="n">dds</span><span class="o">.</span><span class="n">set_store</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
-              <span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;/tmp/dds/tut_sklearn/data&quot;</span><span class="p">,</span>
-              <span class="n">internal_dir</span><span class="o">=</span><span class="s2">&quot;/tmp/dds/tut_sklearn/internal&quot;</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
+<span class="n">dds</span><span class="o">.</span><span class="n">set_store</span><span class="p">(</span><span class="s2">"local"</span><span class="p">,</span>
+              <span class="n">data_dir</span><span class="o">=</span><span class="s2">"/tmp/dds/tut_sklearn/data"</span><span class="p">,</span>
+              <span class="n">internal_dir</span><span class="o">=</span><span class="s2">"/tmp/dds/tut_sklearn/internal"</span><span class="p">)</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
  
@@ -14577,161 +14530,108 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">json</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>We now add the import to the <code>dds</code> package. By default, the data will be stored in the temporary directory</p>
-
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">dds</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>The two internal directories (data and internal) are now there</p>
-
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Let's start with a familiar problem of accessing data from the internet. This piece of code will download a dataset, but with the additional twist that the dataset will be cached onto the local machine.</p>
-
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path_model</span> <span class="o">=</span> <span class="s2">&quot;/wine-quality/my_model&quot;</span>
-<span class="n">path_model_stats</span> <span class="o">=</span> <span class="s2">&quot;/wine-quality/my_model_stats.json&quot;</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">path_model</span> <span class="o">=</span> <span class="s2">"/wine-quality/my_model"</span>
+<span class="n">path_model_stats</span> <span class="o">=</span> <span class="s2">"/wine-quality/my_model_stats.json"</span>
 
-<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">&quot;/wine-quality/raw&quot;</span><span class="p">)</span>
+<span class="nd">@dds</span><span class="o">.</span><span class="n">data_function</span><span class="p">(</span><span class="s2">"/wine-quality/raw"</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">data</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** in _load_data ***&quot;</span><span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/zygmuntz/wine-quality/master/winequality/winequality-red.csv&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in _load_data ***"</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/zygmuntz/wine-quality/master/winequality/winequality-red.csv"</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">content</span> 
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)),</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf8'</span><span class="p">)),</span> <span class="n">sep</span><span class="o">=</span><span class="s2">";"</span><span class="p">)</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">&quot;/tmp/2.png&quot;</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">])</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="s2">"/tmp/2.png"</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">"analysis"</span><span class="p">])</span>
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
-<span class="n">Image</span><span class="p">(</span><span class="s2">&quot;/tmp/2.png&quot;</span><span class="p">)</span>
+<span class="n">Image</span><span class="p">(</span><span class="s2">"/tmp/2.png"</span><span class="p">)</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
-
-
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult">
-<img src="data:image/png;base64,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
-"
->
+<img src="data:image/png;base64,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
+"/>
 </div>
-
 </div>
-
 </div>
-
 </div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">data</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">data</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>*** in _load_data ***
 </pre>
 </div>
 </div>
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
-
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
 <div>
-<style scoped>
+<style scoped="">
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
     }
@@ -14745,104 +14645,97 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
     }
 </style>
 <table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>fixed acidity</th>
-      <th>volatile acidity</th>
-      <th>citric acid</th>
-      <th>residual sugar</th>
-      <th>chlorides</th>
-      <th>free sulfur dioxide</th>
-      <th>total sulfur dioxide</th>
-      <th>density</th>
-      <th>pH</th>
-      <th>sulphates</th>
-      <th>alcohol</th>
-      <th>quality</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>7.4</td>
-      <td>0.70</td>
-      <td>0.00</td>
-      <td>1.9</td>
-      <td>0.076</td>
-      <td>11.0</td>
-      <td>34.0</td>
-      <td>0.9978</td>
-      <td>3.51</td>
-      <td>0.56</td>
-      <td>9.4</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>7.8</td>
-      <td>0.88</td>
-      <td>0.00</td>
-      <td>2.6</td>
-      <td>0.098</td>
-      <td>25.0</td>
-      <td>67.0</td>
-      <td>0.9968</td>
-      <td>3.20</td>
-      <td>0.68</td>
-      <td>9.8</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>7.8</td>
-      <td>0.76</td>
-      <td>0.04</td>
-      <td>2.3</td>
-      <td>0.092</td>
-      <td>15.0</td>
-      <td>54.0</td>
-      <td>0.9970</td>
-      <td>3.26</td>
-      <td>0.65</td>
-      <td>9.8</td>
-      <td>5</td>
-    </tr>
-  </tbody>
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>fixed acidity</th>
+<th>volatile acidity</th>
+<th>citric acid</th>
+<th>residual sugar</th>
+<th>chlorides</th>
+<th>free sulfur dioxide</th>
+<th>total sulfur dioxide</th>
+<th>density</th>
+<th>pH</th>
+<th>sulphates</th>
+<th>alcohol</th>
+<th>quality</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>7.4</td>
+<td>0.70</td>
+<td>0.00</td>
+<td>1.9</td>
+<td>0.076</td>
+<td>11.0</td>
+<td>34.0</td>
+<td>0.9978</td>
+<td>3.51</td>
+<td>0.56</td>
+<td>9.4</td>
+<td>5</td>
+</tr>
+<tr>
+<th>1</th>
+<td>7.8</td>
+<td>0.88</td>
+<td>0.00</td>
+<td>2.6</td>
+<td>0.098</td>
+<td>25.0</td>
+<td>67.0</td>
+<td>0.9968</td>
+<td>3.20</td>
+<td>0.68</td>
+<td>9.8</td>
+<td>5</td>
+</tr>
+<tr>
+<th>2</th>
+<td>7.8</td>
+<td>0.76</td>
+<td>0.04</td>
+<td>2.3</td>
+<td>0.092</td>
+<td>15.0</td>
+<td>54.0</td>
+<td>0.9970</td>
+<td>3.26</td>
+<td>0.65</td>
+<td>9.8</td>
+<td>5</td>
+</tr>
+</tbody>
 </table>
 </div>
 </div>
-
 </div>
-
 </div>
-
 </div>
-
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Our complete pipeline. A few points are noteworthy:</p>
 <ul>
 <li>the <code>_load_data</code> message does not appear: the data has already been loaded</li>
 <li>note the use of <code>dds.keep</code> to keep multiple pieces of data that depend in an interconnected fashion to subset of the input dataset. The data is still loaded and split, but the ML model and scoring function will be evaluated once (try to rerun the cell below to see what happens)</li>
 </ul>
-
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** in build_model ***&quot;</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in build_model ***"</span><span class="p">)</span>
     <span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">preprocessing</span><span class="o">.</span><span class="n">StandardScaler</span><span class="p">(),</span> 
                              <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
-    <span class="n">hyperparameters</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;randomforestregressor__max_features&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;sqrt&#39;</span><span class="p">],</span>
-                      <span class="s1">&#39;randomforestregressor__max_depth&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+    <span class="n">hyperparameters</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">'randomforestregressor__max_features'</span> <span class="p">:</span> <span class="p">[</span><span class="s1">'auto'</span><span class="p">,</span> <span class="s1">'sqrt'</span><span class="p">],</span>
+                      <span class="s1">'randomforestregressor__max_depth'</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
 
     <span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">hyperparameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
     
@@ -14851,47 +14744,37 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
  
     
 <span class="k">def</span> <span class="nf">model_stats</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** in model_stats ***&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in model_stats ***"</span><span class="p">)</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
-<span class="c1">#         &quot;r2_score&quot;: r2_score(y_test, pred), # uncomment me, see what happens</span>
-        <span class="s2">&quot;mse&quot;</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+<span class="c1">#         "r2_score": r2_score(y_test, pred), # uncomment me, see what happens</span>
+        <span class="s2">"mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
     <span class="p">})</span>
     
     
 <span class="k">def</span> <span class="nf">pipeline</span><span class="p">():</span>
     <span class="n">wine_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">()</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">wine_data</span><span class="o">.</span><span class="n">quality</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">wine_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;quality&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">wine_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">'quality'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> 
                                                         <span class="n">test_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> 
                                                         <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> 
                                                         <span class="n">stratify</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
     <span class="n">clf</span> <span class="o">=</span> <span class="n">dds</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">path_model</span><span class="p">,</span> <span class="n">build_model</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
     <span class="n">dds</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">path_model_stats</span><span class="p">,</span> <span class="n">model_stats</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** done ***&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** done ***"</span><span class="p">)</span>
 
 
 <span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>*** in build_model ***
 *** in model_stats ***
@@ -14899,218 +14782,138 @@ h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link {
 </pre>
 </div>
 </div>
-
 </div>
-
 </div>
-
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Accessing the output. This can be done in 2 ways:</p>
 <ul>
 <li>directly reading the files in its final destination in the store directory. The store in this notebook is configured to write data in <code>/tmp/dds/tut_sklearn/data</code>. Note that <code>my_model_stats.json</code> is directly readable as a text blob, as expected</li>
 <li>loaded through its <code>dds</code> path, using <code>dds.load</code>. The latter is preferred because it is compatible with maintaining multiple data forks and branches without having to hardcode such branches.</li>
 </ul>
-
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
 <span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_sklearn</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">wine</span><span class="o">-</span><span class="n">quality</span><span class="o">/</span><span class="n">my_model_stats</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>{&#34;mse&#34;: 0.344712962962963}</pre>
+<pre>{"mse": 0.344712962962963}</pre>
 </div>
 </div>
-
 </div>
-
 </div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/wine-quality/my_model_stats.json&quot;</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="n">dds</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"/wine-quality/my_model_stats.json"</span><span class="p">)</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
-
-
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&#39;{&#34;mse&#34;: 0.344712962962963}&#39;</pre>
+<pre>'{"mse": 0.344712962962963}'</pre>
 </div>
-
 </div>
-
 </div>
-
 </div>
-
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Code update: updating the final <code>mode_stats</code> function simply rerun this part, not <code>build_model</code>.</p>
-
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">model_stats</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*** in model_stats ***&quot;</span><span class="p">)</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="k">def</span> <span class="nf">model_stats</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"*** in model_stats ***"</span><span class="p">)</span>
     <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
-        <span class="s2">&quot;r2_score&quot;</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span> <span class="c1"># now it was uncommented</span>
-        <span class="s2">&quot;mse&quot;</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+        <span class="s2">"r2_score"</span><span class="p">:</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span> <span class="c1"># now it was uncommented</span>
+        <span class="s2">"mse"</span><span class="p">:</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
     <span class="p">})</span>
 
 <span class="n">dds</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>*** in model_stats ***
 *** done ***
 </pre>
 </div>
 </div>
-
 </div>
-
 </div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">sh</span>
 <span class="n">cat</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_sklearn</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">wine</span><span class="o">-</span><span class="n">quality</span><span class="o">/</span><span class="n">my_model_stats</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>{&#34;r2_score&#34;: 0.465891952477023, &#34;mse&#34;: 0.344712962962963}</pre>
+<pre>{"r2_score": 0.465891952477023, "mse": 0.344712962962963}</pre>
 </div>
 </div>
-
 </div>
-
 </div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div>
-    <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-    <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">ls</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_sklearn</span><span class="o">/</span><span class="n">internal</span><span class="o">/</span><span class="n">blobs</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">meta</span>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="highlight highlight-ipynb hl-python"><pre><span></span><span class="err">!</span> <span class="n">ls</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">dds</span><span class="o">/</span><span class="n">tut_sklearn</span><span class="o">/</span><span class="n">internal</span><span class="o">/</span><span class="n">blobs</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">v</span> <span class="n">meta</span>
 </pre></div>
-
-        </div>
-    </div>
-
 </div>
 </div>
-
+</div>
+</div>
 <div class="jp-Cell-outputWrapper">
-
-
 <div class="jp-OutputArea jp-Cell-outputArea">
-
 <div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>4cc67a5b7de7dfd23b3ceceb03c0b8ad570f302e5adf5405fd66243e2b593446
 5a35d7d812a90852e790254e7d966f039e5807600c595892508fa51d0dca7ca2
@@ -15119,68 +14922,42 @@ e3d4070ebcd12feee7739faf867247e641915c694b80a731aa4a4803fb4b0aaf
 </pre>
 </div>
 </div>
-
-</div>
-
-</div>
-
 </div>
 </div>
-
-
 </div>
-
-              
-            </div>
-          </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../faq/" class="btn btn-neutral float-right" title="FAQ">Next <span class="icon icon-circle-arrow-right"></span></a>
-      
-      
-        <a href="../tut_custom_types/" class="btn btn-neutral" title="Adding custom types"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-      
-    </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <!-- Copyright etc -->
-    
-  </div>
+</body>
+</div>
+</div>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a class="btn btn-neutral float-right" href="../faq/" title="FAQ">Next <span class="icon icon-circle-arrow-right"></span></a>
+<a class="btn btn-neutral" href="../tut_custom_types/" title="Adding custom types"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+</div>
+<hr/>
+<div role="contentinfo">
+<!-- Copyright etc -->
+</div>
 
   Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
-      
-        </div>
-      </div>
-
-    </section>
-
-  </div>
-
-  <div class="rst-versions" role="note" aria-label="versions">
-    <span class="rst-current-version" data-toggle="rst-current-version">
-      
-      
-        <span><a href="../tut_custom_types/" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      
-      
-        <span style="margin-left: 15px"><a href="../faq/" style="color: #fcfcfc">Next &raquo;</a></span>
-      
-    </span>
 </div>
-    <script>var base_url = '..';</script>
-    <script src="../js/theme.js" defer></script>
-      <script src="../search/main.js" defer></script>
-    <script defer>
+</div>
+</section>
+</div>
+<div aria-label="versions" class="rst-versions" role="note">
+<span class="rst-current-version" data-toggle="rst-current-version">
+<span><a href="../tut_custom_types/" style="color: #fcfcfc;">« Previous</a></span>
+<span style="margin-left: 15px"><a href="../faq/" style="color: #fcfcfc">Next »</a></span>
+</span>
+</div>
+<script>var base_url = '..';</script>
+<script defer="" src="../js/theme.js"></script>
+<script defer="" src="../search/main.js"></script>
+<script defer="">
         window.onload = function () {
             SphinxRtdTheme.Navigation.enable(true);
         };
     </script>
-
 </body>
 </html>

@@ -12,7 +12,7 @@ pandas>=0.23.2,<1.2.0
 pyarrow>=0.10
 
 # Linter
-mypy
+mypy==0.901
 flake8
 gitpython
 

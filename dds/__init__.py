@@ -243,10 +243,12 @@ def set_store(
 
     Arguments:
 
-      store: a type of store. Two values are supported currently:
+      store: a type of store. Four values are supported by default:
 
-        - `local`: local file system
+        - `local`: local file system (default)
         - `dbfs`: the Databricks file system (only valid for the Databricks environment)
+        - `memory`: in-memory storage (useful for debugging and testing)
+        - `noop`: no-op storage (nothing gets stored, useful for debugging)
 
       internal_dir:  a path in a filesystem for the internal storage. The internal storage contains evaluated blobs
           and corresponding metadata. Accepted values are:

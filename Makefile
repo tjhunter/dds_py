@@ -1,6 +1,7 @@
 .PHONY: build pytest dbc
 
 pytest:
+	DDS_STORE_TYPE=memory pytest -o log_cli=true -o log_cli_level=debug dds_tests
 	pytest -o log_cli=true -o log_cli_level=debug dds_tests
 
 build:
