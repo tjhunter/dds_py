@@ -30,7 +30,7 @@ def f():
 
 
 @pytest.mark.usefixtures("cleandir")
-def test_2():
+def test_gh131():
     with pytest.raises(DDSException) as e:
         eval(f)
     assert e.value.error_code == DDSErrorCode.OVERLAPPING_PATH
