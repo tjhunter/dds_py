@@ -1,6 +1,9 @@
 import dds
 import pytest
 from .utils import cleandir, Counter, spath, unreachable_method
+import sklearn
+from joblib import delayed
+
 
 _c1 = Counter()
 _c2 = Counter()
@@ -42,3 +45,23 @@ def test():
     assert _c3.value == 1
     assert dds.load("/p1.dir/inner") == 4
     assert dds.load("/p2.dir/inner") == 5
+
+
+def delayed(f):
+    return f
+
+def fun_array():
+    dds.keep("/p1", [delayed(fun1_1)(y) for y in [-10, -20]])
+
+@pytest.mark.usefixtures("cleandir")
+def test_array():
+    dds.eval(fun_array)
+    assert _c1.value == 2
+    assert _c2.value == 2
+    assert _c3.value == 1
+    dds.eval(fun)
+    assert _c1.value == 2
+    assert _c2.value == 2
+    assert _c3.value == 1
+    assert dds.load("/p1/0/inner") == 4
+    assert dds.load("/p1/1/inner") == 5
