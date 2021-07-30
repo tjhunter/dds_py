@@ -315,6 +315,21 @@ def _eval_new_ctx(
             inters = inters._replace(store_path=path)
         store_paths = FunctionInteractionsUtils.all_store_paths(inters)
         _logger.debug(
+            f"_eval_new_ctx: assigning {(store_paths)} store path(s) to context"
+        )
+        faulty_non_terminal_leaves = FunctionInteractionsUtils.non_terminal_leaves(
+            list(store_paths.keys()), None
+        )
+        if faulty_non_terminal_leaves:
+            raise DDSException(
+                f"The following paths are terminal (they lead to objects) but they also have sub-paths."
+                f"This is not allowed {', '.join(faulty_non_terminal_leaves)}",
+                DDSErrorCode.OVERLAPPING_PATH,
+            )
+        _logger.debug(
+            f"_eval_new_ctx: assigning {faulty_non_terminal_leaves} store path(s) to context"
+        )
+        _logger.debug(
             f"_eval_new_ctx: assigning {len(store_paths)} store path(s) to context"
         )
         _eval_ctx = _eval_ctx._replace(requested_paths=store_paths)
