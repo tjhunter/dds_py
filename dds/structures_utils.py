@@ -77,14 +77,14 @@ class FunctionInteractionsUtils(object):
         non_empty_paths = [p for p in paths if p != empty_path]
 
         # There are both empty paths and non-empty paths. it should be one or the other.
-        if len(paths) > len(non_empty_paths) > 0:
+        if len(paths) > len(non_empty_paths) > 0 and current_prefix is not None:
             res.append(current_prefix)
 
         splits = [DDSPathUtils.split(p) for p in non_empty_paths]
         _logger.debug("non_terminal splits: %s", splits)
         groups = itertools.groupby(splits, lambda x: x[0])
         for (key, l) in groups:
-            sub = [(p if p is not None else "/") for (_, p) in l]
+            sub: List[DDSPath] = [(p if p is not None else empty_path) for (_, p) in l]
             _logger.debug("non_terminal: %s %s", key, sub)
             sub_path: DDSPath = DDSPath(
                 "/" + key
