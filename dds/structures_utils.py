@@ -1,7 +1,7 @@
 """
 Utilities related to structures
 """
-
+import itertools
 import logging
 import pathlib
 from collections import OrderedDict
@@ -44,6 +44,15 @@ class DDSPathUtils(object):
             return DDSPath(p.absolute().as_posix())
         raise NotImplementedError(f"Cannot make a path from object type {type(p)}: {p}")
 
+    @staticmethod
+    def split(p: DDSPath) -> Tuple[str, Optional[DDSPath]]:
+        l = p.split("/")
+        if len(l) == 1:
+            return (l[0], None)
+        if len(l) == 2 and l[0] == "":
+            return (l[1], None)
+        return (l[1], DDSPathUtils.create("/" + "/".join(l[2:])))
+
 
 class _PrintNode(object):
     def __init__(
@@ -55,6 +64,35 @@ class _PrintNode(object):
 
 
 class FunctionInteractionsUtils(object):
+    @classmethod
+    def non_terminal_leaves(
+        cls, paths: List[DDSPath], current_prefix: Optional[DDSPath]
+    ) -> List[DDSPath]:
+        """
+        Returns a list of paths that are terminal but also with leaves (for example: [/f, /f/g] -> [/f]).
+        """
+        _logger.debug("non_terminal in: %s %s", paths, current_prefix)
+        empty_path = DDSPath("/")
+        res: List[DDSPath] = []
+        non_empty_paths = [p for p in paths if p != empty_path]
+
+        # There are both empty paths and non-empty paths. it should be one or the other.
+        if len(paths) > len(non_empty_paths) > 0:
+            res.append(current_prefix)
+
+        splits = [DDSPathUtils.split(p) for p in non_empty_paths]
+        _logger.debug("non_terminal splits: %s", splits)
+        groups = itertools.groupby(splits, lambda x: x[0])
+        for (key, l) in groups:
+            sub = [(p if p is not None else "/") for (_, p) in l]
+            _logger.debug("non_terminal: %s %s", key, sub)
+            sub_path: DDSPath = DDSPath(
+                "/" + key
+            ) if current_prefix is None else DDSPath(current_prefix + "/" + key)
+            res += FunctionInteractionsUtils.non_terminal_leaves(sub, sub_path)
+
+        return res
+
     @classmethod
     def all_store_paths(
         cls, fi: FunctionInteractions
