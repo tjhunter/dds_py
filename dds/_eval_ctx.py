@@ -7,7 +7,7 @@ import logging
 from collections import OrderedDict
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Tuple, Any, Dict, Set, NewType, Union
+from typing import Tuple, Any, Dict, Set, NewType, Union, Optional
 
 from .fun_args import dds_hash
 from .structures import (
@@ -35,6 +35,11 @@ class AuthorizedObject:
 
     object_val: Any
     resolved_path: CanonicalPath
+
+    # The companion class that comes with this object.
+    # In the case the object value is a static or class method, this is necessary to have accurate source code
+    # information.
+    companion_class: Optional[type]
 
 
 @dataclass(frozen=True)

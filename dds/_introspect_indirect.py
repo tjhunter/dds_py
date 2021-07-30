@@ -12,6 +12,7 @@ from typing import (
     Union,
     List,
     Sequence,
+Optional
 )
 
 from ._eval_ctx import (
@@ -48,16 +49,17 @@ def introspect_indirect(
     f: Callable[[Any], Any], eval_ctx: EvalMainContext
 ) -> FunctionIndirectInteractions:
     fun: FunctionType = cast(FunctionType, f)
-    return _introspect(fun, eval_ctx, call_stack=[])
+    return _introspect(fun, eval_ctx, call_stack=[], companion_class=None)
 
 
 def _introspect(
     obj: Union[FunctionType, type],
     gctx: EvalMainContext,
     call_stack: List[CanonicalPath],
+        companion_class: Optional[type],
 ) -> FunctionIndirectInteractions:
     if isinstance(obj, FunctionType):
-        return _introspect_fun(obj, gctx, call_stack)
+        return _introspect_fun(obj, gctx, call_stack, companion_class)
     if isinstance(obj, type):
         return _introspect_class(obj, gctx, call_stack)
     raise DDSException(
@@ -66,7 +68,7 @@ def _introspect(
 
 
 def _introspect_class(
-    c: type, gctx: EvalMainContext, call_stack: List[CanonicalPath],
+    c: type, gctx: EvalMainContext, call_stack: List[CanonicalPath]
 ) -> FunctionIndirectInteractions:
     # Check if the function has already been evaluated.
     fun_path = function_path(c)
@@ -103,7 +105,7 @@ def _introspect_class(
 
 
 def _introspect_fun(
-    f: FunctionType, gctx: EvalMainContext, call_stack: List[CanonicalPath],
+    f: FunctionType, gctx: EvalMainContext, call_stack: List[CanonicalPath], companion_class: Optional[type]
 ) -> FunctionIndirectInteractions:
     # Check if the function has already been evaluated.
     fun_path = function_path(f)
@@ -117,7 +119,7 @@ def _introspect_fun(
             f"or do not accept the module for this class (see dds.accept_module)."
         )
         raise DDSException(msg, DDSErrorCode.MODULE_NOT_FOUND)
-    # _logger.debug(f"_introspect: {f}: fun_path={fun_path} fun_module={fun_module}")
+    _logger.debug(f"_introspect: %s: fun_path=%s fun_module=%s", f, fun_path, fun_module)
     ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
         # _logger.debug(f"_introspect: is_lambda: {f}")
@@ -140,7 +142,7 @@ def _introspect_fun(
         if fiis_ is not None:
             return fiis_
         src = inspect.getsource(f)
-        # _logger.debug(f"Starting _introspect: {f}: src={src}")
+        _logger.debug(f"Starting _introspect: %s: src=%s", f, src)
         ast_src = ast.parse(src)
         ast_f = ast_src.body[0]  # type: ignore
         assert isinstance(ast_f, ast.FunctionDef), type(ast_f)
@@ -180,7 +182,7 @@ class InspectFunctionIndirect(object):
         local_vars = set(
             InspectFunction.get_local_vars(body, dummy_arg_ctx, fun_path) + arg_names
         )
-        # _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
+        _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
         for n in body:
             vdeps.visit(n)
@@ -193,7 +195,7 @@ class InspectFunctionIndirect(object):
             store_path = InspectFunction._path_annotation(node, mod, gctx)
         else:
             store_path = None
-        # _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
+        _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
 
         return FunctionIndirectInteractions(
             store_path=store_path, fun_path=fun_path, indirect_deps=calls_v.results,
@@ -241,7 +243,7 @@ class InspectFunctionIndirect(object):
         call_stack: List[CanonicalPath],
     ) -> Union[FunctionIndirectInteractions, DDSPath, None]:
         local_path = LocalDepPath(PurePosixPath("/".join(_function_name(node.func))))
-        # _logger.debug(f"inspect_call: local_path: %s", local_path)
+        _logger.debug(f"inspect_call: local_path: %s", local_path)
         # We may do sub-method calls on an object -> filter out based on the name of the object
         if str(local_path.parts[0]) in var_names:
             # _logger.debug(
@@ -251,7 +253,7 @@ class InspectFunctionIndirect(object):
 
         # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod}\n %s", pformat(node))
         z: ObjectRetrievalType = ObjectRetrieval.retrieve_object(local_path, mod, gctx)
-        # _logger.debug(f"inspect_call:local_path:{local_path} mod:{mod} z:{z}")
+        _logger.debug(f"inspect_call:local_path:%s mod:%s z:%s", local_path, mod, z)
         if z is None or isinstance(z, ExternalObject):
             # _logger.debug(f"inspect_call: local_path: %s is rejected", local_path)
             return None
@@ -368,7 +370,7 @@ class IntroVisitorIndirect(ast.NodeVisitor):
         self.results: List[Union[FunctionIndirectInteractions, DDSPath]] = []
 
     def visit_Call(self, node: ast.Call) -> Any:
-        # _logger.debug(f"visit: {node} {dir(node)} {pformat(node)}")
+        _logger.debug(f"visit: %s %s %s", node, dir(node), pformat(node))
         # The list of all the previous interactions.
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunctionIndirect.inspect_call(
@@ -381,3 +383,7 @@ class IntroVisitorIndirect(ast.NodeVisitor):
         if fi_or_p is not None:
             self.results.append(fi_or_p)
         self.generic_visit(node)
+
+
+# def is_static(fd: ast.FunctionDef) -> bool:
+#     return any([dec for dec in fd.decorator_list if dec.id == "staticmethod"])

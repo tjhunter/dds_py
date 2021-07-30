@@ -12,7 +12,7 @@ from typing import (
     Any,
     Union,
     Optional,
-    Type,
+    Type,List, Tuple
 )
 
 from ._eval_ctx import (
@@ -92,7 +92,7 @@ class ObjectRetrieval(object):
         if obj_key in gctx.cached_objects:
             # _logger.debug(f"retrieve_object: found in cache: obj_key: {obj_key}")
             return gctx.cached_objects[obj_key]
-        # _logger.debug(f"retrieve_object: not found in cache: obj_key: {obj_key}")
+        _logger.debug(f"retrieve_object: not found in cache: obj_key: %s", obj_key)
 
         fname = local_path.parts[0]
         sub_path = LocalDepPathUtils.tail(local_path)
@@ -174,7 +174,7 @@ class ObjectRetrieval(object):
                         # _logger.debug(
                         #     f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
                         # )
-                        res = AuthorizedObject(obj, obj_path)
+                        res = AuthorizedObject(obj, obj_path, None)
                         gctx.cached_objects[obj_key] = res
                         return res
                     else:
@@ -239,7 +239,7 @@ class ObjectRetrieval(object):
             )
         elif isinstance(z, AuthorizedObject):
             obj = z.object_val
-            gctx.cached_objects[obj_key] = AuthorizedObject(obj, path)
+            gctx.cached_objects[obj_key] = AuthorizedObject(obj, path, None)
             return obj
         else:
             assert False
@@ -250,10 +250,10 @@ class ObjectRetrieval(object):
         local_path: LocalDepPath,
         context_mod: ModuleType,
         gctx: EvalMainContext,
-        debug: bool = False,
+        debug: bool = True,
     ) -> ObjectRetrievalType:
         if debug:
-            _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")
+            _logger.debug(f"_retrieve_object_rec: %s %s", local_path, context_mod)
         if not local_path.parts:
             # The final position. It is the given module, if authorized.
             obj_mod_path = _mod_path(context_mod)
@@ -270,7 +270,7 @@ class ObjectRetrieval(object):
                 #     f"_retrieve_object_rec: Actual module {obj_mod_path} for obj {context_mod}: authorized"
                 # )
                 pass
-            return AuthorizedObject(context_mod, obj_mod_path)
+            return AuthorizedObject(context_mod, obj_mod_path, None)
         # At least one more path to explore
         fname = local_path.parts[0]
         tail_path = LocalDepPathUtils.tail(local_path)
@@ -343,7 +343,7 @@ class ObjectRetrieval(object):
                         _logger.debug(
                             f"_retrieve_object_rec: Object {fname} ({type(obj)}) of path {obj_path} is authorized,"
                         )
-                    return AuthorizedObject(obj, obj_path)
+                    return AuthorizedObject(obj, obj_path, None)
                 else:
                     if debug:
                         _logger.debug(
@@ -375,7 +375,7 @@ class ObjectRetrieval(object):
             obj_mod_path = _mod_path(context_mod)
             obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
             if gctx.is_authorized_path(obj_path):
-                return AuthorizedObject(obj, obj_path)
+                return AuthorizedObject(obj, obj_path, None)
             else:
                 return ExternalObject(obj_path)
 
@@ -386,9 +386,17 @@ class ObjectRetrieval(object):
             obj_mod_path = function_path(obj)
             # obj_mod_path = _mod_path(context_mod)
             obj_path = CanonicalPathUtils.append(obj_mod_path, fname)
-            # _logger.debug(f"_retrieve_object_rec:(type) whitelisted_packages: {obj_path}->{gctx.is_authorized_path(obj_path)} {gctx.whitelisted_packages}")
+            _logger.debug(f"_retrieve_object_rec:(type) whitelisted_packages: %s->%s %s",
+                          obj_path, gctx.is_authorized_path(obj_path), gctx.whitelisted_packages)
             if gctx.is_authorized_path(obj_path):
-                return AuthorizedObject(obj, obj_path)
+                # There is a subpath, it should check if it corresponds to a static method
+                l = [(n, f) for (n, f) in get_static_member(obj) if n == tail_path.name]
+                if l:
+                    (_, f) = l[0]
+                    static_fun_path = CanonicalPathUtils.append(obj_path, tail_path.name)
+                    _logger.debug("Found static function %s at path %s", f, static_fun_path)
+                    return AuthorizedObject(f, static_fun_path, obj)
+                return AuthorizedObject(obj, obj_path, None)
             else:
                 return ExternalObject(obj_path)
 
@@ -396,3 +404,79 @@ class ObjectRetrieval(object):
         # msg = f"Failed to consider object type {type(obj)} at path {local_path} context_mod: {context_mod}"
         # _logger.debug(msg)
         return None
+
+def get_static_member(obj: type) -> List[Tuple[str, FunctionType]]:
+    _logger.debug("dict: %s", obj.__dict__)
+    methods = [(n, f) for (n, f) in inspect.getmembers(obj, predicate=inspect.isfunction) if is_static_method(obj, n)]
+    _logger.debug("static methods: %s", methods)
+    return methods
+
+
+# Code copied from https://github.com/MacHu-GWU/inspect_mate-project/blob/master/inspect_mate/tester.py
+# See information here: https://stackoverflow.com/questions/8727059/python-check-if-method-is-static
+
+def is_static_method(klass_or_instance, attr):
+    """Test if a value of a class is static method.
+    example::
+        class MyClass(object):
+            @staticmethod
+            def add_two(a, b):
+                return a + b
+    :param klass_or_instance: the class
+    :param attr: attribute name
+    :param value: attribute value
+    """
+    value = getattr(klass_or_instance, attr)
+
+    # is a function or method
+    if inspect.isroutine(value):
+        if isinstance(value, property):
+            return False
+
+        args = inspect.getfullargspec(value).args
+        # Can't be a regular method, must be a static method
+        if len(args) == 0:
+            return True
+
+        # must be a regular method
+        elif args[0] == "self":
+            return False
+
+        else:
+            return inspect.isfunction(value)
+
+    return False
+
+
+def is_class_method(klass_or_instance, attr):
+    """Test if a value of a class is class method.
+    example::
+        class MyClass(object):
+            @classmethod
+            def add_two(cls, a, b):
+                return a + b
+    :param klass_or_instance: the class
+    :param attr: attribute name
+    :param value: attribute value
+    """
+    value = getattr(klass_or_instance, attr)
+
+    # is a function or method
+    if inspect.isroutine(value):
+        if isinstance(value, property):
+            return False
+
+        args = inspect.getfullargspec(value).args
+        # Can't be a regular method, must be a static method
+        if len(args) == 0:
+            return inspect.ismethod(value)
+
+        # must be a regular method
+        elif args[0] == "self":
+            return False
+
+        else:
+            return inspect.ismethod(value)
+
+    return False
+
