@@ -110,7 +110,7 @@ def _introspect_class(
     fis_ = gctx.cached_fun_interactions.get(fis_key)
     if fis_ is not None:
         return fis_
-    src = inspect.getsource(c)
+    src = read_source(c)
     # _logger.debug(f"Starting _introspect_class: {c}: src={src}")
     ast_src = ast.parse(src)
     ast_f: ast.ClassDef = ast_src.body[0]  # type: ignore
@@ -198,7 +198,7 @@ def _introspect_fun(
     ast_f: Union[ast.Lambda, ast.FunctionDef]
     if is_lambda(f):
         # _logger.debug(f"_introspect: is_lambda: {f}")
-        src = inspect.getsource(f)
+        src = read_source(f)
         h = dds_hash(src)
         # Have a stable name for the lambda function
         fun_path = CanonicalPath(
@@ -218,7 +218,7 @@ def _introspect_fun(
         fis_ = gctx.cached_fun_interactions.get(fis_key)
         if fis_ is not None:
             return fis_
-        src = inspect.getsource(f)
+        src = read_source(f)
         # _logger.debug(f"Starting _introspect: {f}: src={src}")
         ast_src = ast.parse(src)
         ast_f = ast_src.body[0]  # type: ignore
@@ -929,6 +929,16 @@ def _build_return_sig(
     if not all_pairs:
         return None
     return dds_hash_commut(all_pairs)
+
+
+def read_source(f: Callable[..., Any]) -> str:
+    # For functions defined in test modules, the source code is directly
+    # attached to the function.
+    if "__dds_source" in dir(f):
+        src: str = f.__dds_source  # type: ignore
+        return src
+    else:
+        return inspect.getsource(f)
 
 
 _accepted_packages: Set[Package] = {

@@ -29,6 +29,7 @@ from .introspect import (
     ExternalVarsVisitor,
     LocalVar,
     _function_name,
+    read_source,
 )
 from .structures import (
     FunctionArgContext,
@@ -139,7 +140,7 @@ def _introspect_fun(
         fiis_ = gctx.cached_indirect_interactions.get(fun_path)
         if fiis_ is not None:
             return fiis_
-        src = inspect.getsource(f)
+        src = read_source(f)
         # _logger.debug(f"Starting _introspect: {f}: src={src}")
         ast_src = ast.parse(src)
         ast_f = ast_src.body[0]  # type: ignore
