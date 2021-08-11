@@ -29,6 +29,8 @@ from .introspect import (
     ExternalVarsVisitor,
     LocalVar,
     _function_name,
+    get_assign_targets,
+    python_builtin_names,
 )
 from .structures import (
     FunctionArgContext,
@@ -184,7 +186,8 @@ class InspectFunctionIndirect(object):
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
         for n in body:
             vdeps.visit(n)
-        calls_v = IntroVisitorIndirect(mod, gctx, local_vars, call_stack)
+        # _logger.debug(f"inspect_fun: %s ExternalVarsVisitor: %s", fun_path, vdeps.vars)
+        calls_v = IntroVisitorIndirect(mod, gctx, local_vars, call_stack, fun_path)
         for n in body:
             calls_v.visit(n)
 
@@ -358,11 +361,14 @@ class IntroVisitorIndirect(ast.NodeVisitor):
         gctx: EvalMainContext,
         function_var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
+        fun_path: CanonicalPath,
     ):
+        current_fun_name = LocalVar(CPU.last(fun_path))
         # TODO: start_mod is in the global context
         self._start_mod = start_mod
         self._gctx = gctx
         self._function_var_names = set(function_var_names)
+        self._store_names: Set[LocalVar] = {current_fun_name}
         self._call_stack = call_stack
         # All the calls to a load and subsequent function calls, ordered
         self.results: List[Union[FunctionIndirectInteractions, DDSPath]] = []
@@ -380,4 +386,47 @@ class IntroVisitorIndirect(ast.NodeVisitor):
         )
         if fi_or_p is not None:
             self.results.append(fi_or_p)
+        self.generic_visit(node)
+
+    def visit_Assign(self, node: ast.Assign) -> Any:
+        targets = get_assign_targets(node)
+        if targets:
+            self._store_names.update(targets)
+        self.generic_visit(node)
+
+    def visit_Name(self, node: ast.Name) -> Any:
+        # Look at names of variables that are names imported in the context of the function (in the module) but that are
+        # not builtins.
+        # This neglects the case of shadowing within the function: if the function has a variable that has the same name
+        # as another function, then a mismatch will happen.
+        if (
+            node.id in self._start_mod.__dict__
+            and node.id not in python_builtin_names
+            and LocalVar(node.id) not in self._function_var_names
+            and LocalVar(node.id) not in self._store_names
+        ):
+            # Quick check that it is indeed a function or a module:
+            # TODO: add a test for modules
+            obj = self._start_mod.__dict__[node.id]
+            self._store_names.add(LocalVar(node.id))
+            # Just handling functions, not modules.
+            # Handling modules is more complicated (requires tracing the full call) and it can be easily worked around
+            # by directly importing the function.
+            if isinstance(obj, (FunctionType,)):
+                # Building a fake AST node to handle functions called without arguments. They may not
+                # _logger.debug(f"visit_name: {node} {pformat(node)} {self._store_names}")
+                # No arg given
+                call_node = ast.Call(
+                    func=node, args=[], keywords=[], starargs=None, kwargs=None
+                )
+                fi_or_p = InspectFunctionIndirect.inspect_call(
+                    call_node,
+                    self._gctx,
+                    self._start_mod,
+                    self._function_var_names,
+                    self._call_stack,
+                )
+                if fi_or_p is not None:
+                    self.results.append(fi_or_p)
+
         self.generic_visit(node)
