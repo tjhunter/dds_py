@@ -71,7 +71,7 @@ class FunctionInteractionsUtils(object):
         """
         Returns a list of paths that are terminal but also with leaves (for example: [/f, /f/g] -> [/f]).
         """
-        _logger.debug("non_terminal in: %s %s", paths, current_prefix)
+        # _logger.debug("non_terminal in: %s %s", paths, current_prefix)
         empty_path = DDSPath("/")
         res: List[DDSPath] = []
         non_empty_paths = [p for p in paths if p != empty_path]
@@ -81,11 +81,11 @@ class FunctionInteractionsUtils(object):
             res.append(current_prefix)
 
         splits = [DDSPathUtils.split(p) for p in non_empty_paths]
-        _logger.debug("non_terminal splits: %s", splits)
+        # _logger.debug("non_terminal splits: %s", splits)
         groups = itertools.groupby(splits, lambda x: x[0])
         for (key, l) in groups:
             sub: List[DDSPath] = [(p if p is not None else empty_path) for (_, p) in l]
-            _logger.debug("non_terminal: %s %s", key, sub)
+            # _logger.debug("non_terminal: %s %s", key, sub)
             sub_path: DDSPath = DDSPath(
                 "/" + key
             ) if current_prefix is None else DDSPath(current_prefix + "/" + key)
@@ -239,6 +239,10 @@ class CanonicalPathUtils(object):
     @staticmethod
     def head(p: CanonicalPath) -> str:
         return p._path.parts[0]
+
+    @staticmethod
+    def last(p: CanonicalPath) -> str:
+        return p._path.parts[-1]
 
     @staticmethod
     def tail(p: CanonicalPath) -> CanonicalPath:

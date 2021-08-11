@@ -287,8 +287,8 @@ def _eval_new_ctx(
             start_globals=local_vars,
             resolved_references=OrderedDict(),
         )
-        _logger.debug(f"_eval_new_ctx: introspect_indirect completed")
         inters_indirect = introspect_indirect(fun, eval_ctx)
+        _logger.debug(f"_eval_new_ctx: introspect_indirect completed")
         all_loads = FunctionIndirectInteractionUtils.all_loads(inters_indirect)
         all_stores = FunctionIndirectInteractionUtils.all_stores(inters_indirect)
         loads_to_check = sorted([p for p in all_loads if p not in all_stores])

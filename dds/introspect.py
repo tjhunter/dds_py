@@ -1,3 +1,5 @@
+import keyword
+import builtins
 import ast
 import inspect
 from collections import OrderedDict
@@ -68,6 +70,41 @@ class Functions(str, Enum):
     Load = "load"
     Keep = "keep"
     Eval = "eval"
+
+
+# All the builtins that should not be looked at.
+# See https://stackoverflow.com/questions/50112359/how-to-get-the-list-of-all-built-in-functions-in-python
+python_builtin_names: Set[str] = set(
+    [name for name, _ in vars(builtins).items()] + list(keyword.kwlist)
+)
+
+
+def get_assign_targets(node: Any) -> List[LocalVar]:
+    """
+    Returns the name of assignment targets from expressions.
+    """
+    # The type of node should be Union[ast.Assign, ast.Tuple, ast.Attribute, ast.Name, ast.Call]
+    if isinstance(node, ast.Name):
+        return [LocalVar(node.id)]
+    if isinstance(node, ast.Assign):
+        return [lv for target in node.targets for lv in get_assign_targets(target)]
+    if isinstance(node, ast.Tuple):
+        return [lv for elt in node.elts for lv in get_assign_targets(elt)]
+    if isinstance(node, ast.Attribute):
+        # Just get the top id, not the full paths
+        return get_assign_targets(node.value)
+    if isinstance(node, ast.Call):
+        return get_assign_targets(node.func)
+    _logger.warning(
+        "Expected assignment object to be of type Tuple or Name in AST, got %s: %s",
+        type(node),
+        node,
+    )
+    # For now putting an exception, but it should be flag configurable.
+    raise DDSException(
+        f"Expected assignment object to be of type Tuple or Name in AST, got {type(node)}: {pformat(node)}",
+        error_code=DDSErrorCode.UNKNOWN_AST_NODE,
+    )
 
 
 def _fis_to_siglist(fis: List[FunctionInteractions]) -> List[Tuple[HK, PyHash]]:
@@ -258,14 +295,17 @@ class IntroVisitor(ast.NodeVisitor):
         function_input_sig: PyHash,
         function_var_names: Set[LocalVar],
         call_stack: List[CanonicalPath],
+        fun_path: CanonicalPath,
     ):
         # TODO: start_mod is in the global context
+        current_fun_name = LocalVar(CanonicalPathUtils.last(fun_path))
         self._start_mod = start_mod
         self._gctx = gctx
         self._function_var_names = set(function_var_names)
         self._body_lines = function_body_lines
         self._input_sig = function_input_sig
         self._call_stack = call_stack
+        self._store_names: Set[LocalVar] = {current_fun_name}
         self.inters: List[FunctionInteractions] = []
         self.load_paths: List[DDSPath] = []
 
@@ -296,6 +336,65 @@ class IntroVisitor(ast.NodeVisitor):
         # str is the underlying type of a DDSPath
         if fi_or_p is not None and isinstance(fi_or_p, str):
             self.load_paths.append(fi_or_p)
+        self.generic_visit(node)
+
+    def visit_Assign(self, node: ast.Assign) -> Any:
+        targets = get_assign_targets(node)
+        if targets:
+            self._store_names.update(targets)
+        self.generic_visit(node)
+
+    def visit_Name(self, node: ast.Name) -> Any:
+        # Look at names of variables that are names imported in the context of the function (in the module) but that are
+        # not builtins.
+        # This neglects the case of shadowing within the function: if the function has a variable that has the same name
+        # as another function, then a mismatch will happen.
+        if (
+            node.id in self._start_mod.__dict__
+            and node.id not in python_builtin_names
+            and LocalVar(node.id) not in self._function_var_names
+            and LocalVar(node.id) not in self._store_names
+        ):
+            # Quick check that it is indeed a function or a module:
+            # TODO: add a test for modules
+            obj = self._start_mod.__dict__[node.id]
+            self._store_names.add(LocalVar(node.id))
+            # Just handling functions, not modules.
+            # Handling modules is more complicated (requires tracing the full call) and it can be easily worked around
+            # by directly importing the function.
+            if isinstance(obj, (FunctionType,)):
+                # Building a fake AST node to handle functions called without arguments. They may not
+                _logger.debug(f"visit_name: {node} {pformat(node)} {self._store_names}")
+                # No arg given
+                call_node = ast.Call(
+                    func=node, args=[], keywords=[], starargs=None, kwargs=None
+                )
+                # This is a bit brute-force (not working for multi-line function calls)
+                # but it should be good enough in practice for most cases.
+                # TODO: refine it based of the nested parse tree?
+                function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
+                # The list of all the previous interactions.
+                # This enforces the concept that the current call depends on previous calls.
+                function_inters_sig: Optional[PyHash] = (
+                    dds_hash_commut(_fis_to_siglist(self.inters))
+                )
+                # Check the call for dds calls or sub_calls.
+                fi_or_p = InspectFunction.inspect_call(
+                    call_node,
+                    self._gctx,
+                    self._start_mod,
+                    function_body_hash,
+                    self._input_sig,
+                    function_inters_sig,
+                    self._function_var_names,
+                    self._call_stack,
+                )
+                if fi_or_p is not None and isinstance(fi_or_p, FunctionInteractions):
+                    self.inters.append(fi_or_p)
+                # str is the underlying type of a DDSPath
+                if fi_or_p is not None and isinstance(fi_or_p, str):
+                    self.load_paths.append(fi_or_p)
+
         self.generic_visit(node)
 
 
@@ -564,7 +663,7 @@ class InspectFunction(object):
             ext_vars=sig_variables_distinct,
         ) or dds_hash([])
         calls_v = IntroVisitor(
-            mod, gctx, function_body_lines, input_sig, local_vars, call_stack
+            mod, gctx, function_body_lines, input_sig, local_vars, call_stack, fun_path
         )
         for n in body:
             calls_v.visit(n)
