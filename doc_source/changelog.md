@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.10.0
+
+This releases adds two bugfixes. 
+
+* [GH-130](https://github.com/tjhunter/dds_py/issues/130) Failing for overlapping paths. For example, `dds` used to accept an evaluation with both `/f` and `/f/g` paths defined.
+Such a structure is ill-defined for most filesystems. It is now an error.
+
+* [GH-133](https://github.com/tjhunter/dds_py/issues/133) Higher-order function calls are not properly captured. For example, the python code `map(some_function, range(2))`
+used to miss `some_function` as a dependency. Such a function is now accounted for. This will retrigger signature 
+calculations in this corner case.
+
 ## v0.9.0
 
 Adding two useful stores for checking the correctness of the code without
