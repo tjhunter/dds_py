@@ -21,7 +21,7 @@ def f():
 
 
 @pytest.mark.usefixtures("cleandir")
-def test_gh133():
+def test_gh133_1():
     global x
     assert f() == [1, 2]
     assert _c.value == 2

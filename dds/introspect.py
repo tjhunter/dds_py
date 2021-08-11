@@ -100,11 +100,12 @@ def get_assign_targets(node: Any) -> List[LocalVar]:
         type(node),
         node,
     )
-    # For now putting an exception, but it should be flag configurable.
-    raise DDSException(
-        f"Expected assignment object to be of type Tuple or Name in AST, got {type(node)}: {pformat(node)}",
-        error_code=DDSErrorCode.UNKNOWN_AST_NODE,
-    )
+    return []
+    # TODO: configurable behaviour about such issues. It is indicative of an issue in most cases.
+    # raise DDSException(
+    #     f"Expected assignment object to be of type Tuple or Name in AST, got {type(node)}: {pformat(node)}",
+    #     error_code=DDSErrorCode.UNKNOWN_AST_NODE,
+    # )
 
 
 def _fis_to_siglist(fis: List[FunctionInteractions]) -> List[Tuple[HK, PyHash]]:

@@ -182,11 +182,11 @@ class InspectFunctionIndirect(object):
         local_vars = set(
             InspectFunction.get_local_vars(body, dummy_arg_ctx, fun_path) + arg_names
         )
-        _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
+        # _logger.debug(f"inspect_fun: %s local_vars: %s", fun_path, local_vars)
         vdeps = ExternalVarsVisitor(mod, gctx, local_vars)
         for n in body:
             vdeps.visit(n)
-        _logger.debug(f"inspect_fun: %s ExternalVarsVisitor: %s", fun_path, vdeps.vars)
+        # _logger.debug(f"inspect_fun: %s ExternalVarsVisitor: %s", fun_path, vdeps.vars)
         calls_v = IntroVisitorIndirect(mod, gctx, local_vars, call_stack, fun_path)
         for n in body:
             calls_v.visit(n)
@@ -414,7 +414,7 @@ class IntroVisitorIndirect(ast.NodeVisitor):
             # by directly importing the function.
             if isinstance(obj, (FunctionType,)):
                 # Building a fake AST node to handle functions called without arguments. They may not
-                _logger.debug(f"visit_name: {node} {pformat(node)} {self._store_names}")
+                # _logger.debug(f"visit_name: {node} {pformat(node)} {self._store_names}")
                 # No arg given
                 call_node = ast.Call(
                     func=node, args=[], keywords=[], starargs=None, kwargs=None
