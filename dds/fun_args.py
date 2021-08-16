@@ -1,6 +1,7 @@
 # from __future__ import annotations
 
 import ast
+from collections import deque
 import hashlib
 import inspect
 import logging
@@ -9,11 +10,12 @@ import dataclasses
 from collections import OrderedDict
 from inspect import Parameter
 from pathlib import PurePosixPath
-from typing import Tuple, Callable, Any, Dict, List, Optional, NewType
+from typing import Tuple, Callable, Any, Dict, List, Optional, NewType, Union, Deque
 import datetime
 
 from .structures import CanonicalPath, DDSException, DDSErrorCode
 from .structures import PyHash, FunctionArgContext, ArgName
+from ._config import get_option
 
 _logger = logging.getLogger(__name__)
 
@@ -65,58 +67,99 @@ def dds_hash(x: Any) -> PyHash:
     type has been flagged in an accepted module.
 
     """
-    if x is None:
-        # TODO: this is not robust to adversarial changes.
-        return PyHash(hashlib.sha256("__DDS_NONE__".encode("utf-8")).hexdigest())
-    if isinstance(x, str):
-        return _algo_str(x)
-    if isinstance(x, float):
-        return _algo_bytes(struct.pack("!d", x))
-    if isinstance(x, int):
-        return _algo_bytes(struct.pack("!l", x))
-    if isinstance(x, list):
-        return _algo_str("|".join([dds_hash(y) for y in x]))
-    if isinstance(x, CanonicalPath):
-        return _algo_str(repr(x))
-    if isinstance(x, tuple):
-        return dds_hash(list(x))
-    if isinstance(x, PurePosixPath):
-        return _algo_str(str(x))
-    if isinstance(x, OrderedDict):
-        # Directly using the ordering of the items in the dictionary.
-        return dds_hash([name + "|" + dds_hash(v) for (name, v) in x.items()])
-    if isinstance(x, dict):
-        # Starting from python 3.7 the order of the keys in a dictionary is the order of insertion
-        # This code should return reliable results for CPython 3.6 and python 3.7+ (i.e. the overwhelming
-        # majority of python interpreters out there).
-        # Not going to check for obscure corner cases for now.
-        return dds_hash([name + "|" + dds_hash(v) for (name, v) in x.items()])
-    if dataclasses.is_dataclass(x):
-        names: List[str] = [f.name for f in dataclasses.fields(x)]
-        vals = [dds_hash(getattr(x, n)) for n in names]
-        return dds_hash([name + "|" + h for (name, h) in zip(names, vals)])
-    if isinstance(
-        x,
-        (
-            datetime.datetime,
-            datetime.date,
-            datetime.time,
-            datetime.timedelta,
-            datetime.timezone,
-            datetime.tzinfo,
-        ),
-    ):
-        # TODO: there may be some confusion because we use the same representation for the object
-        # and its string
-        return dds_hash(repr(x))
-    msg = (
-        f"The type {type(x)} is currently not supported. The only supported types are "
-        f"'well-known' types that are part of the standard data structures in the python library. "
-        f"If you think your data type should be supported by DDS, please open a request ticket. "
-        f"General Python classes will not be supported since they can carry arbitrary state and "
-        f"cannot be easily compared. Consider using a dataclass, a dictionary or a named tuple instead."
-    )
-    raise DDSException(msg, DDSErrorCode.TYPE_NOT_SUPPORTED)
+    max_sequence_size: int = get_option("hash.max_sequence_size")
+
+    # Some hints for tracing the offending object.
+    trace: Deque[Union[int, str]] = deque()
+
+    def current_path() -> str:
+        return ".".join([str(i) if not isinstance(i, str) else i for i in list(trace)])
+
+    def check_len(x: Any) -> None:
+        if len(x) > max_sequence_size:
+            raise DDSException(
+                f"Object of type {type(x)} is a sequence of length {len(x)}. "
+                f"Only sequences of length less than {max_sequence_size} are supported. "
+                "This behaviour can be adjusted with the 'hash.max_sequence_size' option."
+                f" Path hint: <{current_path()}>"
+            )
+
+    def _dds_hash(elt: Any, path_item: Union[int, str, None]) -> PyHash:
+        if path_item is not None:
+            trace.append(path_item)
+        res = _dds_hash0(elt)
+        if trace:
+            trace.pop()
+        return res
+
+    def _dds_hash0(elt: Any) -> PyHash:
+        if elt is None:
+            # TODO: this is not robust to adversarial changes.
+            return PyHash(hashlib.sha256("__DDS_NONE__".encode("utf-8")).hexdigest())
+        if isinstance(elt, str):
+            return _algo_str(elt)
+        if isinstance(elt, float):
+            return _algo_bytes(struct.pack("!d", elt))
+        if isinstance(elt, int):
+            return _algo_bytes(struct.pack("!l", elt))
+        if isinstance(elt, CanonicalPath):
+            return _algo_str(repr(elt))
+        if isinstance(elt, list):
+            check_len(elt)
+            return _algo_str(
+                "|".join([_dds_hash(y, idx) for (idx, y) in enumerate(elt)])
+            )
+        if isinstance(elt, tuple):
+            check_len(elt)
+            return _dds_hash(list(elt), None)
+        if isinstance(elt, PurePosixPath):
+            return _algo_str(str(elt))
+        if isinstance(elt, OrderedDict):
+            check_len(elt)
+            # Directly using the ordering of the items in the dictionary.
+            return _dds_hash(
+                [name + "|" + _dds_hash(v, name) for (name, v) in elt.items()], None
+            )
+        if isinstance(elt, dict):
+            # Starting from python 3.7 the order of the keys in a dictionary is the order of insertion
+            # This code should return reliable results for CPython 3.6 and python 3.7+ (i.e. the overwhelming
+            # majority of python interpreters out there).
+            # Not going to check for obscure corner cases for now.
+            check_len(elt)
+            return _dds_hash(
+                [name + "|" + _dds_hash(v, name) for (name, v) in elt.items()], None
+            )
+        if dataclasses.is_dataclass(elt):
+            names: List[str] = [f.name for f in dataclasses.fields(elt)]
+            # TODO: this is not entirely accurate. The error message will show a 'list' type, but it is actually
+            # a dataclass.
+            check_len(names)
+            vals = [_dds_hash(getattr(elt, n), n) for n in names]
+            return _dds_hash([name + "|" + h for (name, h) in zip(names, vals)], None)
+        if isinstance(
+            elt,
+            (
+                datetime.datetime,
+                datetime.date,
+                datetime.time,
+                datetime.timedelta,
+                datetime.timezone,
+                datetime.tzinfo,
+            ),
+        ):
+            # TODO: there may be some confusion because we use the same representation for the object
+            # and its string
+            return _dds_hash(repr(elt), None)
+        msg = (
+            f"The type {type(elt)} is currently not supported. The only supported types are "
+            f"'well-known' types that are part of the standard data structures in the python library. "
+            f"If you think your data type should be supported by DDS, please open a request ticket. "
+            f"General Python classes will not be supported since they can carry arbitrary state and "
+            f"cannot be easily compared. Consider using a dataclass, a dictionary or a named tuple instead."
+        )
+        raise DDSException(msg, DDSErrorCode.TYPE_NOT_SUPPORTED)
+
+    return _dds_hash(x, None)
 
 
 def get_arg_list(

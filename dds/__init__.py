@@ -14,6 +14,7 @@ from ._version import version
 from .introspect import accept_module as _accept_module
 from .store import Store
 from .structures import DDSPath, ProcessingStage, DDSException
+from ._config import get_option, set_option, reset_option
 
 __all__ = [
     "DDSException",
@@ -26,6 +27,9 @@ __all__ = [
     "__version__",
     "dds_function",
     "data_function",
+    "set_option",
+    "get_option",
+    "reset_option",
 ]
 
 __version__ = version
@@ -101,27 +105,27 @@ def keep(
     - wrap them inside a function which is then called through eval()
 
     Example: the following code will fail:
-    
+
     ```py
     df = pd.DataFrame({"x":[1]})
-    
+
     def my_stats(data: pd.DataFrame) -> int: return len(data)
-    
+
     stats = dds.keep("/stats", my_stats, data)
     ```
 
     The workaround is to use a wrapper function that create the dataframe:
-    
+
     ```py
     def my_pipeline():
         df = pd.DataFrame({"x":[1]})
         return dds.keep("/stats", my_stats, df) # This will work
-    
+
     stats = dds.eval(my_pipeline)
     ```
 
     Another possibility is to move keep the result of the pipeline instead:
-    
+
     ```py
     def my_pipeline2():
         df = pd.DataFrame({"x":[1]})
@@ -178,11 +182,11 @@ def eval(
 
     ```py
     def f1_internal(): return 1
-    
+
     def f1(): return dds.keep("/f1_value", f1_internal)
-    
+
     def f2(): return 2 + f1()
-    
+
     def all_fs():
         f1()
         dds.keep("/f2_value", f2)

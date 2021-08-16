@@ -290,7 +290,13 @@ def _eval_new_ctx(
         inters_indirect = introspect_indirect(fun, eval_ctx)
         _logger.debug(f"_eval_new_ctx: introspect_indirect completed")
         all_loads = FunctionIndirectInteractionUtils.all_loads(inters_indirect)
+        _logger.debug(
+            f"_eval_new_ctx: introspect_indirect: {len(all_loads)} loads detected"
+        )
         all_stores = FunctionIndirectInteractionUtils.all_stores(inters_indirect)
+        _logger.debug(
+            f"_eval_new_ctx: introspect_indirect: {len(all_loads)} loads and {len(all_stores)} detected"
+        )
         loads_to_check = sorted([p for p in all_loads if p not in all_stores])
         # Check that there are no indirect references to resolve:
         if loads_to_check:
@@ -382,9 +388,9 @@ def _eval_new_ctx(
             res = fun(*args, **kwargs)  # type: ignore
             _add_delta(t, ProcessingStage.EVAL)
             _logger.info(f"_eval_new_ctx:Evaluating (eval) fun {fun}: completed")
-            obj_key: Optional[
-                PyHash
-            ] = None if path is None else _eval_ctx.requested_paths[path]
+            obj_key: Optional[PyHash] = (
+                None if path is None else _eval_ctx.requested_paths[path]
+            )
             if obj_key is not None:
                 # TODO: add a phase for storing the blobs
                 _logger.info(f"_eval:Storing blob into key {obj_key}")

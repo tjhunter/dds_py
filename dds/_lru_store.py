@@ -14,6 +14,7 @@ from .structures import (
 _logger = logging.getLogger(__name__)
 
 # The default cache is conservatively small to prevent seemingly memory leaks.
+# TODO: make it a configuration parameter
 default_cache_size = 10
 
 
