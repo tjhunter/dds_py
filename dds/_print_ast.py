@@ -58,8 +58,7 @@ def _leaf(node: "ASTType", show_offsets: bool = True) -> str:
             type(node).__name__,
             ", ".join(
                 "{}={}".format(
-                    field,
-                    _leaf(getattr(node, field), show_offsets=show_offsets),
+                    field, _leaf(getattr(node, field), show_offsets=show_offsets),
                 )
                 for field in _fields(node, show_offsets=show_offsets)
             ),
@@ -100,10 +99,7 @@ def pformat(
 
         def _pformat(el: Union["ASTType", None, str], _indent: int = 0) -> str:
             return pformat(
-                el,
-                indent=indent,
-                show_offsets=show_offsets,
-                _indent=_indent,
+                el, indent=indent, show_offsets=show_offsets, _indent=_indent,
             )
 
         out = type(node).__name__ + "(\n"
@@ -124,8 +120,7 @@ def pformat(
                     with indented():
                         for el in attr:
                             representation += "{}{},\n".format(
-                                indentstr(),
-                                _pformat(el, state.indent),
+                                indentstr(), _pformat(el, state.indent),
                             )
                     representation += indentstr() + "]"
                 elif isinstance(attr, AST):

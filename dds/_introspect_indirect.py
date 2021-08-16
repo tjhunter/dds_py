@@ -68,9 +68,7 @@ def _introspect(
 
 
 def _introspect_class(
-    c: type,
-    gctx: EvalMainContext,
-    call_stack: List[CanonicalPath],
+    c: type, gctx: EvalMainContext, call_stack: List[CanonicalPath],
 ) -> FunctionIndirectInteractions:
     # Check if the function has already been evaluated.
     fun_path = function_path(c)
@@ -107,9 +105,7 @@ def _introspect_class(
 
 
 def _introspect_fun(
-    f: FunctionType,
-    gctx: EvalMainContext,
-    call_stack: List[CanonicalPath],
+    f: FunctionType, gctx: EvalMainContext, call_stack: List[CanonicalPath],
 ) -> FunctionIndirectInteractions:
     # Check if the function has already been evaluated.
     fun_path = function_path(f)
@@ -203,9 +199,7 @@ class InspectFunctionIndirect(object):
         # _logger.debug(f"inspect_fun: path from annotation: %s", store_path)
 
         return FunctionIndirectInteractions(
-            store_path=store_path,
-            fun_path=fun_path,
-            indirect_deps=calls_v.results,
+            store_path=store_path, fun_path=fun_path, indirect_deps=calls_v.results,
         )
 
     @classmethod

@@ -671,21 +671,18 @@ class InspectFunction(object):
         )
         if debug:
             _logger.debug("inspect_fun: ext_deps_vars: %s", ext_deps_vars)
-        input_sig = (
-            _build_return_sig(
-                # The body signature will depend on the exact location of the function calls
-                body_sig=None,
-                arg_ctx=arg_ctx,
-                # TODO: does it also need the indirect deps here?
-                indirect_deps={},
-                # Sub function interactions are processed one at
-                # a time inside the function.
-                sub_fis=[],
-                ext_deps=ext_deps_vars,
-                ext_vars=sig_variables_distinct,
-            )
-            or dds_hash([])
-        )
+        input_sig = _build_return_sig(
+            # The body signature will depend on the exact location of the function calls
+            body_sig=None,
+            arg_ctx=arg_ctx,
+            # TODO: does it also need the indirect deps here?
+            indirect_deps={},
+            # Sub function interactions are processed one at
+            # a time inside the function.
+            sub_fis=[],
+            ext_deps=ext_deps_vars,
+            ext_vars=sig_variables_distinct,
+        ) or dds_hash([])
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack, fun_path
         )
