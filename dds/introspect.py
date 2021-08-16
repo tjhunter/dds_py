@@ -224,7 +224,9 @@ def _introspect_fun(
                 (fun_path, arg_ctx_hash, tup)
             ]
         else:
-            _logger.debug(f"{fun_path} not in interaction cache, objects have changed")
+            _logger.debug(
+                f"{fun_path} not in global interaction cache, objects have changed since loading"
+            )
 
     fun_module = inspect.getmodule(f)
     if fun_module is None:
@@ -311,7 +313,12 @@ class IntroVisitor(ast.NodeVisitor):
         self.load_paths: List[DDSPath] = []
 
     def visit_Call(self, node: ast.Call) -> Any:
-        # _logger.debug(f"visit: {node} {dir(node)} {pformat(node)}")
+        # _logger.debug(f"visit_Call: {node} {dir(node)} {pformat(node)}")
+        # We have visited this call. No need to look at it by-name anymore.
+        n = IntroVisitor._get_call_name(node)
+        # _logger.debug(f"visit_call: call name is {n}")
+        if n is not None:
+            self._store_names.add(n)
         # This is a bit brute-force (not working for multi-line function calls)
         # but it should be good enough in practice for most cases.
         # TODO: refine it based of the nested parse tree?
@@ -346,6 +353,7 @@ class IntroVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_Name(self, node: ast.Name) -> Any:
+        # _logger.debug(f"visit_name0: {node} {pformat(node)} {self._store_names}")
         # Look at names of variables that are names imported in the context of the function (in the module) but that are
         # not builtins.
         # This neglects the case of shadowing within the function: if the function has a variable that has the same name
@@ -397,6 +405,16 @@ class IntroVisitor(ast.NodeVisitor):
                     self.load_paths.append(fi_or_p)
 
         self.generic_visit(node)
+
+    @staticmethod
+    def _get_call_name(node: ast.expr) -> Optional[LocalVar]:
+        if isinstance(node, ast.Call):
+            return IntroVisitor._get_call_name(node.func)
+        if isinstance(node, ast.Attribute):
+            return IntroVisitor._get_call_name(node.value)
+        if isinstance(node, ast.Name):
+            return LocalVar(node.id)
+        return None
 
 
 class ExternalVarsVisitor(ast.NodeVisitor):
@@ -624,7 +642,7 @@ class InspectFunction(object):
         arg_ctx: FunctionArgContext,
         fun_path: CanonicalPath,
         call_stack: List[CanonicalPath],
-        debug: bool = False,
+        debug: bool = True,
     ) -> FunctionInteractions:
         body: Sequence[ast.AST]
         if isinstance(node, ast.FunctionDef):
@@ -651,6 +669,8 @@ class InspectFunction(object):
         ext_deps_vars: Dict[LocalDepPath, CanonicalPath] = dict(
             [(ed.local_path, ed.path) for ed in ext_deps if ed.sig is None]
         )
+        if debug:
+            _logger.debug("inspect_fun: ext_deps_vars: %s", ext_deps_vars)
         input_sig = _build_return_sig(
             # The body signature will depend on the exact location of the function calls
             body_sig=None,

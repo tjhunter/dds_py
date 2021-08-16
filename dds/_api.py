@@ -290,7 +290,13 @@ def _eval_new_ctx(
         inters_indirect = introspect_indirect(fun, eval_ctx)
         _logger.debug(f"_eval_new_ctx: introspect_indirect completed")
         all_loads = FunctionIndirectInteractionUtils.all_loads(inters_indirect)
+        _logger.debug(
+            f"_eval_new_ctx: introspect_indirect: {len(all_loads)} loads detected"
+        )
         all_stores = FunctionIndirectInteractionUtils.all_stores(inters_indirect)
+        _logger.debug(
+            f"_eval_new_ctx: introspect_indirect: {len(all_loads)} loads and {len(all_stores)} detected"
+        )
         loads_to_check = sorted([p for p in all_loads if p not in all_stores])
         # Check that there are no indirect references to resolve:
         if loads_to_check:

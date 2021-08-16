@@ -10,7 +10,6 @@ from typing import List
 import dataclasses
 import datetime
 from collections import OrderedDict
-import pandas as pd
 
 _ = cleandir
 
@@ -210,7 +209,7 @@ def test_8():
     assert dds.eval(fun_8_f1) is None
 
 
-test_9_len = 1000000000
+test_9_len = 20000
 test_9_obj = [1] * test_9_len
 
 
@@ -222,4 +221,5 @@ def fun_9():
 @pytest.mark.usefixtures("cleandir")
 def test_9():
     """ Using big objects throws an error """
+    # TODO: more comprehensive test on lists. They are still seen as external dependencies
     assert dds.eval(fun_9) == test_9_len

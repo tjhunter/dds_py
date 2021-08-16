@@ -88,7 +88,8 @@ def dds_hash(x: Any) -> PyHash:
         if path_item is not None:
             trace.append(path_item)
         res = _dds_hash0(elt)
-        trace.pop()
+        if trace:
+            trace.pop()
         return res
 
     def _dds_hash0(elt: Any) -> PyHash:

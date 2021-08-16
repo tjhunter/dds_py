@@ -202,21 +202,40 @@ class LocalDepPathUtils(object):
 class FunctionIndirectInteractionUtils(object):
     @staticmethod
     def all_loads(fis: FunctionIndirectInteractions) -> Set[DDSPath]:
-        # Use the underlying type (python limitation)
-        res: Set[DDSPath] = {
-            DDSPath(p) for p in fis.indirect_deps if isinstance(p, str)
-        }
-        for fis0 in fis.indirect_deps:
-            if isinstance(fis0, FunctionIndirectInteractions):
-                res.update(FunctionIndirectInteractionUtils.all_loads(fis0))
+
+        res: Set[DDSPath] = set()
+        visited: Set[int] = set()
+
+        def rec(fis0: FunctionIndirectInteractions) -> None:
+            # The FIS may form a DAG
+            if id(fis) in visited:
+                return
+            visited.add(id(fis))
+            res.update((DDSPath(p) for p in fis0.indirect_deps if isinstance(p, str)))
+            for fis1 in fis0.indirect_deps:
+                if isinstance(fis1, FunctionIndirectInteractions):
+                    rec(fis1)
+
+        rec(fis)
         return res
 
     @staticmethod
     def all_stores(fis: FunctionIndirectInteractions) -> Set[DDSPath]:
-        res: Set[DDSPath] = {fis.store_path} if fis.store_path is not None else set()
-        for fis0 in fis.indirect_deps:
-            if isinstance(fis0, FunctionIndirectInteractions):
-                res.update(list(FunctionIndirectInteractionUtils.all_stores(fis0)))
+        res: Set[DDSPath] = set()
+        visited: Set[int] = set()
+
+        def rec(fis0: FunctionIndirectInteractions) -> None:
+            # The FIS may form a DAG
+            if id(fis) in visited:
+                return
+            visited.add(id(fis))
+            if fis0.store_path is not None:
+                res.add(fis0.store_path)
+            for fis1 in fis0.indirect_deps:
+                if isinstance(fis1, FunctionIndirectInteractions):
+                    rec(fis1)
+
+        rec(fis)
         return res
 
 
