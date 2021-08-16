@@ -128,8 +128,6 @@ _options_values: Dict[str, Any] = dict(
     ((option.key, option.default) for option in _options)
 )
 
-# _key_format = "koalas.{}".format
-
 
 def show_options():
     """

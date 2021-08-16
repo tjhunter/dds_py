@@ -642,7 +642,7 @@ class InspectFunction(object):
         arg_ctx: FunctionArgContext,
         fun_path: CanonicalPath,
         call_stack: List[CanonicalPath],
-        debug: bool = True,
+        debug: bool = False,
     ) -> FunctionInteractions:
         body: Sequence[ast.AST]
         if isinstance(node, ast.FunctionDef):
