@@ -35,8 +35,7 @@ class Store(object):
         pass
 
     def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
-        """ idempotent
-        """
+        """idempotent"""
         pass
 
     def sync_paths(self, paths: "OrderedDict[DDSPath, PyHash]") -> None:
@@ -270,7 +269,7 @@ class LocalFileStore(Store):
 
 
 def current_timestamp() -> int:
-    """ The current timestamp.
+    """The current timestamp.
 
     Note: this timestamp is not secure because it depends on a reliable source
     of time on the client's machine. It is only used for limited precision

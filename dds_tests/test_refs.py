@@ -177,8 +177,8 @@ def fun_7_f():
 
 @pytest.mark.usefixtures("cleandir")
 def test_7():
-    """ Variables with names that shadow existing modules should not trigger
-     errors during method access. """
+    """Variables with names that shadow existing modules should not trigger
+    errors during method access."""
     assert dds.eval(fun_7_f) == "test"
 
 

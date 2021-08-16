@@ -86,9 +86,11 @@ class FunctionInteractionsUtils(object):
         for (key, l) in groups:
             sub: List[DDSPath] = [(p if p is not None else empty_path) for (_, p) in l]
             # _logger.debug("non_terminal: %s %s", key, sub)
-            sub_path: DDSPath = DDSPath(
-                "/" + key
-            ) if current_prefix is None else DDSPath(current_prefix + "/" + key)
+            sub_path: DDSPath = (
+                DDSPath("/" + key)
+                if current_prefix is None
+                else DDSPath(current_prefix + "/" + key)
+            )
             res += FunctionInteractionsUtils.non_terminal_leaves(sub, sub_path)
 
         return res

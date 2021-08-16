@@ -388,9 +388,9 @@ def _eval_new_ctx(
             res = fun(*args, **kwargs)  # type: ignore
             _add_delta(t, ProcessingStage.EVAL)
             _logger.info(f"_eval_new_ctx:Evaluating (eval) fun {fun}: completed")
-            obj_key: Optional[
-                PyHash
-            ] = None if path is None else _eval_ctx.requested_paths[path]
+            obj_key: Optional[PyHash] = (
+                None if path is None else _eval_ctx.requested_paths[path]
+            )
             if obj_key is not None:
                 # TODO: add a phase for storing the blobs
                 _logger.info(f"_eval:Storing blob into key {obj_key}")

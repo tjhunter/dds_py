@@ -90,7 +90,13 @@ def _build_default_registry() -> CodecRegistry:
     pfc = PandasFileCodec()
 
     cr = CodecRegistry(
-        [], [StringLocalFileCodec(), BytesFileCodec(), PickleLocalFileCodec(), pfc,],
+        [],
+        [
+            StringLocalFileCodec(),
+            BytesFileCodec(),
+            PickleLocalFileCodec(),
+            pfc,
+        ],
     )
     # Hack for the older versions who might have registerd the old pandas codec.
     cr._protocols[ProtocolRef("default.pandas_local")] = pfc

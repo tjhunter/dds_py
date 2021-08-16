@@ -325,8 +325,8 @@ class IntroVisitor(ast.NodeVisitor):
         function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
         # The list of all the previous interactions.
         # This enforces the concept that the current call depends on previous calls.
-        function_inters_sig: Optional[PyHash] = (
-            dds_hash_commut(_fis_to_siglist(self.inters))
+        function_inters_sig: Optional[PyHash] = dds_hash_commut(
+            _fis_to_siglist(self.inters)
         )
         # Check the call for dds calls or sub_calls.
         fi_or_p = InspectFunction.inspect_call(
@@ -384,8 +384,8 @@ class IntroVisitor(ast.NodeVisitor):
                 function_body_hash = dds_hash(self._body_lines[: node.lineno + 1])
                 # The list of all the previous interactions.
                 # This enforces the concept that the current call depends on previous calls.
-                function_inters_sig: Optional[PyHash] = (
-                    dds_hash_commut(_fis_to_siglist(self.inters))
+                function_inters_sig: Optional[PyHash] = dds_hash_commut(
+                    _fis_to_siglist(self.inters)
                 )
                 # Check the call for dds calls or sub_calls.
                 fi_or_p = InspectFunction.inspect_call(
@@ -671,18 +671,21 @@ class InspectFunction(object):
         )
         if debug:
             _logger.debug("inspect_fun: ext_deps_vars: %s", ext_deps_vars)
-        input_sig = _build_return_sig(
-            # The body signature will depend on the exact location of the function calls
-            body_sig=None,
-            arg_ctx=arg_ctx,
-            # TODO: does it also need the indirect deps here?
-            indirect_deps={},
-            # Sub function interactions are processed one at
-            # a time inside the function.
-            sub_fis=[],
-            ext_deps=ext_deps_vars,
-            ext_vars=sig_variables_distinct,
-        ) or dds_hash([])
+        input_sig = (
+            _build_return_sig(
+                # The body signature will depend on the exact location of the function calls
+                body_sig=None,
+                arg_ctx=arg_ctx,
+                # TODO: does it also need the indirect deps here?
+                indirect_deps={},
+                # Sub function interactions are processed one at
+                # a time inside the function.
+                sub_fis=[],
+                ext_deps=ext_deps_vars,
+                ext_vars=sig_variables_distinct,
+            )
+            or dds_hash([])
+        )
         calls_v = IntroVisitor(
             mod, gctx, function_body_lines, input_sig, local_vars, call_stack, fun_path
         )
@@ -1020,9 +1023,9 @@ def _build_return_sig(
 
     These elements are combined using the commutative hash function.
     """
-    body: List[Tuple[HK, PyHash]] = [] if body_sig is None else [
-        (_hash_key_body_sig, body_sig)
-    ]
+    body: List[Tuple[HK, PyHash]] = (
+        [] if body_sig is None else [(_hash_key_body_sig, body_sig)]
+    )
     arg: List[Tuple[HK, PyHash]]
     if any(sig is None for sig in arg_ctx.named_args.values()):
         assert arg_ctx.inner_call_key is not None, f"{arg_ctx} {body_sig}"
