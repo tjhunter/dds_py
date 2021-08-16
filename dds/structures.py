@@ -57,6 +57,7 @@ class DDSErrorCode(IntEnum):
     STORE_PATH_NOT_SUPPORTED = 14
     ARG_IN_DATA_FUNCTION = 15
     OVERLAPPING_PATH = 16
+    UNKNOWN_OPTION = 17
 
 
 class DDSException(BaseException):

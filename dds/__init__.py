@@ -14,6 +14,7 @@ from ._version import version
 from .introspect import accept_module as _accept_module
 from .store import Store
 from .structures import DDSPath, ProcessingStage, DDSException
+from ._config import get_option, set_option, reset_option
 
 __all__ = [
     "DDSException",
@@ -26,6 +27,9 @@ __all__ = [
     "__version__",
     "dds_function",
     "data_function",
+    "set_option",
+    "get_option",
+    "reset_option",
 ]
 
 __version__ = version

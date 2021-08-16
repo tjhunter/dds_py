@@ -10,6 +10,7 @@ from typing import List
 import dataclasses
 import datetime
 from collections import OrderedDict
+import pandas as pd
 
 _ = cleandir
 
@@ -206,4 +207,19 @@ def fun_8_f1():
 @pytest.mark.usefixtures("cleandir")
 def test_8():
     """ Using various objects does not cause an error """
-    assert dds.eval(fun_1_f1) is None
+    assert dds.eval(fun_8_f1) is None
+
+
+test_9_len = 1000000000
+test_9_obj = [1] * test_9_len
+
+
+@dds.data_function("/p")
+def fun_9():
+    return len(test_9_obj)
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_9():
+    """ Using big objects throws an error """
+    assert dds.eval(fun_9) == test_9_len
