@@ -1,8 +1,22 @@
 # Changelog
 
+## v0.11.0
+
+This release adds configuration options and addresses performance issues 
+introduced by v0.10. In addition, some groundwork started to introduce more limits 
+around the hashing of objects, such as big lists, into the signature. This part is 
+not enabled yet.
+
+* [GH-136](https://github.com/tjhunter/dds_py/issues/136) Performance issues on deeply nested code.
+This was a regression from v0.10 caused by a sub-optimal algorithm.
+
+* [GH-137](https://github.com/tjhunter/dds_py/issues/137) Introduction of the configuration framework.
+This allows the behaviour of some specific aspects to be finetuned. The feature is currently left undocumented
+until more options are added.
+
 ## v0.10.0
 
-This releases adds two bugfixes. 
+This release adds two bugfixes. 
 
 * [GH-130](https://github.com/tjhunter/dds_py/issues/130) Failing for overlapping paths. For example, `dds` used to accept an evaluation with both `/f` and `/f/g` paths defined.
 Such a structure is ill-defined for most filesystems. It is now an error.
