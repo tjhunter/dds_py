@@ -93,6 +93,14 @@ def dds_hash(x: Any) -> PyHash:
             trace.pop()
         return res
 
+    def _hash_dict_tuple(k: Any, v: Any) -> str:
+        # Supposing for now that any dictionary key is well-behaved with respect to being converted to a string.
+        if isinstance(k, str):
+            n = k
+        else:
+            n = str(k)
+        return _dds_hash(k, None) + "|" + _dds_hash(v, n)
+
     def _dds_hash0(elt: Any) -> PyHash:
         if elt is None:
             # TODO: this is not robust to adversarial changes.
@@ -127,16 +135,16 @@ def dds_hash(x: Any) -> PyHash:
             # majority of python interpreters out there).
             # Not going to check for obscure corner cases for now.
             check_len(elt)
-            return _dds_hash(
-                [name + "|" + _dds_hash(v, name) for (name, v) in elt.items()], None
-            )
+            return _dds_hash([_hash_dict_tuple(k, v) for (k, v) in elt.items()], None)
         if dataclasses.is_dataclass(elt):
             names: List[str] = [f.name for f in dataclasses.fields(elt)]
             # TODO: this is not entirely accurate. The error message will show a 'list' type, but it is actually
             # a dataclass.
             check_len(names)
             vals = [_dds_hash(getattr(elt, n), n) for n in names]
-            return _dds_hash([name + "|" + h for (name, h) in zip(names, vals)], None)
+            return _dds_hash(
+                [_hash_dict_tuple(name, h) for (name, h) in zip(names, vals)], None
+            )
         if isinstance(
             elt,
             (
