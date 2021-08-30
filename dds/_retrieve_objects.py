@@ -128,13 +128,6 @@ class ObjectRetrieval(object):
                         )
                     return None
                 else:
-                    if debug:
-                        _logger.debug(
-                            f"Could not load name %s, looking into the globals (mod_path: %s, %s)",
-                            fname,
-                            mod_path,
-                            mod_path.get(0),
-                        )
                     pass
                 if debug:
                     _logger.debug(
