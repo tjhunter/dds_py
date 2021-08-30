@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.12.0
+
+This is a major release. It adds hashing of lists and dictionaries into the 
+signatures. Concretely, this means that signatures that depend on
+lists and dictionaries depend on their contents. This solves 
+a major pain point for depending on more complex structures, which 
+is important for when configuring a program.
+This may introduce a recalculation if lists or dictionaries were dependent.
+The new behavior can be disabled with the options:
+
+```py
+dds.set_option("accept_dict", False)
+dds.set_option("accept_list", False)
+```
+
+* [GH-140](https://github.com/tjhunter/dds_py/issues/140) Adds an enables by default lists and dictionaries
+
+
 ## v0.11.0
 
 This release adds configuration options and addresses performance issues 
