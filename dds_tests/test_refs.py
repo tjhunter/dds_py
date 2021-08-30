@@ -219,7 +219,9 @@ def fun_9():
 
 
 @pytest.mark.usefixtures("cleandir")
-def test_9():
+def test_gh140_biglists():
     """ Using big objects throws an error """
     # TODO: more comprehensive test on lists. They are still seen as external dependencies
-    assert dds.eval(fun_9) == test_9_len
+    with pytest.raises(dds.DDSException) as e:
+        dds.eval(fun_9)
+    assert e.value.error_code == dds.structures.DDSErrorCode.SEQUENCE_TOO_LONG

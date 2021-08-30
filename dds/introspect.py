@@ -436,25 +436,29 @@ class ExternalVarsVisitor(ast.NodeVisitor):
 
     def visit_Name(self, node: ast.Name, debug: bool = False) -> Any:
         local_dep_path = LocalDepPath(PurePosixPath(node.id))
-        # _logger.debug(
-        #     "ExternalVarsVisitor:visit_Name: id: %s local_dep_path:%s",
-        #     node.id,
-        #     local_dep_path,
-        # )
+        if debug:
+            _logger.debug(
+                "ExternalVarsVisitor:visit_Name: id: %s local_dep_path:%s",
+                node.id,
+                local_dep_path,
+            )
         if not isinstance(node.ctx, ast.Load):
-            # _logger.debug(
-            #     "ExternalVarsVisitor:visit_Name: id: %s skipping ctx: %s",
-            #     node.id,
-            #     node.ctx,
-            # )
+            if debug:
+                _logger.debug(
+                    "ExternalVarsVisitor:visit_Name: id: %s skipping ctx: %s",
+                    node.id,
+                    node.ctx,
+                )
             return
         # If it is a var that is already part of the function, do not introspect
         if len(local_dep_path.parts) == 1:
             v = str(local_dep_path)
             if v in self._local_vars:
-                # _logger.debug(
-                #     "ExternalVarsVisitor:visit_Name: id: %s skipping, in vars", node.id
-                # )
+                if debug:
+                    _logger.debug(
+                        "ExternalVarsVisitor:visit_Name: id: %s skipping, in vars",
+                        node.id,
+                    )
                 return
         if local_dep_path in self.vars or local_dep_path in self._rejected_paths:
             return
@@ -658,7 +662,7 @@ class InspectFunction(object):
             vdeps.visit(n)
         ext_deps = sorted(vdeps.vars.values(), key=lambda ed: ed.local_path)
         if debug:
-            _logger.debug(f"inspect_fun: ext_deps: %s", ext_deps)
+            _logger.debug("inspect_fun: ext_deps: %s", ext_deps)
 
         # The variables that are hashable: authorized variables outside of the function
         sig_variables: List[Tuple[LocalDepPath, PyHash]] = [

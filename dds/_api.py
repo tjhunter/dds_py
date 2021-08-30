@@ -30,7 +30,7 @@ from .structures_utils import (
     FunctionInteractionsUtils,
     FunctionIndirectInteractionUtils,
 )
-from . import _options
+from ._config import get_option, extra_debug_option
 
 _Out = TypeVar("_Out")
 _In = TypeVar("_In")
@@ -192,7 +192,7 @@ def _eval(
 
     stages = _parse_stages(dds_stages)
 
-    extra_debug = dds_extra_debug or _options._dds_extra_debug
+    extra_debug = dds_extra_debug or get_option(extra_debug_option)
 
     if not _eval_ctx:
         # Not in an evaluation context, create one and introspect
