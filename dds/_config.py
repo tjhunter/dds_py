@@ -105,7 +105,33 @@ class Option:
 
 # Available options.
 #
+
+accept_list_option = Option(
+    key="accept_list",
+    doc=(
+        "Accepts lists as objects. If true, lists are then traversed and their content is included in the signature"
+        " (default true)"
+    ),
+    default=True,
+    types=(bool,),
+    check_func=(lambda v: True, "",),
+)
+
+accept_dict_option = Option(
+    key="accept_dict",
+    doc=(
+        "Accepts dictionaries as objects. If true, lists are then traversed and their content is included "
+        "in the signature"
+        " (default true)"
+    ),
+    default=True,
+    types=(bool,),
+    check_func=(lambda v: True, "",),
+)
+
 _options: List[Option] = [
+    accept_list_option,
+    accept_dict_option,
     Option(
         key="hash.max_sequence_size",
         doc=(
@@ -154,7 +180,7 @@ def show_options():
     print(row_format.format("=" * 31, "=" * 14, "=" * 53))
 
 
-def get_option(key: str, default: Union[Any, None] = None) -> Any:
+def get_option(key: Union[Option, str], default: Union[Any, None] = None) -> Any:
     """
     Retrieves the value of the specified option.
 
@@ -173,6 +199,8 @@ def get_option(key: str, default: Union[Any, None] = None) -> Any:
     ------
     DDSException : if no such option exists and the default is not provided
     """
+    if isinstance(key, Option):
+        return get_option(key.key)
     _check_option(key)
     if default is None:
         default = _options_dict[key].default

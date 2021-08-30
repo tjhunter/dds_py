@@ -58,6 +58,7 @@ class DDSErrorCode(IntEnum):
     ARG_IN_DATA_FUNCTION = 15
     OVERLAPPING_PATH = 16
     UNKNOWN_OPTION = 17
+    SEQUENCE_TOO_LONG = 18
 
 
 class DDSException(BaseException):
@@ -65,9 +66,11 @@ class DDSException(BaseException):
     The base exception for all the exceptions generated in DDS.
     """
 
+    error_code: Optional[DDSErrorCode]
+
     def __init__(self, message: str, error_code: Optional[DDSErrorCode] = None):
         super(DDSException, self).__init__(message)
-        self.error_code: Optional[DDSErrorCode] = error_code
+        self.error_code = error_code
 
 
 class EvalContext(NamedTuple):

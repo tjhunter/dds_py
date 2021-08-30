@@ -23,6 +23,7 @@ from ._eval_ctx import (
 )
 from .structures import DDSException, CanonicalPath, LocalDepPath, DDSErrorCode
 from .structures_utils import LocalDepPathUtils, CanonicalPathUtils
+from ._config import get_option, accept_list_option, accept_dict_option
 
 _logger = logging.getLogger(__name__)
 
@@ -55,6 +56,11 @@ def _is_authorized_type(tpe: Type[Any], gctx: EvalMainContext) -> bool:
         return True
     if tpe in (int, float, str, bytes, PurePosixPath, FunctionType, ModuleType):
         return True
+    # Some specific structural types are more complex and can be user-controlled.
+    if get_option(accept_list_option) and tpe in (list,):
+        return True
+    if get_option(accept_dict_option) and tpe in (dict,):
+        return True
     if issubclass(tpe, object):
         mod = inspect.getmodule(tpe)
         if mod is None:
@@ -82,7 +88,7 @@ class ObjectRetrieval(object):
         local_path: LocalDepPath,
         context_mod: ModuleType,
         gctx: EvalMainContext,
-        debug: bool = False,
+        debug: bool = True,
     ) -> ObjectRetrievalType:
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
@@ -90,9 +96,11 @@ class ObjectRetrieval(object):
         obj_key = (local_path, mod_path)
 
         if obj_key in gctx.cached_objects:
-            # _logger.debug(f"retrieve_object: found in cache: obj_key: {obj_key}")
+            if debug:
+                _logger.debug(f"retrieve_object: found in cache: obj_key: {obj_key}")
             return gctx.cached_objects[obj_key]
-        # _logger.debug(f"retrieve_object: not found in cache: obj_key: {obj_key}")
+        if debug:
+            _logger.debug(f"retrieve_object: not found in cache: obj_key: {obj_key}")
 
         fname = local_path.parts[0]
         sub_path = LocalDepPathUtils.tail(local_path)
@@ -112,21 +120,26 @@ class ObjectRetrieval(object):
                 # Looking into the globals (only if the scope is currently __main__ or __global__)
                 mod_path = _mod_path(context_mod)
                 if CanonicalPathUtils.head(mod_path) not in ("__main__", "__global__"):
-                    # _logger.debug(
-                    #     f"Could not load name %s and not in global context (%s), skipping ",
-                    #     fname,
-                    #     mod_path,
-                    # )
+                    if debug:
+                        _logger.debug(
+                            f"Could not load name %s and not in global context (%s), skipping ",
+                            fname,
+                            mod_path,
+                        )
                     return None
                 else:
-                    # _logger.debug(
-                    #     f"Could not load name %s, looking into the globals (mod_path: %s, %s)",
-                    #     fname,
-                    #     mod_path,
-                    #     mod_path.get(0),
-                    # )
+                    if debug:
+                        _logger.debug(
+                            f"Could not load name %s, looking into the globals (mod_path: %s, %s)",
+                            fname,
+                            mod_path,
+                            mod_path.get(0),
+                        )
                     pass
-                # _logger.debug(f"Could not load name {fname}, looking into the globals")
+                if debug:
+                    _logger.debug(
+                        f"Could not load name {fname}, looking into the globals"
+                    )
                 if fname in gctx.start_globals:
                     # _logger.debug(f"Found {fname} in start_globals")
                     obj = gctx.start_globals[fname]
@@ -151,10 +164,11 @@ class ObjectRetrieval(object):
                             ["__global__"] + [str(x) for x in local_path.parts]
                         )
                     if not gctx.is_authorized_path(obj_path):
-                        # _logger.debug(
-                        #     f"Object[start_globals] {fname} of type {type(obj)} is not authorized (path),"
-                        #     f" dropping path {obj_path}"
-                        # )
+                        if debug:
+                            _logger.debug(
+                                f"Object[start_globals] {fname} of type {type(obj)} is not authorized (path),"
+                                f" dropping path {obj_path}"
+                            )
                         res = ExternalObject(obj_path)
                         gctx.cached_objects[obj_key] = res
                         return res
@@ -171,21 +185,24 @@ class ObjectRetrieval(object):
                             str,
                         ),
                     ):
-                        # _logger.debug(
-                        #     f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
-                        # )
+                        if debug:
+                            _logger.debug(
+                                f"Object[start_globals] {fname} ({type(obj)}) of path {obj_path} is authorized,"
+                            )
                         res = AuthorizedObject(obj, obj_path)
                         gctx.cached_objects[obj_key] = res
                         return res
                     else:
-                        # _logger.debug(
-                        #     f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (type), dropping path {obj_path}"
-                        # )
+                        if debug:
+                            _logger.debug(
+                                f"Object[start_globals] {fname} of type {type(obj)} is noft authorized (type), dropping path {obj_path}"
+                            )
                         res = ExternalObject(obj_path)
                         gctx.cached_objects[obj_key] = res
                         return res
                 else:
-                    # _logger.debug(f"{fname} not found in start_globals")
+                    if debug:
+                        _logger.debug(f"{fname} not found in start_globals")
                     gctx.cached_objects[obj_key] = None
                     return None
             res = cls._retrieve_object_rec(sub_path, loaded_mod, gctx)
@@ -250,7 +267,7 @@ class ObjectRetrieval(object):
         local_path: LocalDepPath,
         context_mod: ModuleType,
         gctx: EvalMainContext,
-        debug: bool = False,
+        debug: bool = True,
     ) -> ObjectRetrievalType:
         if debug:
             _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")

@@ -81,7 +81,8 @@ def dds_hash(x: Any) -> PyHash:
                 f"Object of type {type(x)} is a sequence of length {len(x)}. "
                 f"Only sequences of length less than {max_sequence_size} are supported. "
                 "This behaviour can be adjusted with the 'hash.max_sequence_size' option."
-                f" Path hint: <{current_path()}>"
+                f" Path hint: <{current_path()}>",
+                DDSErrorCode.SEQUENCE_TOO_LONG,
             )
 
     def _dds_hash(elt: Any, path_item: Union[int, str, None]) -> PyHash:
