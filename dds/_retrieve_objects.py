@@ -88,7 +88,7 @@ class ObjectRetrieval(object):
         local_path: LocalDepPath,
         context_mod: ModuleType,
         gctx: EvalMainContext,
-        debug: bool = True,
+        debug: bool = False,
     ) -> ObjectRetrievalType:
         """Retrieves the object and also provides the canonical path of the object"""
         assert len(local_path.parts), local_path
@@ -267,7 +267,7 @@ class ObjectRetrieval(object):
         local_path: LocalDepPath,
         context_mod: ModuleType,
         gctx: EvalMainContext,
-        debug: bool = True,
+        debug: bool = False,
     ) -> ObjectRetrievalType:
         if debug:
             _logger.debug(f"_retrieve_object_rec: {local_path} {context_mod}")

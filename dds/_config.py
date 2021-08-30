@@ -129,7 +129,20 @@ accept_dict_option = Option(
     check_func=(lambda v: True, "",),
 )
 
+extra_debug_option = Option(
+    key="extra_debug",
+    doc=(
+        "Prints and evaluates extra debugging information. This information requires extra roundtrips to the "
+        "storage backend. It is disabled by default to assist with debugging, but it can be disabled if "
+        "I/O with the storage backend is an issue."
+    ),
+    default=True,
+    types=(bool,),
+    check_func=(lambda v: True, "",),
+)
+
 _options: List[Option] = [
+    extra_debug_option,
     accept_list_option,
     accept_dict_option,
     Option(

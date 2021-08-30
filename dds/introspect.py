@@ -434,7 +434,7 @@ class ExternalVarsVisitor(ast.NodeVisitor):
         # All the dependencies that are encountered but do not lead to an external dep.
         self._rejected_paths: Set[LocalDepPath] = set()
 
-    def visit_Name(self, node: ast.Name, debug: bool = True) -> Any:
+    def visit_Name(self, node: ast.Name, debug: bool = False) -> Any:
         local_dep_path = LocalDepPath(PurePosixPath(node.id))
         if debug:
             _logger.debug(
