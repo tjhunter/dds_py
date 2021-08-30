@@ -87,6 +87,8 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">Changelog</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#v0120">v0.12.0</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#v0110">v0.11.0</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#v0100">v0.10.0</a>
@@ -139,6 +141,20 @@
             <div class="section">
               
                 <h1 id="changelog">Changelog</h1>
+<h2 id="v0120">v0.12.0</h2>
+<p>This is a major release. It adds hashing of lists and dictionaries into the 
+signatures. Concretely, this means that signatures that depend on
+lists and dictionaries depend on their contents. This solves 
+a major pain point for depending on more complex structures, which 
+is important for when configuring a program.
+This may introduce a recalculation if lists or dictionaries were dependent.
+The new behavior can be disabled with the options:</p>
+<pre><code class="language-py">dds.set_option(&quot;accept_dict&quot;, False)
+dds.set_option(&quot;accept_list&quot;, False)
+</code></pre>
+<ul>
+<li><a href="https://github.com/tjhunter/dds_py/issues/140">GH-140</a> Adds an enables by default lists and dictionaries</li>
+</ul>
 <h2 id="v0110">v0.11.0</h2>
 <p>This release adds configuration options and addresses performance issues 
 introduced by v0.10. In addition, some groundwork started to introduce more limits 
