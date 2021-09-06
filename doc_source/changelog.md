@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.12.1
+
+Minor relase. Removes verbose logs and ensures that OrderedDict objects are
+also considered in the signature.
+
+
 ## v0.12.0
 
 This is a major release. It adds hashing of lists and dictionaries into the 
