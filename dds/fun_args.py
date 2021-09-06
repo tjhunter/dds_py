@@ -126,9 +126,7 @@ def dds_hash(x: Any) -> PyHash:
         if isinstance(elt, OrderedDict):
             check_len(elt)
             # Directly using the ordering of the items in the dictionary.
-            return _dds_hash(
-                [name + "|" + _dds_hash(v, name) for (name, v) in elt.items()], None
-            )
+            return _dds_hash([_hash_dict_tuple(k, v) for (k, v) in elt.items()], None)
         if isinstance(elt, dict):
             # Starting from python 3.7 the order of the keys in a dictionary is the order of insertion
             # This code should return reliable results for CPython 3.6 and python 3.7+ (i.e. the overwhelming

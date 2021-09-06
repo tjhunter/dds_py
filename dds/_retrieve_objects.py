@@ -6,6 +6,7 @@ import inspect
 import logging
 import pathlib
 import typing
+from collections import OrderedDict
 from pathlib import PurePosixPath
 from types import ModuleType, FunctionType
 from typing import (
@@ -59,7 +60,7 @@ def _is_authorized_type(tpe: Type[Any], gctx: EvalMainContext) -> bool:
     # Some specific structural types are more complex and can be user-controlled.
     if get_option(accept_list_option) and tpe in (list,):
         return True
-    if get_option(accept_dict_option) and tpe in (dict,):
+    if get_option(accept_dict_option) and tpe in (dict, OrderedDict):
         return True
     if issubclass(tpe, object):
         mod = inspect.getmodule(tpe)
