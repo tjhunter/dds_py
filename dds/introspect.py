@@ -130,6 +130,7 @@ def _introspect_class(
     arg_ctx: FunctionArgContext,
     gctx: EvalMainContext,
     call_stack: List[CanonicalPath],
+    debug: bool = False,
 ) -> FunctionInteractions:
     # Check if the function has already been evaluated.
     fun_path = function_path(c)
@@ -153,7 +154,8 @@ def _introspect_class(
     ast_src = ast.parse(src)
     ast_f: ast.ClassDef = ast_src.body[0]  # type: ignore
     assert isinstance(ast_f, ast.ClassDef), type(ast_f)
-    _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
+    if debug:
+        _logger.debug(f"_introspect ast_src:\n {pformat(ast_f)}")
     body_lines = src.split("\n")
 
     # For each of the functions in the body, look for interactions.
