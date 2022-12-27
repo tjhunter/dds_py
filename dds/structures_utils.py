@@ -46,12 +46,12 @@ class DDSPathUtils(object):
 
     @staticmethod
     def split(p: DDSPath) -> Tuple[str, Optional[DDSPath]]:
-        l = p.split("/")
-        if len(l) == 1:
-            return (l[0], None)
-        if len(l) == 2 and l[0] == "":
-            return (l[1], None)
-        return (l[1], DDSPathUtils.create("/" + "/".join(l[2:])))
+        segments = p.split("/")
+        if len(segments) == 1:
+            return (segments[0], None)
+        if len(segments) == 2 and segments[0] == "":
+            return (segments[1], None)
+        return (segments[1], DDSPathUtils.create("/" + "/".join(segments[2:])))
 
 
 class _PrintNode(object):
@@ -254,8 +254,8 @@ class SupportedTypeUtils(object):
 
 class CanonicalPathUtils(object):
     @staticmethod
-    def from_list(l: List[str]) -> CanonicalPath:
-        return CanonicalPath(PurePosixPath("/".join(l)))
+    def from_list(segments: List[str]) -> CanonicalPath:
+        return CanonicalPath(PurePosixPath("/".join(segments)))
 
     @staticmethod
     def head(p: CanonicalPath) -> str:

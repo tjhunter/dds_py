@@ -17,7 +17,7 @@ flake8
 gitpython
 
 # Code formatter. Only support Python 3.6+
-black==19.10b0
+black==22.10
 
 # Documentation
 mkdocs

@@ -51,7 +51,7 @@ from .structures_utils import DDSPathUtils, CanonicalPathUtils
 try:
     from IPython.core.magics.code import extract_symbols  # type: ignore
 except ImportError:
-    exctract_sympols = None  # type: ignore
+    exctract_sympols = None
 
 _logger = logging.getLogger(__name__)
 _hash_key_body_sig = HK("body_sig")
@@ -767,7 +767,7 @@ class InspectFunction(object):
                         )
                     return None
                 assert isinstance(z, AuthorizedObject)
-                caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
+                caller_fun_path = z.resolved_path
                 # _logger.debug(f"_path_annotation: caller_fun_path: %s", caller_fun_path)
                 if caller_fun_path == CanonicalPathUtils.from_list(
                     ["dds", "_annotations", "dds_function"]
@@ -1072,7 +1072,7 @@ def _new_getfile(obj, _old_getfile=inspect.getfile):
     if hasattr(obj, "__module__"):
         object_ = sys.modules.get(obj.__module__)
         if hasattr(object_, "__file__"):
-            return object_.__file__
+            return object_.__file__  # type: ignore
 
     # If parent module is __main__, lookup by methods (NEW)
     for name, member in inspect.getmembers(obj):
@@ -1099,8 +1099,9 @@ def getsource_class(c: type) -> str:
         # Not in a jupyter context, no need to try the jupyter fallback.
         if extract_symbols is None:
             raise e
-        cell_code = "".join(inspect.linecache.getlines(_new_getfile(c)))
-        class_code = extract_symbols(cell_code, c.__name__)[0][0]
+        lines = inspect.linecache.getlines(_new_getfile(c))  # type: ignore
+        cell_code = "".join(lines)
+        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]
         return class_code
 
 
