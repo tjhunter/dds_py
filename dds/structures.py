@@ -100,7 +100,7 @@ class CodecProtocol(object):
         pass
 
     def handled_types(self) -> List[SupportedType]:
-        """ The list of types that this codec can handle """
+        """The list of types that this codec can handle"""
         pass
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
@@ -110,7 +110,7 @@ class CodecProtocol(object):
         pass
 
     def deserialize_from(self, loc: GenericLocation) -> Any:
-        """ Simple in-memory deserialization """
+        """Simple in-memory deserialization"""
         pass
 
 
@@ -125,7 +125,7 @@ class FileCodecProtocol(object):
         pass
 
     def handled_types(self) -> List[SupportedType]:
-        """ The list of types that this codec can handle """
+        """The list of types that this codec can handle"""
         pass
 
     def serialize_into(self, blob: Any, loc: PurePath) -> None:
@@ -135,7 +135,7 @@ class FileCodecProtocol(object):
         pass
 
     def deserialize_from(self, loc: PurePath) -> Any:
-        """ Simple in-memory deserialization """
+        """Simple in-memory deserialization"""
         pass
 
 

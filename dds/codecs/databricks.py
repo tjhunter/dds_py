@@ -24,7 +24,7 @@ _logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class DBFSURI:
-    """ A URI that can be interpreted by DBFS """
+    """A URI that can be interpreted by DBFS"""
 
     _uri: str
 
@@ -156,7 +156,8 @@ class DBFSStore(Store):
         bfc = PickleLocalFileCodec()
 
         self._registry = CodecRegistry(
-            [PySparkDatabricksCodec()], [slfc, plfc, bfc, PandasFileCodec()],
+            [PySparkDatabricksCodec()],
+            [slfc, plfc, bfc, PandasFileCodec()],
         )
         # Deprecation hack
         # To ensure that older data already written can still be read, add the following compatibility routines:

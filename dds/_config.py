@@ -114,7 +114,10 @@ accept_list_option = Option(
     ),
     default=True,
     types=(bool,),
-    check_func=(lambda v: True, "",),
+    check_func=(
+        lambda v: True,
+        "",
+    ),
 )
 
 accept_dict_option = Option(
@@ -126,7 +129,10 @@ accept_dict_option = Option(
     ),
     default=True,
     types=(bool,),
-    check_func=(lambda v: True, "",),
+    check_func=(
+        lambda v: True,
+        "",
+    ),
 )
 
 extra_debug_option = Option(
@@ -138,7 +144,10 @@ extra_debug_option = Option(
     ),
     default=True,
     types=(bool,),
-    check_func=(lambda v: True, "",),
+    check_func=(
+        lambda v: True,
+        "",
+    ),
 )
 
 _options: List[Option] = [

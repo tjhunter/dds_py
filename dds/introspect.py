@@ -49,9 +49,9 @@ from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
 # Only for loading classes in a notebook:
 try:
-    from IPython.core.magics.code import extract_symbols
+    from IPython.core.magics.code import extract_symbols  # type: ignore
 except ImportError:
-    exctract_sympols = None
+    exctract_sympols = None  # type: ignore
 
 _logger = logging.getLogger(__name__)
 _hash_key_body_sig = HK("body_sig")
