@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.12.2
+
+Minor release. Now accepts classes that are defined in a shell or a Jupyter-style 
+environment. Also upgrades the testing infrastructure.
+
 ## v0.12.1
 
 Minor relase. Removes verbose logs and ensures that OrderedDict objects are
