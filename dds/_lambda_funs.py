@@ -7,7 +7,7 @@ http://xion.io/post/code/python-get-lambda-code.html
 from typing import Iterable, Tuple, Optional, Callable, List, Dict, Any
 
 import ast
-import asttokens  # type: ignore
+import asttokens
 import inspect
 import logging
 from ._print_ast import pformat

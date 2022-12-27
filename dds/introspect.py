@@ -49,7 +49,7 @@ from .structures_utils import DDSPathUtils, CanonicalPathUtils
 
 # Only for loading classes in a notebook:
 try:
-    from IPython.core.magics.code import extract_symbols  # type: ignore
+    from IPython.core.magics.code import extract_symbols
 except ImportError:
     exctract_sympols = None
 

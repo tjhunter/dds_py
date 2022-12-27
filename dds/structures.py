@@ -97,11 +97,11 @@ SupportedType = NewType("SupportedType", str)
 
 class CodecProtocol(object):
     def ref(self) -> ProtocolRef:
-        pass
+        raise NotImplementedError()
 
     def handled_types(self) -> List[SupportedType]:
         """The list of types that this codec can handle"""
-        pass
+        raise NotImplementedError()
 
     def serialize_into(self, blob: Any, loc: GenericLocation) -> None:
         """
@@ -111,7 +111,7 @@ class CodecProtocol(object):
 
     def deserialize_from(self, loc: GenericLocation) -> Any:
         """Simple in-memory deserialization"""
-        pass
+        raise NotImplementedError()
 
 
 class FileCodecProtocol(object):
@@ -122,21 +122,21 @@ class FileCodecProtocol(object):
     """
 
     def ref(self) -> ProtocolRef:
-        pass
+        raise NotImplementedError()
 
     def handled_types(self) -> List[SupportedType]:
         """The list of types that this codec can handle"""
-        pass
+        raise NotImplementedError()
 
     def serialize_into(self, blob: Any, loc: PurePath) -> None:
         """
         Puts the blob into the specified path. The path is assumed to be eventually filled with a file.
         """
-        pass
+        raise NotImplementedError()
 
     def deserialize_from(self, loc: PurePath) -> Any:
         """Simple in-memory deserialization"""
-        pass
+        raise NotImplementedError()
 
 
 class BlobMetaData(NamedTuple):
