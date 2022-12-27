@@ -32,4 +32,5 @@ pytest
 pytest-cov
 scikit-learn
 requests
+nbmake==0.5
 

@@ -31,6 +31,7 @@ from .introspect import (
     _function_name,
     get_assign_targets,
     python_builtin_names,
+    getsource_class,
 )
 from .structures import (
     FunctionArgContext,
@@ -88,7 +89,7 @@ def _introspect_class(
     fiis_ = gctx.cached_indirect_interactions.get(fun_path)
     if fiis_ is not None:
         return fiis_
-    src = inspect.getsource(c)
+    src = getsource_class(c)
     # _logger.debug(f"Starting _introspect_class: {c}: src={src}")
     ast_src = ast.parse(src)
     ast_f: ast.ClassDef = ast_src.body[0]  # type: ignore

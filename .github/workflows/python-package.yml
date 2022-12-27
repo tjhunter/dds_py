@@ -48,6 +48,9 @@ jobs:
     - name: Test (in-memory store)
       run: |
         DDS_STORE_TYPE=memory pytest -o log_cli=true -o log_cli_level=debug
+    - name: Test (jupyter specific)
+      run: |
+        PYTHONPATH=$(PWD) pytest --nbmake dds_tests_assets/
     - name: Run the documentation notebooks
       run: |
         jupyter kernelspec list
