@@ -1,6 +1,7 @@
 import keyword
 import builtins
 import ast
+import sys
 import inspect
 from collections import OrderedDict
 import logging
@@ -45,6 +46,12 @@ from .structures import (
     DDSErrorCode,
 )
 from .structures_utils import DDSPathUtils, CanonicalPathUtils
+
+# Only for loading classes in a notebook:
+try:
+    from IPython.core.magics.code import extract_symbols
+except ImportError:
+    exctract_sympols = None
 
 _logger = logging.getLogger(__name__)
 _hash_key_body_sig = HK("body_sig")
@@ -149,7 +156,7 @@ def _introspect_class(
     fis_ = gctx.cached_fun_interactions.get(fis_key)
     if fis_ is not None:
         return fis_
-    src = inspect.getsource(c)
+    src = getsource_class(c)
     # _logger.debug(f"Starting _introspect_class: {c}: src={src}")
     ast_src = ast.parse(src)
     ast_f: ast.ClassDef = ast_src.body[0]  # type: ignore
@@ -760,7 +767,7 @@ class InspectFunction(object):
                         )
                     return None
                 assert isinstance(z, AuthorizedObject)
-                caller_fun, caller_fun_path = (z.object_val, z.resolved_path)
+                caller_fun_path = z.resolved_path
                 # _logger.debug(f"_path_annotation: caller_fun_path: %s", caller_fun_path)
                 if caller_fun_path == CanonicalPathUtils.from_list(
                     ["dds", "_annotations", "dds_function"]
@@ -1055,6 +1062,47 @@ def _build_return_sig(
     if not all_pairs:
         return None
     return dds_hash_commut(all_pairs)
+
+
+def _new_getfile(obj, _old_getfile=inspect.getfile):
+    if not inspect.isclass(obj):
+        return _old_getfile(obj)
+
+    # Lookup by parent module (as in current inspect)
+    if hasattr(obj, "__module__"):
+        object_ = sys.modules.get(obj.__module__)
+        if hasattr(object_, "__file__"):
+            return object_.__file__  # type: ignore
+
+    # If parent module is __main__, lookup by methods (NEW)
+    for name, member in inspect.getmembers(obj):
+        if (
+            inspect.isfunction(member)
+            and obj.__qualname__ + "." + member.__name__ == member.__qualname__
+        ):
+            return inspect.getfile(member)
+    else:
+        raise TypeError("Source for {!r} not found".format(obj))
+
+
+def getsource_class(c: type) -> str:
+    """
+    Returns the source code of a class. It is extra complicated because the
+    inspect module fails for classes defined in a jupyter notebook.
+
+    The original solution was written here:
+    https://stackoverflow.com/questions/51566497/getting-the-source-of-an-object-defined-in-a-jupyter-notebook
+    """
+    try:
+        return inspect.getsource(c)
+    except TypeError as e:
+        # Not in a jupyter context, no need to try the jupyter fallback.
+        if extract_symbols is None:
+            raise e
+        lines = inspect.linecache.getlines(_new_getfile(c))  # type: ignore
+        cell_code = "".join(lines)
+        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]
+        return class_code
 
 
 _accepted_packages: Set[Package] = {

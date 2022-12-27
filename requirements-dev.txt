@@ -12,12 +12,12 @@ pandas>=0.23.2,<1.2.0
 pyarrow>=0.10
 
 # Linter
-mypy==0.901
+mypy==0.991
 flake8
 gitpython
 
 # Code formatter. Only support Python 3.6+
-black==19.10b0
+black==22.10
 
 # Documentation
 mkdocs
@@ -32,4 +32,5 @@ pytest
 pytest-cov
 scikit-learn
 requests
+nbmake==0.5
 

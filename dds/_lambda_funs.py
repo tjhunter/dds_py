@@ -7,7 +7,7 @@ http://xion.io/post/code/python-get-lambda-code.html
 from typing import Iterable, Tuple, Optional, Callable, List, Dict, Any
 
 import ast
-import asttokens  # type: ignore
+import asttokens
 import inspect
 import logging
 from ._print_ast import pformat
@@ -57,15 +57,17 @@ def inspect_lambda_condition(fun: Callable[..., Any]) -> ast.Lambda:
     _logger.debug(f"_parse_lambda: {lines}")
 
     atok = asttokens.ASTTokens("".join(lines), parse=True)
+    atok_tree = atok.tree
+    assert isinstance(atok_tree, ast.AST), atok_tree
 
     parent_of: Dict[ast.AST, Optional[ast.AST]] = dict()
-    for node, parent in _walk_with_parent(atok.tree):
+    for node, parent in _walk_with_parent(atok_tree):
         parent_of[node] = parent
 
     # node of the decorator
     call_node: Optional[ast.Call] = None
 
-    for node in ast.walk(atok.tree):
+    for node in ast.walk(atok_tree):
         if isinstance(node, ast.Lambda) and node.lineno - 1 == condition_lineno:
             # Go up all the way to the decorator
             ancestor = parent_of[node]

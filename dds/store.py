@@ -29,10 +29,10 @@ _logger = logging.getLogger(__name__)
 
 class Store(object):
     def has_blob(self, key: PyHash) -> bool:
-        pass
+        raise NotImplementedError()
 
     def fetch_blob(self, key: PyHash) -> Optional[Any]:
-        pass
+        raise NotImplementedError()
 
     def store_blob(self, key: PyHash, blob: Any, codec: Optional[ProtocolRef]) -> None:
         """idempotent"""
@@ -48,7 +48,7 @@ class Store(object):
         """
         Fetches a set of paths from the store. It is expected that all the paths are returned.
         """
-        pass
+        raise NotImplementedError()
 
     def codec_registry(self) -> CodecRegistry:
         """
@@ -57,7 +57,7 @@ class Store(object):
         It is not necessarily unique
         It may not be called for mutable operations during an evaluation. In that case, the behavior is not defined.
         """
-        pass
+        raise NotImplementedError()
 
     # TODO: reset paths to start the store from scratch without losing data
 

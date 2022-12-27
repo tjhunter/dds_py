@@ -35,14 +35,14 @@ class CodecRegistry(object):
             self.add_file_codec(fc)
 
     def add_codec(self, codec: CodecProtocol) -> None:
-        """ added codecs come on top """
+        """added codecs come on top"""
         self.codecs.insert(0, codec)
         for t in codec.handled_types():
             self._handled_types[t] = codec
         self._protocols[codec.ref()] = codec
 
     def add_file_codec(self, codec: FileCodecProtocol) -> None:
-        """ added codecs come on top """
+        """added codecs come on top"""
         self.file_codecs.insert(0, codec)
         for t in codec.handled_types():
             if t not in self._handled_types:
@@ -90,7 +90,13 @@ def _build_default_registry() -> CodecRegistry:
     pfc = PandasFileCodec()
 
     cr = CodecRegistry(
-        [], [StringLocalFileCodec(), BytesFileCodec(), PickleLocalFileCodec(), pfc,],
+        [],
+        [
+            StringLocalFileCodec(),
+            BytesFileCodec(),
+            PickleLocalFileCodec(),
+            pfc,
+        ],
     )
     # Hack for the older versions who might have registerd the old pandas codec.
     cr._protocols[ProtocolRef("default.pandas_local")] = pfc

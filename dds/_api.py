@@ -220,7 +220,7 @@ def _eval(
             f"_eval:Evaluating (keep:{path}) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
         )
         t = _time()
-        res = fun(*args, **kwargs)  # type: ignore
+        res = fun(*args, **kwargs)
         _add_delta(t, ProcessingStage.STORE_COMMIT)
         _logger.info(f"_eval:Evaluating (keep:{path}) fun {fun}: completed")
         if key is not None:
@@ -385,7 +385,7 @@ def _eval_new_ctx(
             _logger.info(
                 f"_eval_new_ctx:Evaluating (eval) fun {fun} with args {arg_repr} kwargs {kwargs_repr}"
             )
-            res = fun(*args, **kwargs)  # type: ignore
+            res = fun(*args, **kwargs)
             _add_delta(t, ProcessingStage.EVAL)
             _logger.info(f"_eval_new_ctx:Evaluating (eval) fun {fun}: completed")
             obj_key: Optional[PyHash] = (
@@ -424,7 +424,7 @@ def _fetch_ipython_vars() -> Dict[str, Any]:
     Fetches variables from the ipython / jupyter environment. This is a best effort method.
     """
     try:
-        from IPython import get_ipython  # type: ignore
+        from IPython import get_ipython
 
         ipython = get_ipython()
         if ipython is None:

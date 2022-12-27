@@ -45,3 +45,12 @@ def test_extern_class_params_f1():
 @pytest.mark.usefixtures("cleandir")
 def test_extern_class_params():
     assert dds.keep("/path", test_extern_class_params_f1) == 1
+
+
+@dds.data_function("/test_simpleclass_decorator")
+def simpleclass_decorator_fun():
+    return Class1().method()
+
+@pytest.mark.usefixtures("cleandir")
+def test_simpleclass_decorator():
+    assert simpleclass_decorator_fun() == 1

@@ -3,6 +3,7 @@
 pytest:
 	DDS_STORE_TYPE=memory pytest -o log_cli=true -o log_cli_level=debug dds_tests
 	pytest -o log_cli=true -o log_cli_level=debug dds_tests
+	PYTHONPATH=$(PWD) pytest --nbmake dds_tests_assets/
 
 build:
 	rm -rf ./dist/*.whl
