@@ -1091,16 +1091,23 @@ def getsource_class(c: type) -> str:
     The original solution was written here:
     https://stackoverflow.com/questions/51566497/getting-the-source-of-an-object-defined-in-a-jupyter-notebook
     """
-    try:
-        return inspect.getsource(c)
-    except TypeError as e:
+
+    def extract_jupyter(e: Exception) -> str:
         # Not in a jupyter context, no need to try the jupyter fallback.
         if extract_symbols is None:
             raise e
         lines = inspect.linecache.getlines(_new_getfile(c))  # type: ignore
         cell_code = "".join(lines)
-        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]  # type: ignore
+        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]
         return class_code
+
+    try:
+        return inspect.getsource(c)
+    except TypeError as e:
+        return extract_jupyter(e)
+    except OSError as e:
+        # Different exception with python 3.10+
+        return extract_jupyter(e)
 
 
 _accepted_packages: Set[Package] = {
