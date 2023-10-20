@@ -5,7 +5,13 @@ site_dir: docs
 
 plugins:
   - search
-  - mkdocstrings
+  # - mkdocstrings:
+  #     handlers:
+  #       python:
+  #         paths: [., .., ./dds, ../dds]
+  #         rendering:
+  #           show_category_heading: true
+  #           show_root_toc_entry: false
   - mkdocs-jupyter:
       include_source: True
       execute: True
@@ -13,6 +19,8 @@ plugins:
       glob:
         - "*.py"
         - "jupyter/*"
+
+
 
 extra_css: [extra.css]
 
@@ -22,7 +30,7 @@ theme:
 nav:
     - Home: index.md
     - User guide: user_guide.ipynb
-    - Reference: dds-reference.md
+#    - Reference: dds-reference.md
     - Collaboration and branching: tut_collab.ipynb
     - Working with modules: tut_modules.ipynb
     - Plotting dependencies: tut_plotting.ipynb

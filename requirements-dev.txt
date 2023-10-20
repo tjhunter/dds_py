@@ -29,7 +29,7 @@ wheel
 mkdocs
 mkdocs-jupyter
 mkdocs-exclude
-mkdocstrings
+mkdocstrings[python]>=0.20
 jupyter
 pillow
 

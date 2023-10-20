@@ -1,889 +1,132 @@
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  
-  
-  <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Reference - DDS documentation</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
-
-  <link rel="stylesheet" href="../css/theme.css" />
-  <link rel="stylesheet" href="../css/theme_extra.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
-  <link href="../extra.css" rel="stylesheet" />
-  
-  <script>
-    // Current page data
-    var mkdocs_page_name = "Reference";
-    var mkdocs_page_input_path = "dds-reference.md";
-    var mkdocs_page_url = null;
-  </script>
-  
-  <script src="../js/jquery-2.1.1.min.js" defer></script>
-  <script src="../js/modernizr-2.8.3.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script> 
-  
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>DDS package documentation - DDS documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "DDS package documentation";
+        var mkdocs_page_input_path = "dds-reference.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
 </head>
 
 <body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-        <a href=".." class="icon icon-home"> DDS documentation</a>
-        <div role="search">
+          <a href=".." class="icon icon-home"> DDS documentation
+        </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
-                    </li>
-                </ul>
-                <ul class="current">
-                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Reference</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations">dds._annotations</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds._annotations.data_function">data_function()</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__">dds.__init__</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.accept_module">accept_module()</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.eval">eval()</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.keep">keep()</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#accepted-functions">Accepted functions.</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#accepted-arguments">Accepted arguments.</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#using-complex-arguments">Using complex arguments</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#dds.__init__.set_store">set_store()</a>
-    </li>
-    </ul>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Collaboration and branching</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Working with modules</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_plotting/">Plotting dependencies</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Adding custom types</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../tut_sklearn/">Tutorial - scikit-learn</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
-                    </li>
-                </ul>
-                <ul>
-                    <li class="toctree-l1"><a class="reference internal" href="../changelog/">Changelog</a>
-                    </li>
-                </ul>
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../user_guide/">User guide</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tut_collab/">Using dds to collaborate between data branches</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tut_modules/">Working with modules</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tut_plotting/">Plotting dependencies</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tut_custom_types/">Tutorial - Custom serialization protocols</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tut_sklearn/">End-to-end tutorial: scikit-learn tutorial</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../changelog/">Changelog</a>
+                </li>
+              </ul>
       </div>
     </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="..">DDS documentation</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">DDS documentation</a>
+        
       </nav>
-
-      
       <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="..">Docs</a> &raquo;</li>
-    
-      
-    
-    <li>Reference</li>
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">DDS package documentation</li>
     <li class="wy-breadcrumbs-aside">
-      
     </li>
   </ul>
-  
   <hr/>
 </div>
-          <div role="main">
-            <div class="section">
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
               
                 <h1 id="dds-package-documentation">DDS package documentation</h1>
 <p>This is the reference documentation of all the public-facing functions.</p>
-<div class="doc doc-object doc-module">
-<h2 class="hidden-toc" href="#dds._annotations" id="dds._annotations" style="visibility: hidden; position: absolute;">
-        </h2>
-<div class="doc doc-contents first">
-<div class="doc doc-children">
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds._annotations.data_function">
-
-        <code class="highlight language-python">
-data_function<span class="p">(</span><span class="n">path</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Annotation-style for <code>dds.keep</code>.</p>
-<p>This is useful for functions with no arguments that should be cached as DDS functions.</p>
-<p>The following definitions are equivalent:</p>
-<pre><code class="language-py">dds.data_function("/function")
-def function(): return 1
-</code></pre>
-<pre><code class="language-py">def _function(): return 1
-
-def function():
-    return dds.keep("/function", _function)
-</code></pre>
-<details class="quote">
-          <summary>Source code in <code>dds/_annotations.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">data_function</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">F</span><span class="p">],</span> <span class="n">F</span><span class="p">]:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Annotation-style for `dds.keep`.</span>
-
-<span class="sd">    This is useful for functions with no arguments that should be cached as DDS functions.</span>
-
-<span class="sd">    The following definitions are equivalent:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    dds.data_function("/function")</span>
-<span class="sd">    def function(): return 1</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    def _function(): return 1</span>
-
-<span class="sd">    def function():</span>
-<span class="sd">        return dds.keep("/function", _function)</span>
-<span class="sd">    ```</span>
-<span class="sd">    """</span>
-
-    <span class="k">def</span> <span class="nf">decorator_</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
-        <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">DDSException</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"@data_function cannot be used with arguments. "</span>
-                    <span class="sa">f</span><span class="s2">"Arguments were passed to the function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2">, but this function "</span>
-                    <span class="sa">f</span><span class="s2">"also has a dds.data_function annotation, which is not allowed (see "</span>
-                    <span class="sa">f</span><span class="s2">"user guide of DDS). "</span>
-                    <span class="sa">f</span><span class="s2">"Suggestion: write a wrapper function that does not take arguments itself, "</span>
-                    <span class="sa">f</span><span class="s2">"or use dds.keep to pass arguments"</span><span class="p">,</span>
-                    <span class="n">DDSErrorCode</span><span class="o">.</span><span class="n">ARG_IN_DATA_FUNCTION</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">decorator_</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="doc doc-object doc-module">
-<h2 class="hidden-toc" href="#dds.__init__" id="dds.__init__" style="visibility: hidden; position: absolute;">
-        </h2>
-<div class="doc doc-contents first">
-<div class="doc doc-children">
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds.__init__.accept_module">
-
-        <code class="highlight language-python">
-accept_module<span class="p">(</span><span class="n">module</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Marks a module as accepted for introspection. Only functions in the current scope and in accepted modules
-will be considered for the evaluation.</p>
-<p>Example to ensure that all the functions in my_lib are considered by DDS.</p>
-<pre><code class="language-py">import my_lib
-dds.accept_module(my_lib)
-</code></pre>
-<p>The example above causes the <code>my_lib</code> module to be imported. If it is not desired, the name of the module can
-be passed instead:</p>
-<pre><code class="language-py">dds.accept_module("my_lib")
-</code></pre>
-<details class="quote">
-          <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">accept_module</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Marks a module as accepted for introspection. Only functions in the current scope and in accepted modules</span>
-<span class="sd">    will be considered for the evaluation.</span>
-
-<span class="sd">    Example to ensure that all the functions in my_lib are considered by DDS.</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    import my_lib</span>
-<span class="sd">    dds.accept_module(my_lib)</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    The example above causes the `my_lib` module to be imported. If it is not desired, the name of the module can</span>
-<span class="sd">    be passed instead:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    dds.accept_module("my_lib")</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_accept_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds.__init__.eval">
-
-        <code class="highlight language-python">
-eval<span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dds_stages</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Evaluates a function. The result of the function is not stored in the data store, but the function itself may
-contain multiple calls to keep().</p>
-<p>This function is useful to consider in one evaluation multiple functions that may themselves call keep() or
-refer to each other. eval() allows keep() calls to refer to complex arguments that cannot be evaluated before
-runtime. eval() als ensures some basic rules such as no circular references, and will eventually
-enable automatic parallel execution of internal statements.</p>
-<p>See also the documentation of keep() for an example of eval().</p>
-<p><strong>Parameters:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>fun</code></td>
-<td><code>Callable[..., ~_Out]</code></td>
-<td>
-<p>the function to call.</p>
-</td>
-<td><em>required</em></td>
-</tr>
-<tr>
-<td><code>args</code></td>
-<td><code>Any</code></td>
-<td>
-<p>the optional arguments for this function.</p>
-<p>NOTE: keyworded arguments are not supported yet.</p>
-</td>
-<td><code>()</code></td>
-</tr>
-<tr>
-<td><code>dds_extra_debug</code></td>
-<td><code>Optional[bool]</code></td>
-<td>
-<p>If true, will compute extra statistics to assist with debugging.
-As implemented, it reaches to the store to check which blobs need to be computed.</p>
-</td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>dds_export_graph</code></td>
-<td><code>Union[str, pathlib.Path]</code></td>
-<td>
-<p>if specified, a file with the dependency graph of the function will be exported.</p>
-<p>NOTE: this requires the pydot or pydotplus package to be installed, as well as the graphviz program.
-These packages must be installed separately. If they are not present, a runtime error will be triggered.</p>
-</td>
-<td><code>None</code></td>
-</tr>
-</tbody>
-</table>
-<p>Simple example.</p>
-<p>In this example, the function is evaluated only once and its result is served to f1 and f2.</p>
-<pre><code class="language-py">def f1_internal(): return 1
-
-def f1(): return dds.keep("/f1_value", f1_internal)
-
-def f2(): return 2 + f1()
-
-def all_fs():
-    f1()
-    dds.keep("/f2_value", f2)
-</code></pre>
-<details class="quote">
-          <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">eval</span><span class="p">(</span>
-    <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="n">dds_export_graph</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dds_extra_debug</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dds_stages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ProcessingStage</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Out</span><span class="p">]:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Evaluates a function. The result of the function is not stored in the data store, but the function itself may</span>
-<span class="sd">    contain multiple calls to keep().</span>
-
-<span class="sd">    This function is useful to consider in one evaluation multiple functions that may themselves call keep() or</span>
-<span class="sd">    refer to each other. eval() allows keep() calls to refer to complex arguments that cannot be evaluated before</span>
-<span class="sd">    runtime. eval() als ensures some basic rules such as no circular references, and will eventually</span>
-<span class="sd">    enable automatic parallel execution of internal statements.</span>
-
-<span class="sd">    See also the documentation of keep() for an example of eval().</span>
-
-<span class="sd">    Arguments:</span>
-<span class="sd">      fun: the function to call.</span>
-
-<span class="sd">      args: the optional arguments for this function.</span>
-
-<span class="sd">        NOTE: keyworded arguments are not supported yet.</span>
-
-<span class="sd">      dds_extra_debug: If true, will compute extra statistics to assist with debugging.</span>
-<span class="sd">        As implemented, it reaches to the store to check which blobs need to be computed.</span>
-
-<span class="sd">      dds_export_graph: if specified, a file with the dependency graph of the function will be exported.</span>
-
-<span class="sd">        NOTE: this requires the pydot or pydotplus package to be installed, as well as the graphviz program.</span>
-<span class="sd">        These packages must be installed separately. If they are not present, a runtime error will be triggered.</span>
-
-<span class="sd">    Simple example.</span>
-
-<span class="sd">    In this example, the function is evaluated only once and its result is served to f1 and f2.</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    def f1_internal(): return 1</span>
-
-<span class="sd">    def f1(): return dds.keep("/f1_value", f1_internal)</span>
-
-<span class="sd">    def f2(): return 2 + f1()</span>
-
-<span class="sd">    def all_fs():</span>
-<span class="sd">        f1()</span>
-<span class="sd">        dds.keep("/f2_value", f2)</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_eval</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">dds_export_graph</span><span class="p">,</span> <span class="n">dds_extra_debug</span><span class="p">,</span> <span class="n">dds_stages</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds.__init__.keep">
-
-        <code class="highlight language-python">
-keep<span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,
-the function will be evaluated again (with the given arguments).</p>
-<p>For example, instead of writing:</p>
-<pre><code class="language-py">data = my_function(arg1, arg2)
-</code></pre>
-<p>you should use:</p>
-<pre><code class="language-py">data = dds.keep(path, my_function, arg1, arg2)
-</code></pre>
-<p><strong>Parameters:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>path</code></td>
-<td><code>Union[str, DDSPath, pathlib.Path]</code></td>
-<td>
-<p>a path in the storage system which will store the content of the function, evaluated to the given
-arguments. It is expected to be in absolute form (starting with "/" if a string
-or being an absolute path if a pathlib's <code>Path</code> object).</p>
-<p>If this path exists, it will be overwritten silently.</p>
-</td>
-<td><em>required</em></td>
-</tr>
-<tr>
-<td><code>fun</code></td>
-<td><code>Callable[..., ~_Out]</code></td>
-<td>
-<p>A function to evaluate. See text above on the limitations over this function</p>
-</td>
-<td><em>required</em></td>
-</tr>
-<tr>
-<td><code>args</code></td>
-<td><code>Any</code></td>
-<td>
-<p>the arguments of this function</p>
-</td>
-<td><code>()</code></td>
-</tr>
-<tr>
-<td><code>kwargs</code></td>
-<td><code>Any</code></td>
-<td>
-<p><em>(keyworded arguments are currently unsupported)</em></p>
-</td>
-<td><code>{}</code></td>
-</tr>
-</tbody>
-</table>
-<p>return: the value that the function would produce for these arguments</p>
-<h3 id="accepted-functions">Accepted functions.</h3>
-<p>In general, the functions that should be provided are <em>total, non-recursive, deterministic and referentially
- transparent</em>.</p>
-<p>Functions have currently the following restrictions:</p>
-<ul>
-<li>no static method, class method</li>
-<li>not recursive</li>
-<li>no generators</li>
-<li>the functions must be in an accepted module to be considered, see the <code>accept_module()</code> function</li>
-</ul>
-<p>They must return storable objects. The exact list depends on the store that is currently deployed.</p>
-<h3 id="accepted-arguments">Accepted arguments.</h3>
-<p>Only the following classes of arguments are accepted:</p>
-<ul>
-<li>the basic types of python (int, str, bool, float)</li>
-<li>lists and tuples of accepted arguments</li>
-<li>dictionaries. They are evaluated as sorted lists (by their keys)</li>
-</ul>
-<h3 id="using-complex-arguments">Using complex arguments</h3>
-<p>If more complex arguments should be accepted, two strategies are possible:
-- embed them inside the function call
-- wrap them inside a function which is then called through eval()</p>
-<p>Example: the following code will fail:</p>
-<pre><code class="language-py">df = pd.DataFrame({"x":[1]})
-
-def my_stats(data: pd.DataFrame) -&gt; int: return len(data)
-
-stats = dds.keep("/stats", my_stats, data)
-</code></pre>
-<p>The workaround is to use a wrapper function that create the dataframe:</p>
-<pre><code class="language-py">def my_pipeline():
-    df = pd.DataFrame({"x":[1]})
-    return dds.keep("/stats", my_stats, df) # This will work
-
-stats = dds.eval(my_pipeline)
-</code></pre>
-<p>Another possibility is to move keep the result of the pipeline instead:</p>
-<pre><code class="language-py">def my_pipeline2():
-    df = pd.DataFrame({"x":[1]})
-    return my_stats(df)
-
-stats = dds.keep("/stats", my_pipeline2)
-</code></pre>
-<p>The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will
-only be evaluated once.</p>
-<details class="quote">
-          <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">keep</span><span class="p">(</span>
-    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DDSPath</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
-    <span class="n">fun</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">_Out</span><span class="p">],</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Out</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Stores the result of calling a function to a specific path. If this particular evaluation has not happened before,</span>
-<span class="sd">    the function will be evaluated again (with the given arguments).</span>
-
-<span class="sd">    For example, instead of writing:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    data = my_function(arg1, arg2)</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    you should use:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    data = dds.keep(path, my_function, arg1, arg2)</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    Arguments:</span>
-<span class="sd">        path: a path in the storage system which will store the content of the function, evaluated to the given</span>
-<span class="sd">            arguments. It is expected to be in absolute form (starting with "/" if a string</span>
-<span class="sd">            or being an absolute path if a pathlib's `Path` object).</span>
-
-<span class="sd">            If this path exists, it will be overwritten silently.</span>
-
-<span class="sd">        fun: A function to evaluate. See text above on the limitations over this function</span>
-
-<span class="sd">        args: the arguments of this function</span>
-
-<span class="sd">        kwargs: *(keyworded arguments are currently unsupported)*</span>
-
-<span class="sd">    return: the value that the function would produce for these arguments</span>
-
-
-<span class="sd">    ### Accepted functions.</span>
-
-<span class="sd">    In general, the functions that should be provided are *total, non-recursive, deterministic and referentially</span>
-<span class="sd">     transparent*.</span>
-
-<span class="sd">    Functions have currently the following restrictions:</span>
-
-<span class="sd">    - no static method, class method</span>
-<span class="sd">    - not recursive</span>
-<span class="sd">    - no generators</span>
-<span class="sd">    - the functions must be in an accepted module to be considered, see the `accept_module()` function</span>
-
-<span class="sd">    They must return storable objects. The exact list depends on the store that is currently deployed.</span>
-
-<span class="sd">    ### Accepted arguments.</span>
-
-<span class="sd">    Only the following classes of arguments are accepted:</span>
-
-<span class="sd">    - the basic types of python (int, str, bool, float)</span>
-<span class="sd">    - lists and tuples of accepted arguments</span>
-<span class="sd">    - dictionaries. They are evaluated as sorted lists (by their keys)</span>
-
-<span class="sd">    ### Using complex arguments</span>
-
-<span class="sd">    If more complex arguments should be accepted, two strategies are possible:</span>
-<span class="sd">    - embed them inside the function call</span>
-<span class="sd">    - wrap them inside a function which is then called through eval()</span>
-
-<span class="sd">    Example: the following code will fail:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    df = pd.DataFrame({"x":[1]})</span>
-
-<span class="sd">    def my_stats(data: pd.DataFrame) -&gt; int: return len(data)</span>
-
-<span class="sd">    stats = dds.keep("/stats", my_stats, data)</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    The workaround is to use a wrapper function that create the dataframe:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    def my_pipeline():</span>
-<span class="sd">        df = pd.DataFrame({"x":[1]})</span>
-<span class="sd">        return dds.keep("/stats", my_stats, df) # This will work</span>
-
-<span class="sd">    stats = dds.eval(my_pipeline)</span>
-<span class="sd">    ```</span>
-
-<span class="sd">    Another possibility is to move keep the result of the pipeline instead:</span>
-
-<span class="sd">    ```py</span>
-<span class="sd">    def my_pipeline2():</span>
-<span class="sd">        df = pd.DataFrame({"x":[1]})</span>
-<span class="sd">        return my_stats(df)</span>
-
-<span class="sd">    stats = dds.keep("/stats", my_pipeline2)</span>
-<span class="sd">    ```</span>
-
-
-<span class="sd">    The difference is that my_pipeline will be evaluated at each call (but not my_stats), while my_pipeline2 will</span>
-<span class="sd">    only be evaluated once.</span>
-
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_keep</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-<div class="doc doc-object doc-function">
-<h2 class="doc doc-heading" id="dds.__init__.set_store">
-
-        <code class="highlight language-python">
-set_store<span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dbutils</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commit_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>        </code>
-
-
-      </h2>
-<div class="doc doc-contents ">
-<p>Sets a new store or replaces the existing store.</p>
-<p>By default, a local store is created, pointing to the
-temporary directory of the current operating system:</p>
-<ul>
-<li>/tmp/dds/data for the user data</li>
-<li>/tmp/dds/internal for the blobs</li>
-</ul>
-<p>The exact paths of the default store may change in the future.</p>
-<p><strong>Parameters:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>store</code></td>
-<td><code>Union[str, dds.store.Store]</code></td>
-<td>
-<p>a type of store. Four values are supported by default:</p>
-<ul>
-<li><code>local</code>: local file system (default)</li>
-<li><code>dbfs</code>: the Databricks file system (only valid for the Databricks environment)</li>
-<li><code>memory</code>: in-memory storage (useful for debugging and testing)</li>
-<li><code>noop</code>: no-op storage (nothing gets stored, useful for debugging)</li>
-</ul>
-</td>
-<td><em>required</em></td>
-</tr>
-<tr>
-<td><code>internal_dir</code></td>
-<td><code>Optional[str]</code></td>
-<td>
-<p>a path in a filesystem for the internal storage. The internal storage contains evaluated blobs
-  and corresponding metadata. Accepted values are:</p>
-<ul>
-<li>local: a path in the local filesystem</li>
-<li>dbfs: a path in DBFS</li>
-</ul>
-</td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>data_dir</code></td>
-<td><code>Optional[str]</code></td>
-<td>
-<p>a path in a filesystem for the data storage. All paths provided by the user are guaranteed to map
-   to a path in the given data storage.</p>
-<ul>
-<li>for local: a path in the local filesystem. It contains symbolic links to the internal storage</li>
-<li>for dbfs: a path in DBFS. Objects are copied from the internal storage to the data storage</li>
-</ul>
-</td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>dbutils</code></td>
-<td><code>Optional[Any]</code></td>
-<td>
-<p>(optional, valid only for the 'dbfs' store) the <code>dbutils</code> object that is in a notebook. If not provided,
-DDS will use reflection facilities from IPython to load it.</p>
-</td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>commit_type</code></td>
-<td><code>Optional[str]</code></td>
-<td>
-<p>(DBFS only, 'none', 'links_only', 'full', default 'full'). The type of commit that will be
-executed to update the paths. Committing a path in DBFS involves a full copy, which may be expensive,
-especially if the underlying table uses Databricks Delta. This is why the following options can be used:</p>
-<ul>
-<li>
-<p>none: no file will be committed. Useful for debugging.</p>
-</li>
-<li>
-<p>links_only: a metadata link reference to the blob will be updated. This is much faster because it involves
-    a 1kb file transfer of metadata as opposed to a full copy of a dataset.
-     However, this means that the final tables are not readable by systems other than DDS, unless they understand
-     the DDS file protocol.</p>
-</li>
-<li>
-<p>full: the full dataset and metadata are transfered.</p>
-<p>NOTE: integration with Delta: the full transfer is currently implemented as an overwrite operation. This is
-compatible with the Delta IO protocol which will allow the user to revert to older versions if necessary.</p>
-<p>NOTE: costs: in order for DDS to work, the data must be at least in the internal store, and also copied to
-the final place. In the case of large tables, this may incur extra storage costs.</p>
-</li>
-</ul>
-</td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>cache_objects</code></td>
-<td><code>Union[NoneType, bool, int]</code></td>
-<td>
-<p>(optional, true/false or a positive integer, 0 means no caching, negative number means everything
- cached). Sets a caching level of the objects (not the paths).
- With the cache enabled, if an object has already been fetched from the store, it may be kept in memory
- and reserved later.</p>
-<p>Caching the objects has no effect on coherence and may be safely used with the local store, or with
-  distributed stores such as DBFS. However, if large objects are returned, they may lead to the main process
-  running out of memory.</p>
-<p>This option has no effect on updating paths. Paths are always checked against the store (even if it means
- reaching out to a remote server). This is done in order to prevent coherence issues in case paths are
- updated on a remote server.</p>
-<p>A positive integer argument indicate that no more than so many objects are being retained by the current
- python process in memory.</p>
-<p>The exact details of the caching strategy are left as an implementation detail and should not be relied upon.
- The cache is currently implemented as a LRU cache on the most recent fetched objects.</p>
-<p>This option is not compatible with providing a <code>Store</code> object as an argument.</p>
-</td>
-<td><code>None</code></td>
-</tr>
-</tbody>
-</table>
-<p>:return: nothing</p>
-<details class="quote">
-          <summary>Source code in <code>dds/__init__.py</code></summary>
-          <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">set_store</span><span class="p">(</span>
-    <span class="n">store</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Store</span><span class="p">],</span>
-    <span class="n">internal_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">data_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">dbutils</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">commit_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">cache_objects</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Sets a new store or replaces the existing store.</span>
-
-<span class="sd">    By default, a local store is created, pointing to the</span>
-<span class="sd">    temporary directory of the current operating system:</span>
-
-<span class="sd">      - /tmp/dds/data for the user data</span>
-<span class="sd">      - /tmp/dds/internal for the blobs</span>
-
-<span class="sd">    The exact paths of the default store may change in the future.</span>
-
-<span class="sd">    Arguments:</span>
-
-<span class="sd">      store: a type of store. Four values are supported by default:</span>
-
-<span class="sd">        - `local`: local file system (default)</span>
-<span class="sd">        - `dbfs`: the Databricks file system (only valid for the Databricks environment)</span>
-<span class="sd">        - `memory`: in-memory storage (useful for debugging and testing)</span>
-<span class="sd">        - `noop`: no-op storage (nothing gets stored, useful for debugging)</span>
-
-<span class="sd">      internal_dir:  a path in a filesystem for the internal storage. The internal storage contains evaluated blobs</span>
-<span class="sd">          and corresponding metadata. Accepted values are:</span>
-
-<span class="sd">          - local: a path in the local filesystem</span>
-<span class="sd">          - dbfs: a path in DBFS</span>
-
-<span class="sd">      data_dir: a path in a filesystem for the data storage. All paths provided by the user are guaranteed to map</span>
-<span class="sd">           to a path in the given data storage.</span>
-
-<span class="sd">        - for local: a path in the local filesystem. It contains symbolic links to the internal storage</span>
-<span class="sd">        - for dbfs: a path in DBFS. Objects are copied from the internal storage to the data storage</span>
-
-<span class="sd">      dbutils: (optional, valid only for the 'dbfs' store) the `dbutils` object that is in a notebook. If not provided,</span>
-<span class="sd">        DDS will use reflection facilities from IPython to load it.</span>
-
-<span class="sd">      commit_type: (DBFS only, 'none', 'links_only', 'full', default 'full'). The type of commit that will be</span>
-<span class="sd">        executed to update the paths. Committing a path in DBFS involves a full copy, which may be expensive,</span>
-<span class="sd">        especially if the underlying table uses Databricks Delta. This is why the following options can be used:</span>
-
-<span class="sd">        - none: no file will be committed. Useful for debugging.</span>
-
-<span class="sd">        - links_only: a metadata link reference to the blob will be updated. This is much faster because it involves</span>
-<span class="sd">            a 1kb file transfer of metadata as opposed to a full copy of a dataset.</span>
-<span class="sd">             However, this means that the final tables are not readable by systems other than DDS, unless they understand</span>
-<span class="sd">             the DDS file protocol.</span>
-
-<span class="sd">        - full: the full dataset and metadata are transfered.</span>
-
-<span class="sd">            NOTE: integration with Delta: the full transfer is currently implemented as an overwrite operation. This is</span>
-<span class="sd">            compatible with the Delta IO protocol which will allow the user to revert to older versions if necessary.</span>
-
-<span class="sd">            NOTE: costs: in order for DDS to work, the data must be at least in the internal store, and also copied to</span>
-<span class="sd">            the final place. In the case of large tables, this may incur extra storage costs.</span>
-
-<span class="sd">      cache_objects: (optional, true/false or a positive integer, 0 means no caching, negative number means everything</span>
-<span class="sd">         cached). Sets a caching level of the objects (not the paths).</span>
-<span class="sd">         With the cache enabled, if an object has already been fetched from the store, it may be kept in memory</span>
-<span class="sd">         and reserved later.</span>
-
-<span class="sd">         Caching the objects has no effect on coherence and may be safely used with the local store, or with</span>
-<span class="sd">          distributed stores such as DBFS. However, if large objects are returned, they may lead to the main process</span>
-<span class="sd">          running out of memory.</span>
-
-<span class="sd">         This option has no effect on updating paths. Paths are always checked against the store (even if it means</span>
-<span class="sd">         reaching out to a remote server). This is done in order to prevent coherence issues in case paths are</span>
-<span class="sd">         updated on a remote server.</span>
-
-<span class="sd">         A positive integer argument indicate that no more than so many objects are being retained by the current</span>
-<span class="sd">         python process in memory.</span>
-
-<span class="sd">         The exact details of the caching strategy are left as an implementation detail and should not be relied upon.</span>
-<span class="sd">         The cache is currently implemented as a LRU cache on the most recent fetched objects.</span>
-
-<span class="sd">         This option is not compatible with providing a `Store` object as an argument.</span>
-
-<span class="sd">    :return: nothing</span>
-<span class="sd">    """</span>
-    <span class="n">_set_store</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">internal_dir</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">dbutils</span><span class="p">,</span> <span class="n">commit_type</span><span class="p">,</span> <span class="n">cache_objects</span><span class="p">)</span>
-</code></pre>
-</div>
-</details>
-</div>
-</div>
-</div>
-</div>
-</div>
+<p>::: dds._annotations
+    handler: python
+    selection:
+      members:
+        - data_function</p>
+<p>::: dds.<strong>init</strong>
+    handler: python
+    selection:
+      members:
+        - keep
+        - eval
+        - set_store
+        - accept_module</p>
               
             </div>
-          </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../tut_collab/" class="btn btn-neutral float-right" title="Collaboration and branching">Next <span class="icon icon-circle-arrow-right"></span></a>
-      
-      
-        <a href="../user_guide/" class="btn btn-neutral" title="User guide"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-      
-    </div>
-  
+          </div><footer>
 
   <hr/>
 
   <div role="contentinfo">
     <!-- Copyright etc -->
-    
   </div>
 
-  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
-      
+          
         </div>
       </div>
 
@@ -891,24 +134,22 @@ the final place. In the case of large tables, this may incur extra storage costs
 
   </div>
 
-  <div class="rst-versions" role="note" aria-label="versions">
-    <span class="rst-current-version" data-toggle="rst-current-version">
-      
-      
-        <span><a href="../user_guide/" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      
-      
-        <span style="margin-left: 15px"><a href="../tut_collab/" style="color: #fcfcfc">Next &raquo;</a></span>
-      
-    </span>
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
 </div>
-    <script>var base_url = '..';</script>
-    <script src="../js/theme.js" defer></script>
-      <script src="../search/main.js" defer></script>
-    <script defer>
-        window.onload = function () {
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
             SphinxRtdTheme.Navigation.enable(true);
-        };
+        });
     </script>
 
 </body>
