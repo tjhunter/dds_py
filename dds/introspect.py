@@ -1098,7 +1098,7 @@ def getsource_class(c: type) -> str:
             raise e
         lines = inspect.linecache.getlines(_new_getfile(c))  # type: ignore
         cell_code = "".join(lines)
-        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]
+        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]  # type: ignore
         return class_code
 
     try:
