@@ -44,7 +44,7 @@ _eval_ctx: Optional[EvalContext] = None
 
 def keep(
     path: Union[str, DDSPath, pathlib.Path],
-    fun: Union[Callable[..., _Out]],
+    fun: Callable[..., _Out],
     *args: Tuple[Any, ...],
     **kwargs: Dict[str, Any],
 ) -> _Out:

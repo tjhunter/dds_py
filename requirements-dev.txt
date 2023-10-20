@@ -22,6 +22,9 @@ gitpython
 # Code formatter. Only support Python 3.6+
 black==22.10
 
+# Packaging
+wheel
+
 # Documentation
 mkdocs
 mkdocs-jupyter

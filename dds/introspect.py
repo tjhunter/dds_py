@@ -1073,7 +1073,7 @@ def _new_getfile(obj, _old_getfile=inspect.getfile):
             return object_.__file__  # type: ignore
 
     # If parent module is __main__, lookup by methods (NEW)
-    for name, member in inspect.getmembers(obj):
+    for _, member in inspect.getmembers(obj):
         if (
             inspect.isfunction(member)
             and obj.__qualname__ + "." + member.__name__ == member.__qualname__
