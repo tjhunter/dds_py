@@ -6,7 +6,7 @@ pydotplus
 
 
 # Dependencies for pandas support
-pandas>=0.23.2,<1.2.0
+pandas>=0.23.2,<3.0
 # This is currently not importing as long as this issue is not solved:
 # https://github.com/apache/arrow/pull/8386
 pyarrow>=0.10
