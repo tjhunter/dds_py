@@ -6,24 +6,30 @@ pydotplus
 
 
 # Dependencies for pandas support
-pandas>=0.23.2,<1.2.0
-# This is currently not importing as long as this issue is not solved:
-# https://github.com/apache/arrow/pull/8386
+# Arrow can be complicated to install. Based on this page, this is 
+# a minimal set of dependencies to make it work.
+# https://arrow.apache.org/docs/python/install.html
+pandas>=1.0,<3.0
 pyarrow>=0.10
+numpy>=1.16.6
+pip>=19
 
 # Linter
-mypy==0.991
+mypy==1.5.1
 flake8
 gitpython
 
 # Code formatter. Only support Python 3.6+
 black==22.10
 
+# Packaging
+wheel
+
 # Documentation
 mkdocs
 mkdocs-jupyter
 mkdocs-exclude
-mkdocstrings
+mkdocstrings[python]>=0.20
 jupyter
 pillow
 

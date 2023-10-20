@@ -55,7 +55,6 @@ except ImportError:
 
 _logger = logging.getLogger(__name__)
 _hash_key_body_sig = HK("body_sig")
-_hash_key_fun_body = HK("function_body_hash")
 _hash_key_fun_input = HK("function_input_hash")
 _hash_key_fun_inter = HK("function_inter_hash")
 
@@ -951,7 +950,6 @@ class InspectFunction(object):
         gctx: EvalMainContext,
         local_path: LocalDepPath,
     ) -> DDSPath:
-        called_path_symbol: str
         if isinstance(local_path_node, ast.Constant):
             # Just a string, directly access it.
             return DDSPathUtils.create(local_path_node.value)
@@ -1075,7 +1073,7 @@ def _new_getfile(obj, _old_getfile=inspect.getfile):
             return object_.__file__  # type: ignore
 
     # If parent module is __main__, lookup by methods (NEW)
-    for name, member in inspect.getmembers(obj):
+    for _, member in inspect.getmembers(obj):
         if (
             inspect.isfunction(member)
             and obj.__qualname__ + "." + member.__name__ == member.__qualname__
@@ -1093,16 +1091,23 @@ def getsource_class(c: type) -> str:
     The original solution was written here:
     https://stackoverflow.com/questions/51566497/getting-the-source-of-an-object-defined-in-a-jupyter-notebook
     """
-    try:
-        return inspect.getsource(c)
-    except TypeError as e:
+
+    def extract_jupyter(e: Exception) -> str:
         # Not in a jupyter context, no need to try the jupyter fallback.
         if extract_symbols is None:
             raise e
         lines = inspect.linecache.getlines(_new_getfile(c))  # type: ignore
         cell_code = "".join(lines)
-        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]
+        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]  # type: ignore
         return class_code
+
+    try:
+        return inspect.getsource(c)
+    except TypeError as e:
+        return extract_jupyter(e)
+    except OSError as e:
+        # Different exception with python 3.10+
+        return extract_jupyter(e)
 
 
 _accepted_packages: Set[Package] = {

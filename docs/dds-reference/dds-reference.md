@@ -17,4 +17,3 @@ This is the reference documentation of all the public-facing functions.
         - set_store
         - accept_module
 
-

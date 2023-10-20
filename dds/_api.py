@@ -44,7 +44,7 @@ _eval_ctx: Optional[EvalContext] = None
 
 def keep(
     path: Union[str, DDSPath, pathlib.Path],
-    fun: Union[Callable[..., _Out]],
+    fun: Callable[..., _Out],
     *args: Tuple[Any, ...],
     **kwargs: Dict[str, Any],
 ) -> _Out:
@@ -424,9 +424,9 @@ def _fetch_ipython_vars() -> Dict[str, Any]:
     Fetches variables from the ipython / jupyter environment. This is a best effort method.
     """
     try:
-        from IPython import get_ipython
+        from IPython import get_ipython  # type: ignore
 
-        ipython = get_ipython()
+        ipython: Optional[Any] = get_ipython()  # type: ignore
         if ipython is None:
             return {}
         return dict(ipython.user_ns)
