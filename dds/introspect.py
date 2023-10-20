@@ -55,7 +55,6 @@ except ImportError:
 
 _logger = logging.getLogger(__name__)
 _hash_key_body_sig = HK("body_sig")
-_hash_key_fun_body = HK("function_body_hash")
 _hash_key_fun_input = HK("function_input_hash")
 _hash_key_fun_inter = HK("function_inter_hash")
 
@@ -951,7 +950,6 @@ class InspectFunction(object):
         gctx: EvalMainContext,
         local_path: LocalDepPath,
     ) -> DDSPath:
-        called_path_symbol: str
         if isinstance(local_path_node, ast.Constant):
             # Just a string, directly access it.
             return DDSPathUtils.create(local_path_node.value)
@@ -1101,7 +1099,7 @@ def getsource_class(c: type) -> str:
             raise e
         lines = inspect.linecache.getlines(_new_getfile(c))  # type: ignore
         cell_code = "".join(lines)
-        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]
+        class_code: str = extract_symbols(cell_code, c.__name__)[0][0]  # type: ignore
         return class_code
 
 

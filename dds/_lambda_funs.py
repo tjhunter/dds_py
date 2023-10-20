@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 
 def _walk_with_parent(node: ast.AST) -> Iterable[Tuple[ast.AST, Optional[ast.AST]]]:
     """Walk the abstract syntax tree by (node, parent)."""
-    stack = [(node, None)]  # type: List[Tuple[ast.AST, Optional[ast.AST]]]
+    stack: List[Tuple[ast.AST, Optional[ast.AST]]] = [(node, None)]
     while stack:
         node, parent = stack.pop()
 
